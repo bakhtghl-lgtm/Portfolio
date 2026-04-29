@@ -1,0 +1,9 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tanstack-start-app",
+  "compatibility_date": "2025-09-24",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "@tanstack/react-start/server-entry",
+  // Supabase (contact form): set SUPABASE_URL in vars and SUPABASE_SERVICE_ROLE_KEY via `wrangler secret put`,
+  // or use .dev.vars locally (see .env.example).
+}
