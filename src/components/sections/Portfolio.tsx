@@ -1,6 +1,6 @@
 import { LayoutGrid, ArrowUpRight, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Section, SectionTag } from "../Section";
 import { cn } from "@/lib/utils";
 import appointmentWorkflow from "@/assets/portfolio-appointment-workflow.png";
@@ -327,6 +327,7 @@ export function Portfolio() {
     : -1;
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const [mediaZoomed, setMediaZoomed] = useState(false);
+  const [workflowDetailsOpen, setWorkflowDetailsOpen] = useState(false);
 
   useEffect(() => {
     if (!activeProject) return;
@@ -347,6 +348,7 @@ export function Portfolio() {
   useEffect(() => {
     setActiveMediaIndex(0);
     setMediaZoomed(false);
+    setWorkflowDetailsOpen(false);
   }, [activeProject]);
 
   useEffect(() => {
@@ -475,83 +477,69 @@ export function Portfolio() {
 
             <div className="relative z-10 min-h-0 flex-1 overflow-hidden">
               {activeProject.detail ? (
-                <div className="grid h-full min-h-0 grid-cols-1 grid-rows-[auto_minmax(0,1fr)] md:grid-cols-[minmax(0,1fr)_480px] md:grid-rows-1">
-                  <div className="order-1 min-h-0 bg-gradient-to-b from-muted/30 to-background/40 px-3 py-3 sm:px-5 sm:py-5 md:order-1 md:h-full md:px-6 md:py-6">
-                    <div
-                      className="relative mx-auto h-[min(46vh,420px)] w-full max-w-[880px] overflow-hidden rounded-3xl border border-border bg-card-gradient shadow-card md:h-full md:max-h-[560px]"
-                      style={{
-                        backgroundImage: `radial-gradient(circle at 30% 30%, oklch(0.88 0.18 ${activeProject.hue} / 0.20), transparent 60%), radial-gradient(circle at 70% 70%, oklch(0.4 0.05 270 / 0.35), transparent 60%)`,
-                      }}
-                    >
-                      {(() => {
-                        const items = activeProject.gallery?.length
-                          ? activeProject.gallery
-                          : [{ src: activeProject.imageUrl, alt: activeProject.title }];
-                        const current = items[Math.min(activeMediaIndex, items.length - 1)];
-                        return (
-                          <button
-                            type="button"
-                            onClick={() => setMediaZoomed((z) => !z)}
-                            className={cn(
-                              "relative h-full w-full",
-                              mediaZoomed ? "cursor-zoom-out" : "cursor-zoom-in",
-                            )}
-                            aria-label={mediaZoomed ? "Zoom out" : "Zoom in"}
-                          >
-                            <img
-                              src={current.src}
-                              alt={current.alt}
-                              className={cn(
-                                "opacity-90",
-                                mediaZoomed
-                                  ? "max-w-none max-h-none w-[160%] h-[160%] object-contain object-center"
-                                  : "h-full w-full object-contain object-center",
-                              )}
-                            />
-                          </button>
-                        );
-                      })()}
-                      <div className="pointer-events-none absolute inset-0 bg-background/25" />
+                <>
+                  {/* Mobile: preview first → small faded “See details” → details overlay */}
+                  <div className="relative flex h-full min-h-0 flex-col md:hidden">
+                    <div className="min-h-0 flex-1 bg-gradient-to-b from-muted/30 to-background/40 px-3 py-3">
                       <div
-                        className="pointer-events-none absolute inset-0 opacity-25"
+                        className={cn(
+                          "relative mx-auto h-full w-full max-w-[880px] overflow-hidden rounded-3xl border border-border bg-card-gradient shadow-card",
+                          mediaZoomed && !workflowDetailsOpen ? "overflow-auto" : "overflow-hidden",
+                        )}
                         style={{
-                          backgroundImage:
-                            "linear-gradient(oklch(1 0 0 / 0.05) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0 / 0.05) 1px, transparent 1px)",
-                          backgroundSize: "40px 40px",
+                          backgroundImage: `radial-gradient(circle at 30% 30%, oklch(0.88 0.18 ${activeProject.hue} / 0.20), transparent 60%), radial-gradient(circle at 70% 70%, oklch(0.4 0.05 270 / 0.35), transparent 60%)`,
                         }}
-                      />
+                      >
+                        {(() => {
+                          const items = activeProject.gallery?.length
+                            ? activeProject.gallery
+                            : [{ src: activeProject.imageUrl, alt: activeProject.title }];
+                          const current = items[Math.min(activeMediaIndex, items.length - 1)];
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (workflowDetailsOpen) return;
+                                setMediaZoomed((z) => !z);
+                              }}
+                              className={cn(
+                                "relative h-full w-full",
+                                workflowDetailsOpen ? "cursor-default" : mediaZoomed ? "cursor-zoom-out" : "cursor-zoom-in",
+                              )}
+                              aria-label={
+                                workflowDetailsOpen ? "Preview" : mediaZoomed ? "Zoom out" : "Zoom in"
+                              }
+                            >
+                              <img
+                                src={current.src}
+                                alt={current.alt}
+                                className={cn(
+                                  "opacity-90",
+                                  mediaZoomed
+                                    ? "max-w-none max-h-none w-[160%] h-[160%] object-contain object-center"
+                                    : "h-full w-full object-contain object-center",
+                                )}
+                              />
+                            </button>
+                          );
+                        })()}
 
-                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                        <div className="font-display text-7xl md:text-9xl font-bold opacity-10 tracking-tighter">
-                          {activeIndex >= 0 ? `0${activeIndex + 1}` : ""}
+                        <div className="pointer-events-none absolute inset-0 bg-background/25" />
+                        <div
+                          className="pointer-events-none absolute inset-0 opacity-25"
+                          style={{
+                            backgroundImage:
+                              "linear-gradient(oklch(1 0 0 / 0.05) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0 / 0.05) 1px, transparent 1px)",
+                            backgroundSize: "40px 40px",
+                          }}
+                        />
+
+                        <div className="absolute top-4 left-4 rounded-full border border-secondary/30 bg-secondary/15 px-3 py-1.5 text-xs font-semibold tracking-wide text-secondary backdrop-blur">
+                          {activeProject.metric}
                         </div>
-                      </div>
 
-                      <div className="absolute top-5 left-5 rounded-full border border-secondary/30 bg-secondary/15 px-3 py-1.5 text-xs font-semibold tracking-wide text-secondary backdrop-blur">
-                        {activeProject.metric}
-                      </div>
-
-                      <div className="absolute bottom-5 left-5 flex flex-wrap gap-2">
-                        {activeProject.tags.map((t) => (
-                          <span
-                            key={t}
-                            className="rounded-full border border-border bg-background/70 px-4 py-1.5 text-xs font-medium backdrop-blur"
-                          >
-                            {t.toLowerCase() === "funnels" ? (
-                              <span className="inline-flex items-center gap-2">
-                                <FunnelIcon className="size-3.5 text-secondary" />
-                                {t}
-                              </span>
-                            ) : (
-                              t
-                            )}
-                          </span>
-                        ))}
-                      </div>
-
-                      {activeProject.gallery && activeProject.gallery.length > 1 ? (
-                        <>
-                          <div className="absolute right-5 bottom-5 flex items-center gap-2">
+                        {activeProject.gallery && activeProject.gallery.length > 1 ? (
+                          <>
                             <button
                               type="button"
                               onClick={() =>
@@ -561,7 +549,7 @@ export function Portfolio() {
                                     activeProject.gallery!.length,
                                 )
                               }
-                              className="pointer-events-auto inline-flex size-10 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-secondary"
+                              className="pointer-events-auto absolute left-3 top-1/2 -translate-y-1/2 inline-flex size-11 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-secondary"
                               aria-label="Previous screenshot"
                             >
                               ←
@@ -571,57 +559,233 @@ export function Portfolio() {
                               onClick={() =>
                                 setActiveMediaIndex((i) => (i + 1) % activeProject.gallery!.length)
                               }
-                              className="pointer-events-auto inline-flex size-10 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-secondary"
+                              className="pointer-events-auto absolute right-3 top-1/2 -translate-y-1/2 inline-flex size-11 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-secondary"
                               aria-label="Next screenshot"
                             >
                               →
                             </button>
-                          </div>
+                          </>
+                        ) : null}
 
-                          <div className="absolute left-1/2 bottom-5 hidden -translate-x-1/2 gap-2 md:flex">
-                            {activeProject.gallery.map((m, idx) => (
-                              <button
-                                key={m.src}
-                                type="button"
-                                onClick={() => setActiveMediaIndex(idx)}
-                                className={cn(
-                                  "pointer-events-auto size-2.5 rounded-full border border-border bg-background/60 backdrop-blur transition",
-                                  idx === activeMediaIndex
-                                    ? "border-secondary bg-secondary/70"
-                                    : "hover:border-secondary/50",
-                                )}
-                                aria-label={`Open screenshot ${idx + 1}`}
+                        <div className="pointer-events-none absolute top-4 right-4 rounded-full border border-border/70 bg-background/70 px-3 py-1 text-[11px] font-medium text-muted-foreground backdrop-blur">
+                          {mediaZoomed ? "Scroll to pan • click to zoom out" : "Zoom to see"}
+                        </div>
+
+                        {!workflowDetailsOpen ? (
+                          <div className="absolute inset-x-0 bottom-4 flex justify-center">
+                            <motion.button
+                              type="button"
+                              onClick={() => {
+                                setMediaZoomed(false);
+                                setWorkflowDetailsOpen(true);
+                              }}
+                              initial={{ opacity: 0, y: 6 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                              className="pointer-events-auto rounded-full border border-border/70 bg-background/55 px-4 py-2 text-[11px] font-semibold text-muted-foreground backdrop-blur transition hover:border-secondary/50 hover:text-foreground"
+                              aria-label="Open details"
+                            >
+                              <motion.span
+                                animate={{ opacity: [0.7, 1, 0.7] }}
+                                transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+                              >
+                                See details
+                              </motion.span>
+                            </motion.button>
+                          </div>
+                        ) : null}
+
+                        <AnimatePresence>
+                          {workflowDetailsOpen ? (
+                            <motion.div
+                              key="workflow-details"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              transition={{ duration: 0.18, ease: "easeOut" }}
+                              className="absolute inset-0 z-20"
+                            >
+                              <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.18, ease: "easeOut" }}
+                                className="absolute inset-0 bg-background/60 backdrop-blur-sm"
                               />
-                            ))}
+                              <motion.div
+                                initial={{ opacity: 0, y: 14, scale: 0.99 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: 10, scale: 0.99 }}
+                                transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
+                                className="absolute inset-0 overflow-hidden rounded-3xl border border-border/70 bg-background/85 backdrop-blur-md"
+                              >
+                                <div className="flex items-center justify-between border-b border-border/70 px-4 py-3">
+                                  <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-secondary">
+                                    Details
+                                  </p>
+                                  <button
+                                    type="button"
+                                    onClick={() => setWorkflowDetailsOpen(false)}
+                                    className="rounded-full border border-border bg-background/70 px-3 py-1.5 text-[11px] font-semibold text-muted-foreground backdrop-blur transition hover:border-secondary/50 hover:text-foreground"
+                                  >
+                                    Back to preview
+                                  </button>
+                                </div>
+                                <div className="h-[calc(100%-48px)] overflow-y-auto overscroll-contain px-4 py-4 pr-2 [scrollbar-gutter:stable]">
+                                  <PortfolioDetailBody detail={activeProject.detail} />
+                                  <div className="h-14" />
+                                </div>
+                              </motion.div>
+                            </motion.div>
+                          ) : null}
+                        </AnimatePresence>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Desktop/tablet: keep the existing two-column layout */}
+                  <div className="hidden h-full min-h-0 md:grid md:grid-cols-[minmax(0,1fr)_480px]">
+                    <div className="order-1 min-h-0 bg-gradient-to-b from-muted/30 to-background/40 px-6 py-6">
+                      <div
+                        className="relative mx-auto h-full max-h-[560px] w-full max-w-[880px] overflow-hidden rounded-3xl border border-border bg-card-gradient shadow-card"
+                        style={{
+                          backgroundImage: `radial-gradient(circle at 30% 30%, oklch(0.88 0.18 ${activeProject.hue} / 0.20), transparent 60%), radial-gradient(circle at 70% 70%, oklch(0.4 0.05 270 / 0.35), transparent 60%)`,
+                        }}
+                      >
+                        {(() => {
+                          const items = activeProject.gallery?.length
+                            ? activeProject.gallery
+                            : [{ src: activeProject.imageUrl, alt: activeProject.title }];
+                          const current = items[Math.min(activeMediaIndex, items.length - 1)];
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => setMediaZoomed((z) => !z)}
+                              className={cn(
+                                "relative h-full w-full",
+                                mediaZoomed ? "cursor-zoom-out" : "cursor-zoom-in",
+                              )}
+                              aria-label={mediaZoomed ? "Zoom out" : "Zoom in"}
+                            >
+                              <img
+                                src={current.src}
+                                alt={current.alt}
+                                className={cn(
+                                  "opacity-90",
+                                  mediaZoomed
+                                    ? "max-w-none max-h-none w-[160%] h-[160%] object-contain object-center"
+                                    : "h-full w-full object-contain object-center",
+                                )}
+                              />
+                            </button>
+                          );
+                        })()}
+                        <div className="pointer-events-none absolute inset-0 bg-background/25" />
+                        <div
+                          className="pointer-events-none absolute inset-0 opacity-25"
+                          style={{
+                            backgroundImage:
+                              "linear-gradient(oklch(1 0 0 / 0.05) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0 / 0.05) 1px, transparent 1px)",
+                            backgroundSize: "40px 40px",
+                          }}
+                        />
+
+                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                          <div className="font-display text-7xl md:text-9xl font-bold opacity-10 tracking-tighter">
+                            {activeIndex >= 0 ? `0${activeIndex + 1}` : ""}
                           </div>
-                        </>
-                      ) : null}
+                        </div>
 
-                      <div className="pointer-events-none absolute top-5 right-5 rounded-full border border-border/70 bg-background/70 px-3 py-1 text-[11px] font-medium text-muted-foreground backdrop-blur">
-                        {mediaZoomed ? "Scroll to pan • click to zoom out" : "Zoom to see"}
+                        <div className="absolute top-5 left-5 rounded-full border border-secondary/30 bg-secondary/15 px-3 py-1.5 text-xs font-semibold tracking-wide text-secondary backdrop-blur">
+                          {activeProject.metric}
+                        </div>
+
+                        <div className="absolute bottom-5 left-5 flex flex-wrap gap-2">
+                          {activeProject.tags.map((t) => (
+                            <span
+                              key={t}
+                              className="rounded-full border border-border bg-background/70 px-4 py-1.5 text-xs font-medium backdrop-blur"
+                            >
+                              {t.toLowerCase() === "funnels" ? (
+                                <span className="inline-flex items-center gap-2">
+                                  <FunnelIcon className="size-3.5 text-secondary" />
+                                  {t}
+                                </span>
+                              ) : (
+                                t
+                              )}
+                            </span>
+                          ))}
+                        </div>
+
+                        {activeProject.gallery && activeProject.gallery.length > 1 ? (
+                          <>
+                            <div className="absolute right-5 bottom-5 flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setActiveMediaIndex(
+                                    (i) =>
+                                      (i - 1 + activeProject.gallery!.length) %
+                                      activeProject.gallery!.length,
+                                  )
+                                }
+                                className="pointer-events-auto inline-flex size-10 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-secondary"
+                                aria-label="Previous screenshot"
+                              >
+                                ←
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setActiveMediaIndex(
+                                    (i) => (i + 1) % activeProject.gallery!.length,
+                                  )
+                                }
+                                className="pointer-events-auto inline-flex size-10 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-secondary"
+                                aria-label="Next screenshot"
+                              >
+                                →
+                              </button>
+                            </div>
+
+                            <div className="absolute left-1/2 bottom-5 hidden -translate-x-1/2 gap-2 md:flex">
+                              {activeProject.gallery.map((m, idx) => (
+                                <button
+                                  key={m.src}
+                                  type="button"
+                                  onClick={() => setActiveMediaIndex(idx)}
+                                  className={cn(
+                                    "pointer-events-auto size-2.5 rounded-full border border-border bg-background/60 backdrop-blur transition",
+                                    idx === activeMediaIndex
+                                      ? "border-secondary bg-secondary/70"
+                                      : "hover:border-secondary/50",
+                                  )}
+                                  aria-label={`Open screenshot ${idx + 1}`}
+                                />
+                              ))}
+                            </div>
+                          </>
+                        ) : null}
+
+                        <div className="pointer-events-none absolute top-5 right-5 rounded-full border border-border/70 bg-background/70 px-3 py-1 text-[11px] font-medium text-muted-foreground backdrop-blur">
+                          {mediaZoomed ? "Scroll to pan • click to zoom out" : "Zoom to see"}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="relative order-2 h-full min-h-0 overflow-hidden border-l border-border/70 bg-background/55 backdrop-blur-xl">
+                      <div className="absolute inset-0 overflow-y-auto overscroll-contain px-6 py-6 pr-2 [scrollbar-gutter:stable]">
+                        <PortfolioDetailBody detail={activeProject.detail} />
+                        <div className="h-14" />
+                      </div>
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-background/90 via-background/60 to-transparent" />
+                      <div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full border border-border/70 bg-background/70 px-3 py-1 text-[11px] font-medium text-muted-foreground backdrop-blur">
+                        Scroll to see more
                       </div>
                     </div>
                   </div>
-
-                  <div className="relative order-2 min-h-0 overflow-hidden border-t border-border/70 bg-background/55 backdrop-blur-xl md:order-2 md:h-full md:border-t-0 md:border-l">
-                    <div className="absolute inset-0 overflow-y-auto overscroll-contain px-4 py-4 pr-2 [scrollbar-gutter:stable] md:px-6 md:py-6">
-                      <div className="mb-4 flex items-center justify-between md:hidden">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-secondary">
-                          Details
-                        </p>
-                        <p className="text-[11px] font-medium text-muted-foreground">
-                          Scroll
-                        </p>
-                      </div>
-                      <PortfolioDetailBody detail={activeProject.detail} />
-                      <div className="h-14" />
-                    </div>
-                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-background/90 via-background/60 to-transparent" />
-                    <div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full border border-border/70 bg-background/70 px-3 py-1 text-[11px] font-medium text-muted-foreground backdrop-blur">
-                      Scroll to see more
-                    </div>
-                  </div>
-                </div>
+                </>
               ) : (
                 <div className="h-full min-h-0 bg-gradient-to-b from-muted/30 to-background/40 px-3 py-3 sm:px-5 sm:py-5 md:px-6 md:py-6">
                   <div
