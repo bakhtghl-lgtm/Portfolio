@@ -29,23 +29,23 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "bakht_Ali.vercel.app" },
+      { title: "bakhtaliniazi.com" },
       {
         name: "description",
         content:
-          "bakht_Ali.vercel.app — Bakht Ali Niazi portfolio (funnels, automations, CRM systems).",
+          "bakhtaliniazi.com — Bakht Ali Niazi portfolio (funnels, automations, CRM systems).",
       },
       { name: "author", content: "Bakht" },
-      { property: "og:title", content: "bakht_Ali.vercel.app" },
+      { property: "og:title", content: "bakhtaliniazi.com" },
       {
         property: "og:description",
         content:
-          "bakht_Ali.vercel.app — Bakht Ali Niazi portfolio (funnels, automations, CRM systems).",
+          "bakhtaliniazi.com — Bakht Ali Niazi portfolio (funnels, automations, CRM systems).",
       },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://bakht_Ali.vercel.app/" },
+      { property: "og:url", content: "https://bakhtaliniazi.com/" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "bakht_Ali.vercel.app" },
+      { name: "twitter:title", content: "bakhtaliniazi.com" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
