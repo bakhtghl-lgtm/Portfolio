@@ -35,7 +35,7 @@ export function ProfileCard() {
     >
       <button
         aria-label="Settings"
-        className="absolute left-4 top-4 size-10 rounded-full glass flex items-center justify-center text-muted-foreground hover:text-secondary transition"
+        className="absolute right-4 top-4 size-10 rounded-full glass flex items-center justify-center text-muted-foreground hover:text-secondary transition"
       >
         <Settings className="size-4 animate-spin-slow" />
       </button>
