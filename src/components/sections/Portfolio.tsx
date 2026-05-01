@@ -674,27 +674,35 @@ export function Portfolio() {
                       {activeProject.metric}
                     </div>
 
-                    <div className="absolute bottom-5 left-5 flex flex-wrap gap-2">
-                      {activeProject.tags.map((t) => (
-                        <span
-                          key={t}
-                          className="rounded-full border border-border bg-background/70 px-4 py-1.5 text-xs font-medium backdrop-blur"
-                        >
-                          {t.toLowerCase() === "funnels" ? (
-                            <span className="inline-flex items-center gap-2">
-                              <FunnelIcon className="size-3.5 text-secondary" />
-                              {t}
-                            </span>
-                          ) : (
-                            t
-                          )}
-                        </span>
-                      ))}
-                    </div>
-
                     {activeProject.gallery && activeProject.gallery.length > 1 ? (
                       <>
-                        <div className="absolute right-5 bottom-5 flex items-center gap-2">
+                        {/* Mobile: side arrows (no overlap with tags) */}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setActiveMediaIndex(
+                              (i) =>
+                                (i - 1 + activeProject.gallery!.length) % activeProject.gallery!.length,
+                            )
+                          }
+                          className="md:hidden pointer-events-auto absolute left-3 top-1/2 -translate-y-1/2 inline-flex size-11 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-secondary"
+                          aria-label="Previous screenshot"
+                        >
+                          ←
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setActiveMediaIndex((i) => (i + 1) % activeProject.gallery!.length)
+                          }
+                          className="md:hidden pointer-events-auto absolute right-3 top-1/2 -translate-y-1/2 inline-flex size-11 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-secondary"
+                          aria-label="Next screenshot"
+                        >
+                          →
+                        </button>
+
+                        {/* Desktop: bottom-right arrows */}
+                        <div className="absolute right-5 bottom-5 hidden items-center gap-2 md:flex">
                           <button
                             type="button"
                             onClick={() =>
@@ -721,27 +729,51 @@ export function Portfolio() {
                           </button>
                         </div>
 
-                        <div className="absolute left-1/2 bottom-5 hidden -translate-x-1/2 gap-2 md:flex">
-                          {activeProject.gallery.map((m, idx) => (
-                            <button
-                              key={m.src}
-                              type="button"
-                              onClick={() => setActiveMediaIndex(idx)}
-                              className={cn(
-                                "pointer-events-auto size-2.5 rounded-full border border-border bg-background/60 backdrop-blur transition",
-                                idx === activeMediaIndex
-                                  ? "border-secondary bg-secondary/70"
-                                  : "hover:border-secondary/50",
-                              )}
-                              aria-label={`Open screenshot ${idx + 1}`}
-                            />
-                          ))}
+                        {/* Dots: also visible on mobile (scrollable if many) */}
+                        <div className="absolute left-1/2 bottom-4 flex -translate-x-1/2 justify-center md:bottom-5">
+                          <div className="flex max-w-[78vw] items-center gap-2 overflow-x-auto rounded-full border border-border/60 bg-background/40 px-3 py-2 backdrop-blur [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden md:max-w-none md:border-0 md:bg-transparent md:px-0 md:py-0">
+                            {activeProject.gallery.map((m, idx) => (
+                              <button
+                                key={m.src}
+                                type="button"
+                                onClick={() => setActiveMediaIndex(idx)}
+                                className={cn(
+                                  "pointer-events-auto size-2.5 shrink-0 rounded-full border border-border bg-background/60 transition",
+                                  idx === activeMediaIndex
+                                    ? "border-secondary bg-secondary/70"
+                                    : "hover:border-secondary/50",
+                                )}
+                                aria-label={`Open screenshot ${idx + 1}`}
+                              />
+                            ))}
+                          </div>
                         </div>
                       </>
                     ) : null}
 
                     <div className="pointer-events-none absolute top-5 right-5 rounded-full border border-border/70 bg-background/70 px-3 py-1 text-[11px] font-medium text-muted-foreground backdrop-blur">
                       {mediaZoomed ? "Scroll to pan • click to zoom out" : "Zoom to see"}
+                    </div>
+                  </div>
+
+                  {/* Tags below image on mobile to avoid overlap */}
+                  <div className="mx-auto mt-4 w-full max-w-[1100px]">
+                    <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:justify-center">
+                      {activeProject.tags.map((t) => (
+                        <span
+                          key={t}
+                          className="shrink-0 rounded-full border border-border bg-background/70 px-4 py-1.5 text-xs font-medium backdrop-blur"
+                        >
+                          {t.toLowerCase() === "funnels" ? (
+                            <span className="inline-flex items-center gap-2">
+                              <FunnelIcon className="size-3.5 text-secondary" />
+                              {t}
+                            </span>
+                          ) : (
+                            t
+                          )}
+                        </span>
+                      ))}
                     </div>
                   </div>
                 </div>
