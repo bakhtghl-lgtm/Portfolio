@@ -475,10 +475,10 @@ export function Portfolio() {
 
             <div className="relative z-10 min-h-0 flex-1 overflow-hidden">
               {activeProject.detail ? (
-                <div className="grid h-full min-h-0 grid-cols-1 md:grid-cols-[minmax(0,1fr)_480px]">
-                  <div className="order-2 min-h-0 bg-gradient-to-b from-muted/30 to-background/40 px-3 py-3 sm:px-5 sm:py-5 md:order-1 md:h-full md:px-6 md:py-6">
+                <div className="grid h-full min-h-0 grid-cols-1 grid-rows-[auto_minmax(0,1fr)] md:grid-cols-[minmax(0,1fr)_480px] md:grid-rows-1">
+                  <div className="order-1 min-h-0 bg-gradient-to-b from-muted/30 to-background/40 px-3 py-3 sm:px-5 sm:py-5 md:order-1 md:h-full md:px-6 md:py-6">
                     <div
-                      className="relative mx-auto h-full max-h-[560px] w-full max-w-[880px] overflow-hidden rounded-3xl border border-border bg-card-gradient shadow-card"
+                      className="relative mx-auto h-[min(46vh,420px)] w-full max-w-[880px] overflow-hidden rounded-3xl border border-border bg-card-gradient shadow-card md:h-full md:max-h-[560px]"
                       style={{
                         backgroundImage: `radial-gradient(circle at 30% 30%, oklch(0.88 0.18 ${activeProject.hue} / 0.20), transparent 60%), radial-gradient(circle at 70% 70%, oklch(0.4 0.05 270 / 0.35), transparent 60%)`,
                       }}
@@ -603,8 +603,16 @@ export function Portfolio() {
                     </div>
                   </div>
 
-                  <div className="relative order-1 h-full min-h-0 overflow-hidden border-b border-border/70 bg-background/55 backdrop-blur-xl md:order-2 md:border-b-0 md:border-l">
+                  <div className="relative order-2 min-h-0 overflow-hidden border-t border-border/70 bg-background/55 backdrop-blur-xl md:order-2 md:h-full md:border-t-0 md:border-l">
                     <div className="absolute inset-0 overflow-y-auto overscroll-contain px-4 py-4 pr-2 [scrollbar-gutter:stable] md:px-6 md:py-6">
+                      <div className="mb-4 flex items-center justify-between md:hidden">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-secondary">
+                          Details
+                        </p>
+                        <p className="text-[11px] font-medium text-muted-foreground">
+                          Scroll
+                        </p>
+                      </div>
                       <PortfolioDetailBody detail={activeProject.detail} />
                       <div className="h-14" />
                     </div>
