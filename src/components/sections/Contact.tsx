@@ -225,7 +225,7 @@ export function Contact() {
           disabled={pending}
           whileHover={pending ? undefined : { scale: 1.03 }}
           whileTap={pending ? undefined : { scale: 0.97 }}
-          className="mt-4 inline-flex items-center justify-center gap-2 px-10 py-4 rounded-full bg-secondary text-secondary-foreground font-semibold tracking-wide shadow-glow w-fit hover:brightness-110 transition disabled:pointer-events-none disabled:opacity-60"
+          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full bg-secondary px-10 py-4 font-semibold tracking-wide text-secondary-foreground shadow-glow transition hover:brightness-110 disabled:pointer-events-none disabled:opacity-60 sm:w-fit"
         >
           <Send className="size-4" /> {pending ? "SENDING…" : "SEND MESSAGE"}
         </motion.button>

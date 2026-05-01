@@ -76,7 +76,7 @@ export function Testimonial() {
         Trusted by <span className="text-gradient-yellow">Hundred Clients</span>
       </h2>
 
-      <div className="relative bg-card-gradient border border-border rounded-3xl p-8 md:p-12 overflow-hidden min-h-[420px] flex items-center justify-center">
+      <div className="relative bg-card-gradient border border-border rounded-3xl p-7 sm:p-8 md:p-12 overflow-hidden min-h-[360px] sm:min-h-[420px] flex items-center justify-center">
         <div className="absolute -top-24 -right-24 size-72 rounded-full bg-secondary/10 blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -left-24 size-72 rounded-full bg-secondary/5 blur-3xl pointer-events-none" />
         <AnimatePresence mode="wait">

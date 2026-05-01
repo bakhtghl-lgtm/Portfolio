@@ -31,7 +31,7 @@ export function Intro() {
         <motion.a
           href="#portfolio"
           aria-label="Scroll to portfolio"
-          className="relative size-32 rounded-full border border-border flex items-center justify-center group"
+          className="relative size-24 sm:size-28 md:size-32 rounded-full border border-border flex items-center justify-center group"
         >
           <motion.svg
             viewBox="0 0 100 100"
@@ -49,7 +49,7 @@ export function Intro() {
           <motion.span
             animate={{ y: [0, 4, 0] }}
             transition={{ duration: 1.6, repeat: Infinity }}
-            className="size-12 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center shadow-glow group-hover:scale-110 transition"
+            className="size-10 sm:size-11 md:size-12 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center shadow-glow group-hover:scale-110 transition"
           >
             <ArrowDown className="size-5" />
           </motion.span>
