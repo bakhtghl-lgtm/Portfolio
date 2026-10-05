@@ -1,7 +1,8 @@
-import { LayoutGrid, ArrowUpRight, X } from "lucide-react";
-import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { Section, SectionTag } from "../Section";
+import { ArrowUpRight, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion, useScroll, useTransform, type MotionValue } from "framer-motion";
+import { Eyebrow, MaskText } from "../fx/Reveal";
+import { lockScroll } from "../fx/SmoothScroll";
 import { cn } from "@/lib/utils";
 import appointmentWorkflow from "@/assets/portfolio-appointment-workflow.png";
 import ghlZapierHubspotFlow from "@/assets/portfolio-ghl-zapier-hubspot.png";
@@ -116,6 +117,102 @@ function PortfolioDetailBody({ detail }: { detail: PortfolioDetail }) {
           ))}
         </ul>
       </div>
+    </div>
+  );
+}
+
+/** Sticky card that pins, then shrinks and dims as the next project slides over it. */
+function ProjectCard({
+  project: p,
+  index: i,
+  total,
+  progress,
+  onOpen,
+}: {
+  project: PortfolioItem;
+  index: number;
+  total: number;
+  progress: MotionValue<number>;
+  onOpen: () => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress: enter } = useScroll({
+    target: ref,
+    offset: ["start end", "start start"],
+  });
+  const imgScale = useTransform(enter, [0, 1], [1.4, 1]);
+  // card i pins at progress i/(total-1); the next card fully covers it at (i+1)/(total-1)
+  const span = Math.max(1, total - 1);
+  const targetScale = 1 - (total - 1 - i) * 0.04;
+  const scale = useTransform(progress, [i / span, 1], [1, targetScale]);
+  const dim = useTransform(
+    progress,
+    [i / span, Math.min(1, (i + 1) / span)],
+    [0, i === total - 1 ? 0 : 0.6],
+  );
+  const cover = (p.gallery && p.gallery[0]?.src) || p.imageUrl;
+
+  return (
+    <div ref={ref} className="sticky top-0 h-screen flex items-center justify-center">
+      <motion.button
+        type="button"
+        onClick={onOpen}
+        data-cursor="View"
+        style={{ scale, top: `calc(-5vh + ${i * 22}px)` }}
+        className="group relative block w-full h-[72vh] md:h-[78vh] origin-top text-left rounded-[2rem] overflow-hidden border border-border bg-card"
+      >
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `radial-gradient(circle at 30% 30%, oklch(0.88 0.18 ${p.hue} / 0.35), transparent 60%), radial-gradient(circle at 70% 70%, oklch(0.4 0.05 270 / 0.5), transparent 60%)`,
+          }}
+        />
+        <div className="absolute inset-x-0 top-0 h-[58%] md:h-auto md:bottom-0 md:left-[38%] overflow-hidden">
+          <motion.img
+            src={cover}
+            alt={`${p.title} preview`}
+            style={{ scale: imgScale }}
+            className={cn(
+              "absolute inset-0 h-full w-full transition duration-700 group-hover:scale-[1.04]",
+              p.imageThumbFit === "contain"
+                ? "object-cover object-top md:object-contain md:p-8"
+                : "object-cover object-top",
+            )}
+            loading="lazy"
+          />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-card via-card/80 md:via-card/70 to-transparent" />
+
+        <div className="relative h-full flex flex-col justify-between p-6 md:p-12 md:w-[48%]">
+          <div className="flex items-center justify-between">
+            <span className="rounded-full bg-secondary px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-secondary-foreground">
+              {p.metric}
+            </span>
+            <span className="font-mega text-6xl md:text-8xl text-outline">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+          </div>
+          <div>
+            <div className="mb-5 flex flex-wrap gap-2">
+              {p.tags.map((t) => (
+                <TagPill key={t} tag={t} />
+              ))}
+            </div>
+            <h3 className="font-mega text-4xl sm:text-5xl md:text-6xl lg:text-7xl">{p.title}</h3>
+            <span className="mt-6 inline-flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.25em] text-secondary">
+              Explore project
+              <span className="grid size-10 place-items-center rounded-full bg-secondary text-secondary-foreground transition-transform duration-500 group-hover:rotate-45">
+                <ArrowUpRight className="size-5" />
+              </span>
+            </span>
+          </div>
+        </div>
+
+        <motion.div
+          className="pointer-events-none absolute inset-0 bg-background"
+          style={{ opacity: dim }}
+        />
+      </motion.button>
     </div>
   );
 }
@@ -328,6 +425,16 @@ export function Portfolio() {
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const [mediaZoomed, setMediaZoomed] = useState(false);
   const [workflowDetailsOpen, setWorkflowDetailsOpen] = useState(false);
+  const stackRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress: stackProgress } = useScroll({
+    target: stackRef,
+    offset: ["start start", "end end"],
+  });
+
+  useEffect(() => {
+    lockScroll(Boolean(activeProject));
+    return () => lockScroll(false);
+  }, [activeProject]);
 
   useEffect(() => {
     if (!activeProject) return;
@@ -356,88 +463,30 @@ export function Portfolio() {
   }, [activeMediaIndex]);
 
   return (
-    <Section id="portfolio">
-      <SectionTag icon={<LayoutGrid className="size-3.5" />} label="Portfolio" />
-      <h2 className="mt-8 mb-12 font-display text-4xl md:text-6xl font-bold">
-        Featured <span className="text-gradient-yellow">Projects</span>
-      </h2>
+    <section id="portfolio" className="relative px-4 md:px-10 pt-24 md:pt-40 pb-24">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 md:mb-24">
+        <div>
+          <Eyebrow index="05" label="Portfolio" />
+          <h2 className="mt-8 font-mega text-[17vw] md:text-[11vw]">
+            <MaskText lines={["Featured", <span className="text-secondary">Projects</span>]} />
+          </h2>
+        </div>
+        <p className="max-w-xs text-muted-foreground md:text-right">
+          Funnels, websites and automation systems — click any card to explore every screen and the
+          full workflow.
+        </p>
+      </div>
 
-      <div className="space-y-10">
+      <div ref={stackRef} className="relative">
         {projects.map((p, i) => (
-          <motion.button
-            type="button"
+          <ProjectCard
             key={p.title}
-            onClick={() => setActiveProject(p)}
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ delay: i * 0.12, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="block w-full text-left group"
-          >
-            <motion.div
-              whileHover={{ y: -10, scale: 1.01 }}
-              transition={{ type: "spring", stiffness: 200, damping: 20 }}
-              className="relative aspect-[16/10] rounded-3xl overflow-hidden border border-border bg-card-gradient cursor-pointer"
-              style={{
-                backgroundImage: `radial-gradient(circle at 30% 30%, oklch(0.88 0.18 ${p.hue} / 0.3), transparent 60%), radial-gradient(circle at 70% 70%, oklch(0.4 0.05 270 / 0.4), transparent 60%)`,
-              }}
-            >
-              <img
-                src={(p.gallery && p.gallery[0]?.src) || p.imageUrl}
-                alt={`${p.title} preview`}
-                className={cn(
-                  "absolute inset-0 h-full w-full opacity-80 transition duration-700 group-hover:scale-[1.02] group-hover:opacity-95",
-                  p.imageThumbFit === "contain"
-                    ? "object-contain object-top p-2 md:p-4"
-                    : "object-cover",
-                )}
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-background/25" />
-              <div
-                className="absolute inset-0 opacity-20 group-hover:opacity-40 transition duration-700"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(oklch(1 0 0 / 0.05) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0 / 0.05) 1px, transparent 1px)",
-                  backgroundSize: "40px 40px",
-                }}
-              />
-
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-secondary/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1500" />
-
-              <motion.div
-                className="absolute inset-0 flex items-center justify-center"
-                whileHover={{ scale: 1.05 }}
-              >
-                <div className="font-display text-7xl md:text-9xl font-bold opacity-10 tracking-tighter group-hover:opacity-20 transition duration-500">
-                  {`0${i + 1}`}
-                </div>
-              </motion.div>
-
-              <div className="absolute top-6 left-6 px-3 py-1.5 rounded-full bg-secondary/15 border border-secondary/30 backdrop-blur text-xs font-semibold text-secondary tracking-wide">
-                {p.metric}
-              </div>
-
-              <motion.div
-                whileHover={{ rotate: 45 }}
-                className="absolute top-6 right-6 size-12 rounded-full glass flex items-center justify-center group-hover:bg-secondary group-hover:text-secondary-foreground transition duration-500"
-              >
-                <ArrowUpRight className="size-5" />
-              </motion.div>
-
-              <div className="absolute bottom-6 left-6 flex flex-wrap gap-2">
-                {p.tags.map((t) => (
-                  <TagPill key={t} tag={t} />
-                ))}
-              </div>
-            </motion.div>
-            <h3 className="mt-5 font-display text-2xl md:text-3xl font-semibold group-hover:text-secondary transition flex items-center gap-3">
-              {p.title}
-              <motion.span className="inline-block opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition duration-500">
-                →
-              </motion.span>
-            </h3>
-          </motion.button>
+            project={p}
+            index={i}
+            total={projects.length}
+            progress={stackProgress}
+            onOpen={() => setActiveProject(p)}
+          />
         ))}
       </div>
 
@@ -446,6 +495,7 @@ export function Portfolio() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-background/75 p-3 backdrop-blur-md sm:p-6 md:p-8"
           onClick={() => setActiveProject(null)}
           role="presentation"
+          data-lenis-prevent
         >
           <motion.div
             initial={{ opacity: 0, y: 16, scale: 0.98 }}
@@ -504,10 +554,18 @@ export function Portfolio() {
                               }}
                               className={cn(
                                 "relative h-full w-full",
-                                workflowDetailsOpen ? "cursor-default" : mediaZoomed ? "cursor-zoom-out" : "cursor-zoom-in",
+                                workflowDetailsOpen
+                                  ? "cursor-default"
+                                  : mediaZoomed
+                                    ? "cursor-zoom-out"
+                                    : "cursor-zoom-in",
                               )}
                               aria-label={
-                                workflowDetailsOpen ? "Preview" : mediaZoomed ? "Zoom out" : "Zoom in"
+                                workflowDetailsOpen
+                                  ? "Preview"
+                                  : mediaZoomed
+                                    ? "Zoom out"
+                                    : "Zoom in"
                               }
                             >
                               <img
@@ -854,7 +912,8 @@ export function Portfolio() {
                           onClick={() =>
                             setActiveMediaIndex(
                               (i) =>
-                                (i - 1 + activeProject.gallery!.length) % activeProject.gallery!.length,
+                                (i - 1 + activeProject.gallery!.length) %
+                                activeProject.gallery!.length,
                             )
                           }
                           className="md:hidden pointer-events-auto absolute left-3 top-1/2 -translate-y-1/2 inline-flex size-11 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-secondary"
@@ -954,6 +1013,6 @@ export function Portfolio() {
           </motion.div>
         </div>
       ) : null}
-    </Section>
+    </section>
   );
 }

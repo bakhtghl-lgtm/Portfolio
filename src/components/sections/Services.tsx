@@ -1,6 +1,7 @@
-import { AlignLeft, Workflow, LayoutTemplate, MailPlus, TrendingUp } from "lucide-react";
-import { motion } from "framer-motion";
-import { Section, SectionTag } from "../Section";
+import { Workflow, LayoutTemplate, MailPlus, TrendingUp, ArrowUpRight } from "lucide-react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useLayoutEffect, useRef, useState } from "react";
+import { Eyebrow } from "../fx/Reveal";
 
 const services = [
   {
@@ -29,50 +30,116 @@ const services = [
   },
 ];
 
+/** Vertical scroll drives a pinned horizontal track of service cards. */
 export function Services() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [distance, setDistance] = useState(0);
+
+  useLayoutEffect(() => {
+    const measure = () => {
+      if (!trackRef.current) return;
+      setDistance(Math.max(0, trackRef.current.scrollWidth - window.innerWidth));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (trackRef.current) ro.observe(trackRef.current);
+    window.addEventListener("resize", measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, []);
+
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end end"] });
+  const x = useTransform(scrollYProgress, [0, 1], [0, -distance]);
+  const bar = useTransform(scrollYProgress, [0, 1], [0, 1]);
+  const bgText = useTransform(scrollYProgress, [0, 1], ["10%", "-60%"]);
+
   return (
-    <Section id="services">
-      <SectionTag icon={<AlignLeft className="size-3.5" />} label="Services" />
-      <h2 className="mt-8 mb-12 font-display text-4xl md:text-6xl font-bold">
-        My <span className="text-gradient-yellow">Specializations</span>
-      </h2>
+    <section
+      id="services"
+      ref={sectionRef}
+      className="relative"
+      style={{ height: `calc(100vh + ${distance}px)` }}
+    >
+      <div className="sticky top-0 h-screen overflow-hidden flex flex-col justify-center">
+        <motion.div
+          aria-hidden
+          style={{ x: bgText }}
+          className="pointer-events-none absolute bottom-[4vh] left-0 whitespace-nowrap font-mega text-[28vw] text-outline opacity-40"
+        >
+          Specializations
+        </motion.div>
 
-      <div className="grid sm:grid-cols-2 gap-5">
-        {services.map((s, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.08, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-            whileHover={{ y: -6 }}
-            className="group relative bg-card-gradient border border-border rounded-3xl p-7 hover:border-secondary/60 transition-all duration-500 overflow-hidden"
-          >
-            {/* animated glow */}
-            <div className="absolute -right-16 -top-16 size-56 rounded-full bg-secondary/15 blur-3xl opacity-0 group-hover:opacity-100 transition duration-700" />
-            {/* sweep line */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-secondary/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+        <motion.div
+          ref={trackRef}
+          style={{ x }}
+          className="relative flex items-center gap-6 md:gap-10 pl-4 md:pl-10 pr-[10vw] w-max"
+        >
+          <div className="w-[85vw] md:w-[42vw] shrink-0">
+            <Eyebrow index="02" label="Services" />
+            <h2 className="mt-8 font-mega text-[18vw] md:text-[9vw]">
+              My
+              <br />
+              <span className="text-secondary">Speciali</span>
+              <br />
+              zations
+            </h2>
+            <p className="mt-6 max-w-sm text-muted-foreground">
+              Keep scrolling — every service is a system I've shipped for real clients.
+            </p>
+          </div>
 
-            <div className="relative flex flex-col h-full">
-              <div className="flex items-center justify-between mb-5">
-                <div className="size-14 rounded-2xl bg-secondary/10 border border-secondary/20 flex items-center justify-center group-hover:bg-secondary group-hover:text-secondary-foreground transition-all duration-500 group-hover:rotate-6">
-                  <s.icon className="size-6 text-secondary group-hover:text-secondary-foreground transition" />
+          {services.map((s, i) => {
+            const yellow = i % 2 === 1;
+            return (
+              <motion.article
+                key={s.title}
+                whileHover={{ y: -12, rotate: yellow ? 1.5 : -1.5 }}
+                transition={{ type: "spring", stiffness: 200, damping: 18 }}
+                className={`group relative shrink-0 w-[80vw] sm:w-[60vw] md:w-[34vw] h-[62vh] md:h-[66vh] rounded-[2rem] p-7 md:p-10 flex flex-col justify-between overflow-hidden border ${
+                  yellow
+                    ? "bg-secondary text-secondary-foreground border-secondary"
+                    : "bg-card-gradient border-border"
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <div
+                    className={`grid size-16 place-items-center rounded-2xl transition-transform duration-700 group-hover:rotate-[360deg] ${
+                      yellow
+                        ? "bg-secondary-foreground text-secondary"
+                        : "bg-secondary text-secondary-foreground"
+                    }`}
+                  >
+                    <s.icon className="size-7" />
+                  </div>
+                  <span className="font-mega text-8xl md:text-[9rem] opacity-15">0{i + 1}</span>
                 </div>
-                <span className="font-display text-4xl font-bold text-foreground/10 group-hover:text-secondary/30 transition">{`0${i + 1}`}</span>
-              </div>
-              <h3 className="font-display text-2xl font-semibold mb-2 group-hover:text-secondary transition">
-                {s.title}
-              </h3>
-              <p className="text-muted-foreground text-sm leading-relaxed flex-1">{s.desc}</p>
-              <div className="mt-6 pt-5 border-t border-border/60">
-                <p className="text-xs tracking-[0.25em] uppercase text-secondary font-semibold">
-                  {s.count}
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        ))}
+
+                <div>
+                  <h3 className="font-mega text-5xl md:text-6xl">{s.title}</h3>
+                  <p
+                    className={`mt-5 max-w-sm leading-relaxed ${yellow ? "opacity-80" : "text-muted-foreground"}`}
+                  >
+                    {s.desc}
+                  </p>
+                  <div
+                    className={`mt-8 pt-6 border-t flex items-center justify-between ${yellow ? "border-secondary-foreground/20" : "border-border"}`}
+                  >
+                    <span className="text-xs font-bold uppercase tracking-[0.3em]">{s.count}</span>
+                    <ArrowUpRight className="size-6 transition-transform duration-500 group-hover:rotate-45" />
+                  </div>
+                </div>
+              </motion.article>
+            );
+          })}
+        </motion.div>
+
+        <div className="absolute bottom-8 left-4 right-4 md:left-10 md:right-10 h-px bg-border">
+          <motion.div className="h-full bg-secondary origin-left" style={{ scaleX: bar }} />
+        </div>
       </div>
-    </Section>
+    </section>
   );
 }

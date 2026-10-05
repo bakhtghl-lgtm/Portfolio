@@ -1,6 +1,6 @@
-import { Briefcase } from "lucide-react";
-import { motion } from "framer-motion";
-import { Section, SectionTag } from "../Section";
+import { motion, useScroll, useSpring } from "framer-motion";
+import { useRef } from "react";
+import { Eyebrow, MaskText } from "../fx/Reveal";
 
 type TimelineItem = {
   title: string;
@@ -8,7 +8,7 @@ type TimelineItem = {
   points?: string[];
 };
 
-const timeline = [
+const timeline: { period: string; items: TimelineItem[] }[] = [
   {
     period: "2025 — Present",
     items: [
@@ -60,52 +60,82 @@ const timeline = [
 ];
 
 export function Resume() {
-  return (
-    <Section id="resume">
-      <div className="flex justify-center mb-8">
-        <SectionTag icon={<Briefcase className="size-3.5" />} label="Resume" />
-      </div>
-      <h2 className="text-center font-display text-4xl md:text-6xl font-bold mb-16">
-        Education & <span className="text-gradient-yellow">Experience</span>
-      </h2>
+  const listRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: listRef, offset: ["start 70%", "end 60%"] });
+  const line = useSpring(scrollYProgress, { stiffness: 100, damping: 30 });
 
-      <div className="relative pl-8 md:pl-12 border-l border-border space-y-14">
-        {timeline.map((block, bi) => (
+  return (
+    <section id="resume" className="relative px-4 md:px-10 py-24 md:py-40">
+      <div className="grid lg:grid-cols-[0.9fr_1.1fr] gap-12 lg:gap-20">
+        <div className="lg:sticky lg:top-28 lg:self-start">
+          <Eyebrow index="04" label="Resume" />
+          <h2 className="mt-8 font-mega text-[16vw] md:text-[10vw] lg:text-[7vw]">
+            <MaskText
+              lines={["Education", "&", <span className="text-secondary">Experience</span>]}
+            />
+          </h2>
+          <p className="mt-6 max-w-sm text-muted-foreground">
+            From cleaning up contact data to architecting full multi-channel automation systems.
+          </p>
+        </div>
+
+        <div ref={listRef} className="relative pl-10 md:pl-16">
+          {/* rail + scroll-drawn progress */}
+          <div className="absolute left-3 md:left-5 top-0 bottom-0 w-px bg-border" />
           <motion.div
-            key={bi}
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: bi * 0.15 }}
-            className="relative"
-          >
-            <span className="absolute -left-[37px] md:-left-[49px] top-2 size-3 rounded-full bg-secondary shadow-glow" />
-            <p className="text-muted-foreground text-sm mb-6">{block.period}</p>
-            <div className="space-y-6">
-              {block.items.map((it, i) => (
-                <motion.div
-                  key={i}
-                  whileHover={{ x: 6 }}
-                  className="bg-card-gradient border border-border rounded-2xl p-6 hover:border-secondary/50 transition"
-                >
-                  <h4 className="font-display text-2xl font-semibold">{it.title}</h4>
-                  <p className="mt-1 text-muted-foreground">{it.org}</p>
-                  {it.points?.length ? (
-                    <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-                      {it.points.map((p) => (
-                        <li key={p} className="flex gap-2">
-                          <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-secondary/70" />
-                          <span>{p}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        ))}
+            className="absolute left-3 md:left-5 top-0 bottom-0 w-[3px] -ml-px bg-secondary origin-top shadow-glow"
+            style={{ scaleY: line }}
+          />
+
+          <div className="space-y-20">
+            {timeline.map((block) => (
+              <div key={block.period} className="relative">
+                <motion.span
+                  className="absolute -left-[34px] md:-left-[50px] top-3 size-4 rounded-full border-2 border-secondary bg-background"
+                  initial={{ scale: 0 }}
+                  whileInView={{ scale: 1, backgroundColor: "rgba(246, 207, 58, 1)" }}
+                  viewport={{ margin: "-45% 0px -45% 0px" }}
+                  transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                />
+                <p className="font-mega text-5xl md:text-7xl text-outline mb-8">
+                  <MaskText lines={[block.period]} />
+                </p>
+                <div className="space-y-6">
+                  {block.items.map((it, i) => (
+                    <motion.article
+                      key={it.title}
+                      initial={{ opacity: 0, y: 60, rotateX: -20 }}
+                      whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
+                      viewport={{ once: true, margin: "-10%" }}
+                      transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: i * 0.12 }}
+                      style={{ transformPerspective: 1000 }}
+                      className="group relative overflow-hidden rounded-3xl border border-border bg-card-gradient p-6 md:p-8 transition-colors duration-500 hover:border-secondary/60"
+                    >
+                      <div className="absolute -right-20 -top-20 size-56 rounded-full bg-secondary/20 blur-3xl opacity-0 transition duration-700 group-hover:opacity-100" />
+                      <h3 className="relative font-display text-2xl md:text-3xl font-semibold">
+                        {it.title}
+                      </h3>
+                      <p className="relative mt-1 text-secondary text-sm font-medium tracking-wide">
+                        {it.org}
+                      </p>
+                      {it.points?.length ? (
+                        <ul className="relative mt-5 space-y-2.5 text-sm text-muted-foreground">
+                          {it.points.map((p) => (
+                            <li key={p} className="flex gap-3">
+                              <span className="mt-2 h-px w-4 shrink-0 bg-secondary" />
+                              <span>{p}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </motion.article>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-    </Section>
+    </section>
   );
 }
