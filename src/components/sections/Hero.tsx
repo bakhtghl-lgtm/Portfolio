@@ -101,7 +101,7 @@ export function Hero() {
         <motion.div
           aria-hidden
           style={{ x: line2X }}
-          className="text-[19vw] md:text-[15.4vw] whitespace-nowrap text-right md:pr-[4vw]"
+          className="font-mega text-[19vw] md:text-[15.4vw] whitespace-nowrap text-right md:pr-[4vw]"
         >
           <Letters text="EXPERT" play={play} delay={0.25} />
           <motion.span
@@ -148,13 +148,13 @@ export function Hero() {
       >
         <motion.div
           style={{ x: line1X }}
-          className="text-[19vw] md:text-[15.4vw] whitespace-nowrap"
+          className="font-mega text-[19vw] md:text-[15.4vw] whitespace-nowrap"
         >
           <Letters text="GOHIGHLEVEL" play={play} />
         </motion.div>
         <motion.div
           style={{ x: line2X }}
-          className="text-[19vw] md:text-[15.4vw] whitespace-nowrap text-right md:pr-[4vw]"
+          className="font-mega text-[19vw] md:text-[15.4vw] whitespace-nowrap text-right md:pr-[4vw]"
         >
           <Letters text="EXPERT" play={play} delay={0.25} />
           <span className="inline-block opacity-0">.</span>
