@@ -49,14 +49,14 @@ export function Cursor() {
     <>
       <motion.div
         aria-hidden
-        className="pointer-events-none fixed left-0 top-0 z-[100] rounded-full border flex items-center justify-center"
+        className={`cursor-fx pointer-events-none fixed left-0 top-0 z-[100] rounded-full border flex items-center justify-center ${label ? "" : "mix-blend-difference"}`}
         style={{ x: rx, y: ry, translateX: "-50%", translateY: "-50%" }}
         animate={{
           width: size,
           height: size,
           scale: down ? 0.8 : 1,
           backgroundColor: label ? "rgba(246, 207, 58, 1)" : "rgba(246, 207, 58, 0)",
-          borderColor: label ? "rgba(246, 207, 58, 1)" : "rgba(255, 255, 255, 0.45)",
+          borderColor: label ? "rgba(246, 207, 58, 1)" : "rgba(255, 255, 255, 0.85)",
         }}
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
       >
@@ -76,7 +76,7 @@ export function Cursor() {
       </motion.div>
       <motion.div
         aria-hidden
-        className="pointer-events-none fixed left-0 top-0 z-[101] size-1.5 rounded-full bg-secondary"
+        className="cursor-fx pointer-events-none fixed left-0 top-0 z-[101] size-2 rounded-full bg-secondary ring-1 ring-black/40"
         style={{ x, y, translateX: "-50%", translateY: "-50%" }}
         animate={{ opacity: label ? 0 : 1 }}
       />

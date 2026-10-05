@@ -30,6 +30,7 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-highlight: var(--highlight);
   --font-display: "Space Grotesk", system-ui, sans-serif;
   --font-mega: "Anton", "Impact", system-ui, sans-serif;
   --font-sans: "Inter", system-ui, sans-serif;
@@ -70,12 +71,24 @@
   }
 }
 @keyframes grain {
-  0% { transform: translate(0, 0); }
-  20% { transform: translate(-6%, 4%); }
-  40% { transform: translate(4%, -8%); }
-  60% { transform: translate(-8%, 2%); }
-  80% { transform: translate(6%, 6%); }
-  100% { transform: translate(0, 0); }
+  0% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(-6%, 4%);
+  }
+  40% {
+    transform: translate(4%, -8%);
+  }
+  60% {
+    transform: translate(-8%, 2%);
+  }
+  80% {
+    transform: translate(6%, 6%);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
 }
 @media (pointer: fine) {
   .has-cursor,
@@ -89,6 +102,18 @@
     animation: none;
   }
 }
+html[data-intro-seen] [data-preloader] {
+  display: none;
+}
+/* menu overlay open: give the pointer back to the system so nothing covers button labels */
+html[data-menu-open] .cursor-fx {
+  opacity: 0 !important;
+}
+.has-cursor[data-menu-open],
+.has-cursor[data-menu-open] a,
+.has-cursor[data-menu-open] button {
+  cursor: auto;
+}
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
@@ -100,31 +125,57 @@
 
 :root {
   --radius: 1rem;
-  /* Dark base, white primary, yellow accent */
-  --background: oklch(0.16 0.005 270);
-  --foreground: oklch(0.98 0 0);
+  /* Light (cream) page, dark + yellow cards. Dark surfaces re-scope the tokens via .surface-dark. */
+  color-scheme: light;
+  --header-h: 4.5rem;
+  --background: oklch(0.982 0.005 95);
+  --foreground: oklch(0.2 0.006 270);
   --card: oklch(0.2 0.006 270);
   --card-foreground: oklch(0.98 0 0);
   --popover: oklch(0.2 0.006 270);
   --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.99 0 0);
-  --primary-foreground: oklch(0.16 0.005 270);
-  --secondary: oklch(0.88 0.18 95); /* warm yellow */
+  --primary: oklch(0.2 0.006 270);
+  --primary-foreground: oklch(0.982 0.005 95);
+  --secondary: oklch(0.88 0.18 95); /* warm yellow (fills) */
   --secondary-foreground: oklch(0.16 0.005 270);
-  --muted: oklch(0.26 0.008 270);
-  --muted-foreground: oklch(0.72 0.01 270);
+  /* yellow used as TEXT: bright on dark surfaces, deepened to mustard on cream for contrast */
+  --highlight: oklch(0.49 0.115 80);
+  --muted: oklch(0.93 0.006 95);
+  --muted-foreground: oklch(0.45 0.01 270);
   --accent: oklch(0.88 0.18 95);
   --accent-foreground: oklch(0.16 0.005 270);
-  --destructive: oklch(0.65 0.22 25);
+  --destructive: oklch(0.55 0.22 25);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 10%);
-  --ring: oklch(0.88 0.18 95);
+  --border: oklch(0.2 0.006 270 / 12%);
+  --input: oklch(0.2 0.006 270 / 14%);
+  --ring: oklch(0.49 0.115 80);
+  --outline-stroke: oklch(0.2 0.006 270 / 72%);
 
   --gradient-yellow: linear-gradient(135deg, oklch(0.92 0.18 100), oklch(0.84 0.19 85));
   --gradient-card: linear-gradient(160deg, oklch(0.22 0.007 270) 0%, oklch(0.17 0.005 270) 100%);
-  --shadow-glow: 0 20px 60px -20px oklch(0.88 0.18 95 / 0.45);
-  --shadow-card: 0 30px 80px -30px oklch(0 0 0 / 0.6);
+  --shadow-glow: 0 20px 60px -20px oklch(0.88 0.18 95 / 0.55);
+  --shadow-card: 0 30px 80px -30px oklch(0 0 0 / 0.35);
+}
+
+/* Any dark surface (cards, form panel): light text tokens inside it. */
+.surface-dark {
+  color-scheme: dark;
+  --background: oklch(0.17 0.005 270);
+  --foreground: oklch(0.98 0 0);
+  --muted-foreground: oklch(0.76 0.01 270);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 14%);
+  --highlight: oklch(0.88 0.18 95);
+  --ring: oklch(0.88 0.18 95);
+  --outline-stroke: oklch(1 0 0 / 70%);
+  color: var(--foreground);
+}
+
+/* Unlayered on purpose: beats host resets (e.g. the claude.ai preview wrapper) that set body colours. */
+html,
+body {
+  background-color: var(--background);
+  color: var(--foreground);
 }
 
 .dark {
@@ -145,9 +196,7 @@
   .lenis.lenis-stopped {
     overflow: clip;
   }
-  body {
-    overflow-x: clip;
-  }
+
   html,
   body {
     background: var(--color-background);
@@ -161,7 +210,7 @@
     background-attachment: fixed;
   }
   section[id] {
-    scroll-margin-top: 2rem;
+    scroll-margin-top: var(--header-h);
   }
   h1,
   h2,
@@ -179,7 +228,7 @@
     height: 8px;
   }
   ::-webkit-scrollbar-thumb {
-    background: oklch(1 0 0 / 0.12);
+    background: oklch(0 0 0 / 0.18);
     border-radius: 8px;
   }
   ::-webkit-scrollbar-thumb:hover {
@@ -212,12 +261,31 @@
     font-family: var(--font-mega);
     font-weight: 400;
     letter-spacing: -0.01em;
-    line-height: 0.82;
+    /* Anton caps are 0.86em tall: anything tighter than ~0.95 clips inside reveal masks */
+    line-height: 0.95;
     text-transform: uppercase;
+  }
+  /* Reveal mask that leaves room for Anton's full glyph box without shifting layout. */
+  .mask {
+    display: block;
+    overflow: hidden;
+    padding-block: 0.12em;
+    margin-block: -0.12em;
+  }
+  .mask-inline {
+    display: inline-flex;
+    overflow: hidden;
+    padding-block: 0.12em;
+    margin-block: -0.12em;
+  }
+  /* Display sizes: each fits its longest word (measured in Anton em-widths) inside the gutters. */
+  .fs-hero {
+    /* GOHIGHLEVEL = 4.66em */
+    font-size: clamp(2.25rem, min(15.4vw, calc((100vw - 2.5rem) / 4.8)), 16rem);
   }
   .text-outline {
     color: transparent;
-    -webkit-text-stroke: 1.5px oklch(1 0 0 / 0.35);
+    -webkit-text-stroke: max(1.5px, 0.012em) var(--outline-stroke);
   }
   .grain::after {
     content: "";
@@ -230,8 +298,8 @@
     animation: grain 1s steps(6) infinite;
   }
   .glass {
-    background: oklch(1 0 0 / 0.04);
+    background: color-mix(in oklab, var(--background) 72%, transparent);
     backdrop-filter: blur(12px);
-    border: 1px solid oklch(1 0 0 / 0.08);
+    border: 1px solid var(--border);
   }
 }

@@ -2,6 +2,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { Eyebrow, MaskText } from "../fx/Reveal";
 import { VelocityMarquee } from "../fx/VelocityMarquee";
+import { useMedia } from "../fx/useMedia";
 
 type TestimonialItem = {
   name: string;
@@ -59,16 +60,24 @@ function initials(name: string) {
   return (first + last).toUpperCase();
 }
 
-function Card({ t, yellow }: { t: TestimonialItem; yellow?: boolean }) {
+function Card({
+  t,
+  yellow,
+  className = "mx-3",
+}: {
+  t: TestimonialItem;
+  yellow?: boolean;
+  className?: string;
+}) {
   return (
     <figure
-      className={`mx-3 w-[80vw] sm:w-[460px] shrink-0 whitespace-normal rounded-[2rem] border p-7 md:p-9 transition-transform duration-500 hover:-rotate-2 hover:scale-[1.03] ${
+      className={`w-[80vw] sm:w-[460px] shrink-0 whitespace-normal rounded-[2rem] border p-7 md:p-9 transition-transform duration-500 hover:-rotate-2 hover:scale-[1.03] ${
         yellow
           ? "bg-secondary text-secondary-foreground border-secondary"
-          : "bg-card-gradient border-border"
-      }`}
+          : "surface-dark bg-card-gradient border-border"
+      } ${className}`}
     >
-      <span className={`font-mega text-7xl leading-none ${yellow ? "" : "text-secondary"}`}>“</span>
+      <span className={`font-mega text-7xl leading-none ${yellow ? "" : "text-highlight"}`}>“</span>
       <blockquote
         className={`-mt-4 text-base md:text-lg leading-relaxed ${yellow ? "" : "text-foreground/90"}`}
       >
@@ -102,36 +111,55 @@ export function Testimonial() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const rotate = useTransform(scrollYProgress, [0, 1], [-4, 4]);
   const half = Math.ceil(testimonials.length / 2);
+  // phones and reduced motion get a swipeable, snapping row where a whole card is always readable
+  const swipe = useMedia("(max-width: 767px), (prefers-reduced-motion: reduce)");
 
   return (
-    <section id="testimonial" ref={ref} className="relative py-24 md:py-40 overflow-hidden">
+    <section id="testimonial" ref={ref} className="relative py-24 md:py-40 overflow-x-clip">
       <div className="px-4 md:px-10 flex flex-col items-center text-center">
         <Eyebrow index="06" label="Testimonials" />
-        <h2 className="mt-8 font-mega text-[15vw] md:text-[9vw]">
+        {/* HUNDRED CLIENTS = 6.29em */}
+        <h2 className="mt-8 font-mega text-[clamp(2.25rem,calc((100vw-2rem)/6.5),9rem)] md:text-[min(9vw,9rem)]">
           <MaskText
-            lines={["Trusted by", <span className="text-secondary">Hundred Clients</span>]}
+            lines={["Trusted by", <span className="text-highlight">Hundred Clients</span>]}
           />
         </h2>
       </div>
 
-      <motion.div style={{ rotate }} className="mt-16 space-y-6 py-6">
-        <VelocityMarquee baseVelocity={-1.2}>
-          {testimonials
-            .slice(0, half)
-            .concat(testimonials.slice(0, half))
-            .map((t, i) => (
-              <Card key={i} t={t} yellow={i % 3 === 1} />
-            ))}
-        </VelocityMarquee>
-        <VelocityMarquee baseVelocity={1.2}>
-          {testimonials
-            .slice(half)
-            .concat(testimonials.slice(half))
-            .map((t, i) => (
-              <Card key={i} t={t} yellow={i % 3 === 2} />
-            ))}
-        </VelocityMarquee>
-      </motion.div>
+      {swipe ? (
+        <div
+          className="mt-12 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 scroll-px-4 [scrollbar-width:none]"
+          aria-label="Client testimonials"
+        >
+          {testimonials.map((t, i) => (
+            <Card
+              key={t.name}
+              t={t}
+              yellow={i % 3 === 1}
+              className="snap-start w-[min(85vw,420px)]"
+            />
+          ))}
+        </div>
+      ) : (
+        <motion.div style={{ rotate }} className="mt-16 space-y-6 py-6">
+          <VelocityMarquee baseVelocity={-1.2}>
+            {testimonials
+              .slice(0, half)
+              .concat(testimonials.slice(0, half))
+              .map((t, i) => (
+                <Card key={i} t={t} yellow={i % 3 === 1} />
+              ))}
+          </VelocityMarquee>
+          <VelocityMarquee baseVelocity={1.2}>
+            {testimonials
+              .slice(half)
+              .concat(testimonials.slice(half))
+              .map((t, i) => (
+                <Card key={i} t={t} yellow={i % 3 === 2} />
+              ))}
+          </VelocityMarquee>
+        </motion.div>
+      )}
     </section>
   );
 }

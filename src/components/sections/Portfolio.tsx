@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useScroll, useTransform, type MotionValue } from "framer-motion";
 import { Eyebrow, MaskText } from "../fx/Reveal";
 import { lockScroll } from "../fx/SmoothScroll";
+import { useMedia } from "../fx/useMedia";
 import { cn } from "@/lib/utils";
 import appointmentWorkflow from "@/assets/portfolio-appointment-workflow.png";
 import ghlZapierHubspotFlow from "@/assets/portfolio-ghl-zapier-hubspot.png";
@@ -77,7 +78,7 @@ function TagPill({ tag }: { tag: string }) {
   const isFunnels = tag.toLowerCase() === "funnels";
   return (
     <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-background/70 backdrop-blur text-xs font-medium border border-border group-hover:border-secondary/40 transition">
-      {isFunnels ? <FunnelIcon className="size-3.5 text-secondary" /> : null}
+      {isFunnels ? <FunnelIcon className="size-3.5 text-highlight" /> : null}
       <span>{tag}</span>
     </span>
   );
@@ -87,7 +88,7 @@ function PortfolioDetailBody({ detail }: { detail: PortfolioDetail }) {
   return (
     <div className="space-y-5">
       <div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-secondary">
+        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-highlight">
           What it does
         </p>
         <p className="mt-2 whitespace-pre-line break-words text-sm leading-relaxed text-foreground/90">
@@ -95,7 +96,7 @@ function PortfolioDetailBody({ detail }: { detail: PortfolioDetail }) {
         </p>
       </div>
       <div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-secondary">The flow</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-highlight">The flow</p>
         <ul className="mt-3 space-y-2">
           {detail.flow.map((step, idx) => (
             <li
@@ -103,7 +104,7 @@ function PortfolioDetailBody({ detail }: { detail: PortfolioDetail }) {
               className="overflow-hidden rounded-xl border border-border/60 bg-background/50 px-3 py-2.5"
             >
               <div className="flex gap-3">
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary/25 text-xs font-bold text-secondary">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary/25 text-xs font-bold text-highlight">
                   {idx + 1}
                 </span>
                 <div className="min-w-0">
@@ -119,6 +120,81 @@ function PortfolioDetailBody({ detail }: { detail: PortfolioDetail }) {
       </div>
     </div>
   );
+}
+
+function CardBody({ p, i, className = "" }: { p: PortfolioItem; i: number; className?: string }) {
+  return (
+    <div
+      className={`@container relative flex flex-col justify-between gap-8 p-6 md:p-10 lg:p-12 ${className}`}
+    >
+      <div className="flex items-center justify-between gap-4">
+        <span className="rounded-full bg-secondary px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-secondary-foreground">
+          {p.metric}
+        </span>
+        <span aria-hidden className="font-mega text-6xl md:text-8xl leading-[0.9] text-outline">
+          {String(i + 1).padStart(2, "0")}
+        </span>
+      </div>
+      <div>
+        <div className="mb-5 flex flex-wrap gap-2">
+          {p.tags.map((t) => (
+            <TagPill key={t} tag={t} />
+          ))}
+        </div>
+        <h3 className="font-mega text-[clamp(1.75rem,9cqw,4rem)] leading-[1]">{p.title}</h3>
+        <span className="mt-6 inline-flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.25em] text-highlight">
+          Explore project
+          <span className="grid size-10 place-items-center rounded-full bg-secondary text-secondary-foreground transition-transform duration-500 group-hover:rotate-45">
+            <ArrowUpRight className="size-5" />
+          </span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function cardGlow(p: PortfolioItem) {
+  return `radial-gradient(circle at 30% 30%, oklch(0.88 0.18 ${p.hue} / 0.3), transparent 60%), radial-gradient(circle at 70% 70%, oklch(0.4 0.05 270 / 0.5), transparent 60%)`;
+}
+
+/** Phones / reduced motion: a plain list, each screenshot shown top-anchored at full width. */
+function ProjectListCard({
+  project: p,
+  index: i,
+  onOpen,
+}: {
+  project: PortfolioItem;
+  index: number;
+  onOpen: () => void;
+}) {
+  const cover = (p.gallery && p.gallery[0]?.src) || p.imageUrl;
+  return (
+    <motion.button
+      type="button"
+      onClick={onOpen}
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-10%" }}
+      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+      className="surface-dark group relative block w-full overflow-hidden rounded-[1.75rem] border border-border bg-card text-left"
+      style={{ backgroundImage: cardGlow(p) }}
+    >
+      {/* natural aspect at full width: wide screenshots are never side-cropped; very tall
+          full-page captures are capped and crop from the bottom only (top-anchored) */}
+      <img
+        src={cover}
+        alt={`${p.title} preview`}
+        className="block h-auto max-h-[75vw] w-full bg-black/30 object-cover object-top"
+        loading="lazy"
+      />
+      <CardBody p={p} i={i} />
+    </motion.button>
+  );
+}
+
+/** Linear 0..1 ramp between a and b, clamped. */
+function ramp(v: number, a: number, b: number) {
+  return Math.min(1, Math.max(0, (v - a) / (b - a)));
 }
 
 /** Sticky card that pins, then shrinks and dims as the next project slides over it. */
@@ -140,72 +216,48 @@ function ProjectCard({
     target: ref,
     offset: ["start end", "start start"],
   });
-  const imgScale = useTransform(enter, [0, 1], [1.4, 1]);
-  // card i pins at progress i/(total-1); the next card fully covers it at (i+1)/(total-1)
+  const imgScale = useTransform(enter, [0, 1], [1.25, 1]);
+  // card i pins at progress i/span; card i+1 has fully covered it at (i+1)/span
   const span = Math.max(1, total - 1);
   const targetScale = 1 - (total - 1 - i) * 0.04;
   const scale = useTransform(progress, [i / span, 1], [1, targetScale]);
-  const dim = useTransform(
-    progress,
-    [i / span, Math.min(1, (i + 1) / span)],
-    [0, i === total - 1 ? 0 : 0.6],
+  // only dim once the next card is mostly over this one, so the front card stays at full brightness
+  // function transforms (not offset arrays) so framer keeps these on the JS path:
+  // its native scroll-timeline acceleration mis-maps opacity ranges here.
+  // Only dim once the next card is mostly over this one, so the front card stays at full brightness.
+  const last = i === total - 1;
+  const dim = useTransform(progress, (v) =>
+    last ? 0 : 0.55 * ramp(v, (i + 0.55) / span, (i + 1) / span),
+  );
+  // cards buried 3+ deep fade out so at most ~2-3 stacked edges ever show
+  const buried = useTransform(progress, (v) =>
+    i + 2 >= span ? 1 : 1 - ramp(v, (i + 2) / span, (i + 3) / span),
   );
   const cover = (p.gallery && p.gallery[0]?.src) || p.imageUrl;
 
   return (
-    <div ref={ref} className="sticky top-0 h-screen flex items-center justify-center">
+    <div
+      ref={ref}
+      className="sticky top-0 h-screen flex items-center justify-center pt-[var(--header-h)]"
+    >
       <motion.button
         type="button"
         onClick={onOpen}
         data-cursor="View"
-        style={{ scale, top: `calc(-5vh + ${i * 22}px)` }}
-        className="group relative block w-full h-[72vh] md:h-[78vh] origin-top text-left rounded-[2rem] overflow-hidden border border-border bg-card"
+        style={{ scale, opacity: buried, top: `${Math.min(i, 2) * 16 - 16}px` }}
+        className="surface-dark group relative grid w-full h-[min(74vh,760px)] grid-cols-[minmax(0,40%)_minmax(0,1fr)] origin-top text-left rounded-[2rem] overflow-hidden border border-border bg-card"
       >
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `radial-gradient(circle at 30% 30%, oklch(0.88 0.18 ${p.hue} / 0.35), transparent 60%), radial-gradient(circle at 70% 70%, oklch(0.4 0.05 270 / 0.5), transparent 60%)`,
-          }}
-        />
-        <div className="absolute inset-x-0 top-0 h-[58%] md:h-auto md:bottom-0 md:left-[38%] overflow-hidden">
+        <div className="relative min-h-0" style={{ backgroundImage: cardGlow(p) }}>
+          <CardBody p={p} i={i} className="h-full" />
+        </div>
+        <div className="relative min-h-0 overflow-hidden border-l border-border bg-black/30">
           <motion.img
             src={cover}
             alt={`${p.title} preview`}
             style={{ scale: imgScale }}
-            className={cn(
-              "absolute inset-0 h-full w-full transition duration-700 group-hover:scale-[1.04]",
-              p.imageThumbFit === "contain"
-                ? "object-cover object-top md:object-contain md:p-8"
-                : "object-cover object-top",
-            )}
+            className="absolute inset-0 h-full w-full origin-top object-cover object-top transition duration-700 group-hover:scale-[1.04]"
             loading="lazy"
           />
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-card via-card/80 md:via-card/70 to-transparent" />
-
-        <div className="relative h-full flex flex-col justify-between p-6 md:p-12 md:w-[48%]">
-          <div className="flex items-center justify-between">
-            <span className="rounded-full bg-secondary px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-secondary-foreground">
-              {p.metric}
-            </span>
-            <span className="font-mega text-6xl md:text-8xl text-outline">
-              {String(i + 1).padStart(2, "0")}
-            </span>
-          </div>
-          <div>
-            <div className="mb-5 flex flex-wrap gap-2">
-              {p.tags.map((t) => (
-                <TagPill key={t} tag={t} />
-              ))}
-            </div>
-            <h3 className="font-mega text-4xl sm:text-5xl md:text-6xl lg:text-7xl">{p.title}</h3>
-            <span className="mt-6 inline-flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.25em] text-secondary">
-              Explore project
-              <span className="grid size-10 place-items-center rounded-full bg-secondary text-secondary-foreground transition-transform duration-500 group-hover:rotate-45">
-                <ArrowUpRight className="size-5" />
-              </span>
-            </span>
-          </div>
         </div>
 
         <motion.div
@@ -426,6 +478,7 @@ export function Portfolio() {
   const [mediaZoomed, setMediaZoomed] = useState(false);
   const [workflowDetailsOpen, setWorkflowDetailsOpen] = useState(false);
   const stackRef = useRef<HTMLDivElement>(null);
+  const stacked = useMedia("(max-width: 767px), (prefers-reduced-motion: reduce)");
   const { scrollYProgress: stackProgress } = useScroll({
     target: stackRef,
     offset: ["start start", "end end"],
@@ -463,12 +516,12 @@ export function Portfolio() {
   }, [activeMediaIndex]);
 
   return (
-    <section id="portfolio" className="relative px-4 md:px-10 pt-24 md:pt-40 pb-24">
+    <section id="portfolio" className="relative overflow-x-clip px-4 md:px-10 pt-24 md:pt-40 pb-24">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 md:mb-24">
         <div>
           <Eyebrow index="05" label="Portfolio" />
-          <h2 className="mt-8 font-mega text-[17vw] md:text-[11vw]">
-            <MaskText lines={["Featured", <span className="text-secondary">Projects</span>]} />
+          <h2 className="mt-8 font-mega text-[clamp(2.5rem,calc((100vw-2rem)/3.8),11rem)] md:text-[min(11vw,11rem)]">
+            <MaskText lines={["Featured", <span className="text-highlight">Projects</span>]} />
           </h2>
         </div>
         <p className="max-w-xs text-muted-foreground md:text-right">
@@ -477,7 +530,19 @@ export function Portfolio() {
         </p>
       </div>
 
-      <div ref={stackRef} className="relative">
+      {stacked ? (
+        <div className="grid gap-8">
+          {projects.map((p, i) => (
+            <ProjectListCard
+              key={p.title}
+              project={p}
+              index={i}
+              onOpen={() => setActiveProject(p)}
+            />
+          ))}
+        </div>
+      ) : null}
+      <div ref={stackRef} className={stacked ? "hidden" : "relative"}>
         {projects.map((p, i) => (
           <ProjectCard
             key={p.title}
@@ -492,7 +557,7 @@ export function Portfolio() {
 
       {activeProject ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-background/75 p-3 backdrop-blur-md sm:p-6 md:p-8"
+          className="surface-dark fixed inset-0 z-[80] flex items-center justify-center bg-background/80 p-3 backdrop-blur-md sm:p-6 md:p-8"
           onClick={() => setActiveProject(null)}
           role="presentation"
           data-lenis-prevent
@@ -517,7 +582,7 @@ export function Portfolio() {
             </button>
 
             <div className="relative z-10 border-b border-border/80 px-4 pb-3 pt-4 pr-14 md:px-6 md:pb-4 md:pt-5 md:pr-16">
-              <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-secondary">
+              <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-highlight">
                 Project
               </p>
               <h3 className="mt-1 font-display text-xl font-bold tracking-tight text-foreground md:text-3xl">
@@ -592,7 +657,7 @@ export function Portfolio() {
                           }}
                         />
 
-                        <div className="absolute top-4 left-4 rounded-full border border-secondary/30 bg-secondary/15 px-3 py-1.5 text-xs font-semibold tracking-wide text-secondary backdrop-blur">
+                        <div className="absolute top-4 left-4 rounded-full border border-secondary/30 bg-secondary/15 px-3 py-1.5 text-xs font-semibold tracking-wide text-highlight backdrop-blur">
                           {activeProject.metric}
                         </div>
 
@@ -607,7 +672,7 @@ export function Portfolio() {
                                     activeProject.gallery!.length,
                                 )
                               }
-                              className="pointer-events-auto absolute left-3 top-1/2 -translate-y-1/2 inline-flex size-11 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-secondary"
+                              className="pointer-events-auto absolute left-3 top-1/2 -translate-y-1/2 inline-flex size-11 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-highlight"
                               aria-label="Previous screenshot"
                             >
                               ←
@@ -617,7 +682,7 @@ export function Portfolio() {
                               onClick={() =>
                                 setActiveMediaIndex((i) => (i + 1) % activeProject.gallery!.length)
                               }
-                              className="pointer-events-auto absolute right-3 top-1/2 -translate-y-1/2 inline-flex size-11 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-secondary"
+                              className="pointer-events-auto absolute right-3 top-1/2 -translate-y-1/2 inline-flex size-11 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-highlight"
                               aria-label="Next screenshot"
                             >
                               →
@@ -678,7 +743,7 @@ export function Portfolio() {
                                 className="absolute inset-0 overflow-hidden rounded-3xl border border-border/70 bg-background/85 backdrop-blur-md"
                               >
                                 <div className="flex items-center justify-between border-b border-border/70 px-4 py-3">
-                                  <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-secondary">
+                                  <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-highlight">
                                     Details
                                   </p>
                                   <button
@@ -754,7 +819,7 @@ export function Portfolio() {
                           </div>
                         </div>
 
-                        <div className="absolute top-5 left-5 rounded-full border border-secondary/30 bg-secondary/15 px-3 py-1.5 text-xs font-semibold tracking-wide text-secondary backdrop-blur">
+                        <div className="absolute top-5 left-5 rounded-full border border-secondary/30 bg-secondary/15 px-3 py-1.5 text-xs font-semibold tracking-wide text-highlight backdrop-blur">
                           {activeProject.metric}
                         </div>
 
@@ -766,7 +831,7 @@ export function Portfolio() {
                             >
                               {t.toLowerCase() === "funnels" ? (
                                 <span className="inline-flex items-center gap-2">
-                                  <FunnelIcon className="size-3.5 text-secondary" />
+                                  <FunnelIcon className="size-3.5 text-highlight" />
                                   {t}
                                 </span>
                               ) : (
@@ -788,7 +853,7 @@ export function Portfolio() {
                                       activeProject.gallery!.length,
                                   )
                                 }
-                                className="pointer-events-auto inline-flex size-10 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-secondary"
+                                className="pointer-events-auto inline-flex size-10 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-highlight"
                                 aria-label="Previous screenshot"
                               >
                                 ←
@@ -800,7 +865,7 @@ export function Portfolio() {
                                     (i) => (i + 1) % activeProject.gallery!.length,
                                   )
                                 }
-                                className="pointer-events-auto inline-flex size-10 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-secondary"
+                                className="pointer-events-auto inline-flex size-10 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-highlight"
                                 aria-label="Next screenshot"
                               >
                                 →
@@ -900,7 +965,7 @@ export function Portfolio() {
                       </div>
                     </div>
 
-                    <div className="absolute top-5 left-5 rounded-full border border-secondary/30 bg-secondary/15 px-3 py-1.5 text-xs font-semibold tracking-wide text-secondary backdrop-blur">
+                    <div className="absolute top-5 left-5 rounded-full border border-secondary/30 bg-secondary/15 px-3 py-1.5 text-xs font-semibold tracking-wide text-highlight backdrop-blur">
                       {activeProject.metric}
                     </div>
 
@@ -916,7 +981,7 @@ export function Portfolio() {
                                 activeProject.gallery!.length,
                             )
                           }
-                          className="md:hidden pointer-events-auto absolute left-3 top-1/2 -translate-y-1/2 inline-flex size-11 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-secondary"
+                          className="md:hidden pointer-events-auto absolute left-3 top-1/2 -translate-y-1/2 inline-flex size-11 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-highlight"
                           aria-label="Previous screenshot"
                         >
                           ←
@@ -926,7 +991,7 @@ export function Portfolio() {
                           onClick={() =>
                             setActiveMediaIndex((i) => (i + 1) % activeProject.gallery!.length)
                           }
-                          className="md:hidden pointer-events-auto absolute right-3 top-1/2 -translate-y-1/2 inline-flex size-11 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-secondary"
+                          className="md:hidden pointer-events-auto absolute right-3 top-1/2 -translate-y-1/2 inline-flex size-11 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-highlight"
                           aria-label="Next screenshot"
                         >
                           →
@@ -943,7 +1008,7 @@ export function Portfolio() {
                                   activeProject.gallery!.length,
                               )
                             }
-                            className="pointer-events-auto inline-flex size-10 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-secondary"
+                            className="pointer-events-auto inline-flex size-10 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-highlight"
                             aria-label="Previous screenshot"
                           >
                             ←
@@ -953,7 +1018,7 @@ export function Portfolio() {
                             onClick={() =>
                               setActiveMediaIndex((i) => (i + 1) % activeProject.gallery!.length)
                             }
-                            className="pointer-events-auto inline-flex size-10 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-secondary"
+                            className="pointer-events-auto inline-flex size-10 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-highlight"
                             aria-label="Next screenshot"
                           >
                             →
@@ -997,7 +1062,7 @@ export function Portfolio() {
                         >
                           {t.toLowerCase() === "funnels" ? (
                             <span className="inline-flex items-center gap-2">
-                              <FunnelIcon className="size-3.5 text-secondary" />
+                              <FunnelIcon className="size-3.5 text-highlight" />
                               {t}
                             </span>
                           ) : (

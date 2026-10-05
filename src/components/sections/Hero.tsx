@@ -1,15 +1,77 @@
 import { motion, useMotionValue, useScroll, useSpring, useTransform } from "framer-motion";
 import { ArrowDown } from "lucide-react";
-import { useRef } from "react";
+import { useId, useRef } from "react";
 import cutout from "@/assets/portrait-cutout.webp";
 import { useIntroDone } from "../fx/Preloader";
 import { scrollToId } from "../fx/SmoothScroll";
 
 const EASE = [0.76, 0, 0.24, 1] as const;
 
+function ServiceList({ play, className = "" }: { play: boolean; className?: string }) {
+  return (
+    <motion.ul
+      className={`space-y-1 font-mega leading-none ${className}`}
+      initial="hidden"
+      animate={play ? "show" : "hidden"}
+      variants={{ show: { transition: { staggerChildren: 0.1, delayChildren: 1.1 } } }}
+    >
+      {["Funnel Building", "Automations", "CRM Systems"].map((s) => (
+        <li key={s} className="mask">
+          <motion.span
+            className="block"
+            variants={{ hidden: { y: "110%" }, show: { y: "0%" } }}
+            transition={{ duration: 0.8, ease: EASE }}
+          >
+            <span className="text-highlight">/</span> {s}
+          </motion.span>
+        </li>
+      ))}
+    </motion.ul>
+  );
+}
+
+function Intro({ className = "" }: { className?: string }) {
+  return (
+    <p className={`leading-relaxed text-muted-foreground ${className}`}>
+      Say hi from <span className="text-foreground font-semibold">Bakht Ali</span> — I build
+      high-converting funnels, automations, and CRM systems that turn clicks into customers.
+    </p>
+  );
+}
+
+function ScrollBadge({ className = "" }: { className?: string }) {
+  const pathId = useId();
+  return (
+    <button
+      type="button"
+      onClick={() => scrollToId("portfolio")}
+      aria-label="Scroll to portfolio"
+      data-cursor="Work"
+      className={`relative rounded-full bg-background/70 backdrop-blur border border-border grid place-items-center group ${className}`}
+    >
+      <motion.svg
+        viewBox="0 0 100 100"
+        className="absolute inset-0 size-full"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 14, repeat: Infinity, ease: "linear" }}
+      >
+        <defs>
+          <path id={pathId} d="M50,50 m-38,0 a38,38 0 1,1 76,0 a38,38 0 1,1 -76,0" />
+        </defs>
+        <text className="fill-muted-foreground text-[10px] tracking-[0.4em] uppercase">
+          <textPath href={`#${pathId}`}>My Projects • My Projects • </textPath>
+        </text>
+      </motion.svg>
+      <span className="size-10 rounded-full bg-secondary text-secondary-foreground grid place-items-center shadow-glow transition group-hover:scale-125">
+        <ArrowDown className="size-5" />
+      </span>
+    </button>
+  );
+}
+
 function Letters({ text, play, delay = 0 }: { text: string; play: boolean; delay?: number }) {
   return (
-    <span className="inline-flex overflow-hidden">
+    <span className="mask-inline">
       {text.split("").map((ch, i) => (
         <motion.span
           key={i}
@@ -36,7 +98,8 @@ export function Hero() {
   const portraitY = useTransform(scrollYProgress, [0, 1], ["0%", "25%"]);
   const portraitScale = useTransform(scrollYProgress, [0, 1], [1, 0.82]);
   const glowScale = useTransform(scrollYProgress, [0, 1], [1, 2.4]);
-  const dim = useTransform(scrollYProgress, [0, 0.9], [0, 0.85]);
+  // function form: framer's accelerated scroll path mis-maps opacity offset arrays
+  const dim = useTransform(scrollYProgress, (v) => Math.min(0.85, (v / 0.9) * 0.85));
   const sideY = useTransform(scrollYProgress, [0, 1], ["0%", "-120%"]);
 
   // pointer parallax: type and portrait drift in opposite directions
@@ -62,10 +125,10 @@ export function Hero() {
     >
       {/* backdrop grid */}
       <div
-        className="absolute inset-0 opacity-[0.07]"
+        className="absolute inset-0 opacity-[0.06]"
         style={{
           backgroundImage:
-            "linear-gradient(oklch(1 0 0) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0) 1px, transparent 1px)",
+            "linear-gradient(var(--foreground) 1px, transparent 1px), linear-gradient(90deg, var(--foreground) 1px, transparent 1px)",
           backgroundSize: "8vw 8vw",
           maskImage: "radial-gradient(ellipse at 50% 60%, black, transparent 75%)",
         }}
@@ -86,13 +149,10 @@ export function Hero() {
 
       {/* giant type — behind the portrait */}
       <motion.div
-        className="absolute inset-x-0 top-[13vh] md:top-[12vh] px-3 md:px-6 font-mega text-foreground select-none"
+        className="absolute inset-x-0 top-[calc(var(--header-h)+env(safe-area-inset-top,0px)+0.75rem)] md:top-[12vh] px-4 md:px-6 font-mega text-foreground select-none"
         style={{ x: textPX, y: textPY }}
       >
-        <motion.h1
-          style={{ x: line1X }}
-          className="font-mega text-[19vw] md:text-[15.4vw] whitespace-nowrap"
-        >
+        <motion.h1 style={{ x: line1X }} className="font-mega fs-hero whitespace-nowrap">
           <span className="sr-only">Bakht Ali — GoHighLevel Expert</span>
           <span aria-hidden>
             <Letters text="GOHIGHLEVEL" play={play} />
@@ -101,11 +161,11 @@ export function Hero() {
         <motion.div
           aria-hidden
           style={{ x: line2X }}
-          className="font-mega text-[19vw] md:text-[15.4vw] whitespace-nowrap text-right md:pr-[4vw]"
+          className="font-mega fs-hero whitespace-nowrap text-right md:pr-[4vw]"
         >
           <Letters text="EXPERT" play={play} delay={0.25} />
           <motion.span
-            className="inline-block text-secondary"
+            className="inline-block text-highlight"
             initial={{ scale: 0 }}
             animate={play ? { scale: 1 } : undefined}
             transition={{ type: "spring", stiffness: 260, damping: 12, delay: 1 }}
@@ -117,8 +177,14 @@ export function Hero() {
 
       {/* portrait cut-out */}
       <motion.div
-        className="absolute left-1/2 bottom-0 -translate-x-1/2 w-[150vw] sm:w-[88vw] md:w-[60vw] lg:w-[54vw] max-w-[1000px] origin-bottom"
-        style={{ y: portraitY, scale: portraitScale }}
+        className="absolute left-1/2 bottom-0 -translate-x-1/2 w-[min(100vw,calc((100svh-24rem)*1.2))] min-w-[78vw] sm:w-[78vw] md:min-w-0 md:w-[min(80vw,84svh)] lg:w-[min(54vw,84svh)] max-w-[1000px] origin-bottom"
+        style={{
+          y: portraitY,
+          scale: portraitScale,
+          // let the photo dissolve into the page instead of a hard cut at the section edge
+          maskImage: "linear-gradient(to bottom, #000 72%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(to bottom, #000 72%, transparent 100%)",
+        }}
       >
         <motion.div
           initial={{ y: "40%", opacity: 0 }}
@@ -130,7 +196,7 @@ export function Hero() {
             alt="Bakht Ali Niazi"
             width={1200}
             height={996}
-            className="w-full h-auto drop-shadow-[0_40px_60px_rgba(0,0,0,0.55)]"
+            className="w-full h-auto drop-shadow-[0_30px_50px_rgba(0,0,0,0.22)]"
             style={{ x: imgPX, y: imgPY }}
             fetchPriority="high"
           />
@@ -140,46 +206,43 @@ export function Hero() {
       {/* outline echo of the type, in front of the portrait for depth */}
       <motion.div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-[13vh] md:top-[12vh] px-3 md:px-6 font-mega text-outline select-none"
+        className="pointer-events-none absolute inset-x-0 top-[calc(var(--header-h)+env(safe-area-inset-top,0px)+0.75rem)] md:top-[12vh] px-4 md:px-6 font-mega text-outline select-none"
         style={{ x: textPX, y: textPY }}
         initial={{ opacity: 0 }}
         animate={play ? { opacity: 1 } : undefined}
         transition={{ delay: 1.4, duration: 1 }}
       >
-        <motion.div
-          style={{ x: line1X }}
-          className="font-mega text-[19vw] md:text-[15.4vw] whitespace-nowrap"
-        >
+        <motion.div style={{ x: line1X }} className="font-mega fs-hero whitespace-nowrap">
           <Letters text="GOHIGHLEVEL" play={play} />
         </motion.div>
         <motion.div
           style={{ x: line2X }}
-          className="font-mega text-[19vw] md:text-[15.4vw] whitespace-nowrap text-right md:pr-[4vw]"
+          className="font-mega fs-hero whitespace-nowrap text-right md:pr-[4vw]"
         >
           <Letters text="EXPERT" play={play} delay={0.25} />
           <span className="inline-block opacity-0">.</span>
         </motion.div>
       </motion.div>
 
-      {/* bottom-left services list */}
-      <motion.ul
-        className="absolute left-4 md:left-8 top-[calc(13vh+40vw)] md:top-auto md:bottom-12 z-10 space-y-1 font-mega text-xl md:text-3xl leading-none"
-        initial="hidden"
-        animate={play ? "show" : "hidden"}
-        variants={{ show: { transition: { staggerChildren: 0.1, delayChildren: 1.1 } } }}
+      {/* bottom-left services list (md+) */}
+      <ServiceList
+        play={play}
+        className="hidden md:block absolute left-8 bottom-12 z-10 text-3xl"
+      />
+
+      {/* mobile: list + scroll button + intro under the headline, clear of the photo */}
+      <motion.div
+        className="md:hidden absolute inset-x-4 z-10 top-[calc(var(--header-h)+env(safe-area-inset-top,0px)+2rem+(100vw-2.5rem)*0.4)]"
+        initial={{ opacity: 0 }}
+        animate={play ? { opacity: 1 } : undefined}
+        transition={{ delay: 1, duration: 0.6 }}
       >
-        {["Funnel Building", "Automations", "CRM Systems"].map((s) => (
-          <li key={s} className="overflow-hidden">
-            <motion.span
-              className="block"
-              variants={{ hidden: { y: "110%" }, show: { y: "0%" } }}
-              transition={{ duration: 0.8, ease: EASE }}
-            >
-              <span className="text-secondary">/</span> {s}
-            </motion.span>
-          </li>
-        ))}
-      </motion.ul>
+        <div className="flex items-start justify-between gap-4">
+          <ServiceList play={play} className="text-xl" />
+          <ScrollBadge className="size-20 shrink-0" />
+        </div>
+        <Intro className="mt-3 max-w-[34ch] text-[13px]" />
+      </motion.div>
 
       {/* right vertical motto */}
       <motion.div
@@ -197,41 +260,15 @@ export function Hero() {
         </ul>
       </motion.div>
 
-      {/* intro blurb + rotating projects badge */}
+      {/* intro blurb + rotating projects badge (md+) */}
       <motion.div
-        className="absolute right-4 md:right-8 bottom-6 md:bottom-10 z-10 flex items-end gap-5"
+        className="hidden md:flex absolute right-8 bottom-10 z-10 items-end gap-5"
         initial={{ opacity: 0, y: 30 }}
         animate={play ? { opacity: 1, y: 0 } : undefined}
         transition={{ delay: 1.4, duration: 0.8 }}
       >
-        <p className="hidden lg:block max-w-[260px] text-sm leading-relaxed text-muted-foreground text-right">
-          Say hi from <span className="text-foreground font-semibold">Bakht Ali</span> — I build
-          high-converting funnels, automations, and CRM systems that turn clicks into customers.
-        </p>
-        <button
-          type="button"
-          onClick={() => scrollToId("portfolio")}
-          aria-label="Scroll to portfolio"
-          data-cursor="Work"
-          className="relative size-24 md:size-28 rounded-full bg-background/60 backdrop-blur border border-border grid place-items-center group"
-        >
-          <motion.svg
-            viewBox="0 0 100 100"
-            className="absolute inset-0 size-full"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 14, repeat: Infinity, ease: "linear" }}
-          >
-            <defs>
-              <path id="hero-circle" d="M50,50 m-38,0 a38,38 0 1,1 76,0 a38,38 0 1,1 -76,0" />
-            </defs>
-            <text className="fill-muted-foreground text-[10px] tracking-[0.4em] uppercase">
-              <textPath href="#hero-circle">My Projects • My Projects • </textPath>
-            </text>
-          </motion.svg>
-          <span className="size-10 rounded-full bg-secondary text-secondary-foreground grid place-items-center shadow-glow transition group-hover:scale-125">
-            <ArrowDown className="size-5" />
-          </span>
-        </button>
+        <Intro className="hidden lg:block max-w-[260px] text-sm text-right" />
+        <ScrollBadge className="size-28" />
       </motion.div>
 
       <motion.div

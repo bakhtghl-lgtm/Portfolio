@@ -5,6 +5,7 @@ import {
   useScroll,
   useSpring,
   useTransform,
+  useReducedMotion,
   useVelocity,
 } from "framer-motion";
 import { useRef, type ReactNode } from "react";
@@ -32,8 +33,11 @@ export function VelocityMarquee({
   const skew = useTransform(smoothVelocity, [-2000, 2000], [8, -8]);
   const x = useTransform(baseX, (v) => `${wrap(-25, 0, v)}%`);
   const direction = useRef(1);
+  const reduce = useReducedMotion();
 
   useAnimationFrame((_, delta) => {
+    // data-freeze-motion on <html> holds marquees still (used for screenshot/QA runs)
+    if (reduce || document.documentElement.hasAttribute("data-freeze-motion")) return;
     let moveBy = direction.current * baseVelocity * (delta / 1000);
     const vf = velocityFactor.get();
     if (vf < 0) direction.current = -1;
@@ -44,7 +48,10 @@ export function VelocityMarquee({
 
   return (
     <div className={`overflow-hidden whitespace-nowrap flex ${className}`}>
-      <motion.div className="flex whitespace-nowrap" style={{ x, skewX: skew }}>
+      <motion.div
+        className="flex whitespace-nowrap"
+        style={reduce ? undefined : { x, skewX: skew }}
+      >
         {[0, 1, 2, 3].map((i) => (
           <span key={i} className="flex shrink-0 items-center" aria-hidden={i > 0}>
             {children}

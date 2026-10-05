@@ -36,9 +36,12 @@ export function lockScroll(locked: boolean) {
   }
 }
 
+/** Smooth-scroll so the section's top lands just below the sticky header. */
 export function scrollToId(id: string) {
   const el = document.getElementById(id);
   if (!el) return;
-  if (window.__lenis) window.__lenis.scrollTo(el, { duration: 1.6 });
-  else el.scrollIntoView({ behavior: "smooth" });
+  const headerH = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
+  const top = id === "intro" ? 0 : el.getBoundingClientRect().top + window.scrollY - headerH;
+  if (window.__lenis) window.__lenis.scrollTo(top, { duration: 1.4 });
+  else window.scrollTo({ top, behavior: "smooth" });
 }

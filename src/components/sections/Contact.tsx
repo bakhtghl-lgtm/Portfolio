@@ -116,15 +116,16 @@ export function Contact() {
   }
 
   return (
-    <section id="contact" className="relative px-4 md:px-10 py-24 md:py-40">
+    <section id="contact" className="relative overflow-x-clip px-4 md:px-10 py-24 md:py-40">
       <Eyebrow index="07" label="Contact" />
 
       <motion.div ref={ctaRef} style={{ scale: ctaScale }} className="mt-10 origin-center">
-        <h2 className="font-mega text-[20vw] md:text-[14vw] leading-[0.8]">
+        {/* LET'S WORK = 4.16em: sized to the gutters so neither line clips or collides */}
+        <h2 className="font-mega text-[clamp(2.5rem,calc((100vw-2rem)/4.4),13rem)] md:text-[min(14vw,calc((100vw-5rem)/4.4),13rem)] leading-[0.95]">
           <motion.span className="block" style={{ x: ctaX1 }}>
             Let's work
           </motion.span>
-          <motion.span className="block text-secondary text-right" style={{ x: ctaX2 }}>
+          <motion.span className="block text-highlight text-right" style={{ x: ctaX2 }}>
             Together!
           </motion.span>
         </h2>
@@ -150,7 +151,7 @@ export function Contact() {
             href={hireMeHref}
             target="_blank"
             rel="noopener noreferrer"
-            className="block font-display text-2xl md:text-4xl font-bold hover:text-secondary transition"
+            className="block font-display text-2xl md:text-4xl font-bold hover:text-highlight transition"
           >
             bakht.ghl@gmail.com
           </a>
@@ -163,7 +164,7 @@ export function Contact() {
       <form
         ref={formRef}
         onSubmit={onSubmit}
-        className="relative mt-20 grid md:grid-cols-2 gap-x-10 gap-y-10 rounded-[2rem] border border-border bg-card-gradient p-6 md:p-12"
+        className="surface-dark relative mt-20 grid md:grid-cols-2 gap-x-10 gap-y-10 rounded-[2rem] border border-border bg-card-gradient p-6 md:p-12"
       >
         {(
           [

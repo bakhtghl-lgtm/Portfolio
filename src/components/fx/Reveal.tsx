@@ -22,7 +22,7 @@ export function MaskText({
   return (
     <span className={`block ${className}`}>
       {lines.map((line, i) => (
-        <span key={i} className={`block overflow-hidden pb-[0.06em] ${lineClassName}`}>
+        <span key={i} className={`mask ${lineClassName}`}>
           <motion.span
             className="block"
             initial={{ y: "110%", rotate: 4 }}
@@ -41,7 +41,8 @@ export function MaskText({
 /** Each word brightens as the paragraph scrolls through the viewport. */
 export function ScrollLitText({ text, className = "" }: { text: string; className?: string }) {
   const ref = useRef<HTMLParagraphElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.85", "end 0.4"] });
+  // fully lit by the time the paragraph's end reaches the middle of the screen
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.9", "end 0.55"] });
   const words = text.split(" ");
   return (
     <p ref={ref} className={`flex flex-wrap ${className}`}>
@@ -63,12 +64,21 @@ function LitWord({
   range: [number, number];
   word: string;
 }) {
-  const opacity = useTransform(progress, range, [0.12, 1]);
+  // function form keeps this off framer's native scroll-timeline path (it mis-maps opacity ranges)
+  const opacity = useTransform(progress, (v) =>
+    Math.min(1, Math.max(0, (v - range[0]) / (range[1] - range[0]))),
+  );
   const highlight = word.startsWith("*");
   const clean = word.replace(/\*/g, "");
   return (
     <span className="relative mr-[0.25em] mt-[0.1em]">
-      <motion.span style={{ opacity }} className={highlight ? "text-secondary" : undefined}>
+      {/* readable resting state (>= 3:1); the lit layer fades in over it as you scroll */}
+      <span className="text-foreground/55">{clean}</span>
+      <motion.span
+        aria-hidden
+        style={{ opacity }}
+        className={`pointer-events-none absolute inset-0 ${highlight ? "text-highlight" : "text-foreground"}`}
+      >
         {clean}
       </motion.span>
     </span>
@@ -84,7 +94,7 @@ export function Eyebrow({ index, label }: { index: string; label: string }) {
       viewport={{ once: true }}
       className="flex items-center gap-4 text-[11px] font-semibold uppercase tracking-[0.35em] text-muted-foreground"
     >
-      <span className="text-secondary">{index}</span>
+      <span className="text-highlight">{index}</span>
       <motion.span
         className="h-px w-16 bg-secondary origin-left"
         initial={{ scaleX: 0 }}

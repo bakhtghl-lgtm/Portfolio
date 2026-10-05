@@ -9,7 +9,6 @@ export function Footer() {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end end"] });
   const y = useTransform(scrollYProgress, [0, 1], ["60%", "0%"]);
-  const letterSpacing = useTransform(scrollYProgress, [0, 1], ["0.2em", "-0.01em"]);
 
   return (
     <footer
@@ -54,10 +53,11 @@ export function Footer() {
 
       <motion.p
         aria-hidden
-        style={{ y, letterSpacing }}
-        className="mt-10 font-mega text-[24vw] leading-[0.78] text-center whitespace-nowrap select-none"
+        style={{ y }}
+        // BAKHT ALI = 3.58em: fits the gutters at every width; settles fully inside the footer
+        className="mt-10 pb-4 font-mega text-[min(24vw,calc((100vw-2rem)/3.75))] leading-[0.95] text-center whitespace-nowrap select-none"
       >
-        Bakht <span className="text-secondary">Ali</span>
+        Bakht <span className="text-highlight">Ali</span>
       </motion.p>
     </footer>
   );

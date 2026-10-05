@@ -19,18 +19,19 @@ const EASE = [0.76, 0, 0.24, 1] as const;
 
 export function Nav() {
   const [open, setOpen] = useState(false);
-  const [hidden, setHidden] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [time, setTime] = useState("");
   const { scrollY, scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 30 });
 
-  useMotionValueEvent(scrollY, "change", (y) => {
-    const prev = scrollY.getPrevious() ?? 0;
-    setHidden(y > prev && y > 200);
-  });
+  // transparent over the top of the hero, solid/blurred everywhere else
+  useMotionValueEvent(scrollY, "change", (y) => setScrolled(y > window.innerHeight * 0.6));
 
   useEffect(() => {
     lockScroll(open);
+    const root = document.documentElement;
+    if (open) root.setAttribute("data-menu-open", "");
+    else root.removeAttribute("data-menu-open");
   }, [open]);
 
   useEffect(() => {
@@ -60,40 +61,63 @@ export function Nav() {
         style={{ scaleX: progress }}
       />
 
-      <motion.header
-        className="fixed top-0 inset-x-0 z-50 px-4 md:px-10 pt-5"
-        animate={{ y: hidden && !open ? "-120%" : "0%" }}
-        transition={{ duration: 0.5, ease: EASE }}
+      <header
+        className="fixed top-0 inset-x-0 z-50"
+        style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
       >
-        <div className="flex items-center justify-between">
+        <div
+          className={`flex items-center justify-between gap-3 px-4 md:px-10 transition-[padding,background-color,box-shadow,backdrop-filter] duration-500 ${
+            scrolled && !open
+              ? "py-2.5 bg-background/85 backdrop-blur-md shadow-[0_1px_0_var(--border),0_10px_30px_-20px_oklch(0_0_0/0.35)]"
+              : "py-4 md:py-5"
+          }`}
+        >
           <button
             type="button"
             onClick={() => go("intro")}
-            className={`group flex items-center gap-2 font-display text-lg font-bold tracking-tight transition-colors duration-500 ${open ? "text-secondary-foreground" : ""}`}
+            aria-label="Bakht Ali — back to top"
+            className={`group flex min-w-0 items-center gap-2 font-display text-base sm:text-lg font-bold tracking-tight transition-colors duration-500 ${open ? "text-secondary-foreground" : "text-foreground"}`}
           >
-            <span className="grid size-9 place-items-center rounded-full bg-secondary text-secondary-foreground text-sm transition-transform duration-500 group-hover:rotate-[360deg]">
+            <span
+              className={`grid size-9 shrink-0 place-items-center rounded-full text-sm transition-[transform,background-color,color] duration-500 group-hover:rotate-[360deg] ${
+                open
+                  ? "bg-secondary-foreground text-secondary"
+                  : "bg-secondary text-secondary-foreground"
+              }`}
+            >
               B
             </span>
-            <span className="hidden sm:inline overflow-hidden h-[1.4em]">
+            <span className="overflow-hidden h-[1.4em] whitespace-nowrap">
               <span className="block transition-transform duration-500 group-hover:-translate-y-full">
                 Bakht Ali®
               </span>
-              <span className="block text-secondary transition-transform duration-500 group-hover:-translate-y-full">
+              <span
+                className={`block transition-transform duration-500 group-hover:-translate-y-full ${open ? "" : "text-highlight"}`}
+              >
                 GHL Expert
               </span>
             </span>
           </button>
 
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-2 md:gap-3">
             <div
-              className={`${open ? "md:hidden" : "md:flex"} hidden items-center gap-2 rounded-full glass px-4 py-2 text-[11px] uppercase tracking-[0.25em] text-muted-foreground`}
+              className={`${open ? "lg:hidden" : "lg:flex"} hidden items-center gap-2 rounded-full glass px-4 py-2 text-[11px] uppercase tracking-[0.25em] text-muted-foreground`}
             >
               <span className="relative flex size-2">
-                <span className="absolute inline-flex size-full animate-ping rounded-full bg-green-400 opacity-75" />
-                <span className="relative inline-flex size-2 rounded-full bg-green-400" />
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-green-500 opacity-75" />
+                <span className="relative inline-flex size-2 rounded-full bg-green-600" />
               </span>
               Available · Multan {time}
             </div>
+            {!open ? (
+              <button
+                type="button"
+                onClick={() => scrollToId("contact")}
+                className="hidden md:inline-flex items-center rounded-full bg-secondary px-4 py-2.5 text-xs font-bold uppercase tracking-[0.2em] text-secondary-foreground transition hover:brightness-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ring)]"
+              >
+                Hire me
+              </button>
+            ) : null}
             <Magnetic>
               <button
                 type="button"
@@ -126,7 +150,7 @@ export function Nav() {
             </Magnetic>
           </div>
         </div>
-      </motion.header>
+      </header>
 
       <AnimatePresence>
         {open ? (
@@ -139,10 +163,10 @@ export function Nav() {
             transition={{ duration: 0.9, ease: EASE }}
             data-lenis-prevent
           >
-            <div className="h-full overflow-y-auto px-6 md:px-16 pt-28 pb-10 flex flex-col lg:flex-row lg:items-end justify-between gap-12">
+            <div className="h-full overflow-y-auto px-6 md:px-16 pt-[calc(6.5rem+env(safe-area-inset-top,0px))] pb-10 flex flex-col lg:flex-row lg:items-end justify-between gap-12">
               <nav className="flex flex-col">
                 {links.map((l, i) => (
-                  <div key={l.id} className="overflow-hidden">
+                  <div key={l.id} className="mask">
                     <motion.button
                       type="button"
                       onClick={() => go(l.id)}
@@ -150,9 +174,9 @@ export function Nav() {
                       animate={{ y: "0%" }}
                       exit={{ y: "110%" }}
                       transition={{ duration: 0.8, ease: EASE, delay: 0.25 + i * 0.05 }}
-                      className="group flex items-baseline gap-4 font-mega text-[13vw] sm:text-[10vw] lg:text-[7.2vw] text-left"
+                      className="group flex items-center gap-4 font-mega text-[clamp(2.5rem,13vw,4.5rem)] sm:text-[clamp(3rem,10vw,6rem)] lg:text-[min(7.2vw,8rem,calc((100svh-11rem)/8.6))] leading-[0.95] text-left"
                     >
-                      <span className="font-sans text-xs font-bold tracking-widest opacity-60">
+                      <span className="w-6 shrink-0 font-sans text-xs font-bold tracking-widest opacity-70">
                         0{i + 1}
                       </span>
                       <span className="relative">

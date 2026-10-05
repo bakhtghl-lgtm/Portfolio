@@ -22,7 +22,7 @@ function Counter({ to, suffix = "+" }: { to: number; suffix?: string }) {
   return (
     <span ref={ref}>
       {n}
-      <span className="text-secondary">{suffix}</span>
+      <span className="text-highlight">{suffix}</span>
     </span>
   );
 }
@@ -47,11 +47,11 @@ function Band({ reverse = false }: { reverse?: boolean }) {
 export function About() {
   const imgRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: imgRef, offset: ["start end", "end start"] });
-  const clip = useTransform(
-    scrollYProgress,
-    [0, 0.45],
-    ["inset(30% 30% 30% 30% round 50%)", "inset(0% 0% 0% 0% round 24px)"],
-  );
+  // function form: framer's native scroll-timeline path mis-maps partial offset ranges
+  const clip = useTransform(scrollYProgress, (v) => {
+    const k = 1 - Math.min(1, Math.max(0, v / 0.45));
+    return `inset(${30 * k}% ${30 * k}% ${30 * k}% ${30 * k}% round ${24 + 276 * k}px)`;
+  });
   const imgScale = useTransform(scrollYProgress, [0, 1], [1.35, 1]);
   const imgY = useTransform(scrollYProgress, [0, 1], ["-8%", "8%"]);
   const rotate = useTransform(scrollYProgress, [0, 1], [-6, 6]);
@@ -59,16 +59,19 @@ export function About() {
   return (
     <>
       {/* crossing marquee bands */}
-      <div className="relative z-10 py-16 md:py-24">
+      {/* rotated bands are wider than the viewport: clip them here, not on <body>.
+          The gap equals their combined tilt across the width (tan 3° + tan 2° ≈ 0.087 / 2), so the
+          bands converge at the left edge without ever covering each other's text. */}
+      <div className="relative z-10 overflow-x-clip py-16 md:py-24">
         <div className="-rotate-3 bg-secondary text-secondary-foreground py-4 md:py-5 shadow-glow">
           <Band />
         </div>
-        <div className="rotate-2 -mt-2 md:-mt-4 bg-foreground text-background py-4 md:py-5 opacity-95">
+        <div className="rotate-2 mt-[calc(4.4vw+0.25rem)] bg-foreground text-background py-4 md:py-5 opacity-95">
           <Band reverse />
         </div>
       </div>
 
-      <section id="about" className="relative px-4 md:px-10 py-24 md:py-40">
+      <section id="about" className="relative overflow-x-clip px-4 md:px-10 py-24 md:py-40">
         <Eyebrow index="01" label="About me" />
 
         <div className="mt-12 grid lg:grid-cols-[1.4fr_1fr] gap-16 items-start">

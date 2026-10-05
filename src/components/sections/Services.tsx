@@ -2,6 +2,7 @@ import { Workflow, LayoutTemplate, MailPlus, TrendingUp, ArrowUpRight } from "lu
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useLayoutEffect, useRef, useState } from "react";
 import { Eyebrow } from "../fx/Reveal";
+import { useMedia } from "../fx/useMedia";
 
 const services = [
   {
@@ -30,8 +31,99 @@ const services = [
   },
 ];
 
-/** Vertical scroll drives a pinned horizontal track of service cards. */
+function Heading() {
+  return (
+    <div className="w-full md:w-[42vw] shrink-0">
+      <Eyebrow index="02" label="Services" />
+      {/* SPECIALIZATIONS = 5.96em in Anton: sized so the word always fits on one line */}
+      <h2 className="mt-8 font-mega text-[clamp(2.25rem,calc((100vw-2rem)/6.1),6rem)] md:text-[6.6vw]">
+        My
+        <br />
+        <span className="text-highlight">Specializations</span>
+      </h2>
+      <p className="mt-6 max-w-sm text-muted-foreground">
+        Keep scrolling — every service is a system I've shipped for real clients.
+      </p>
+    </div>
+  );
+}
+
+function ServiceCard({
+  s,
+  i,
+  className = "",
+}: {
+  s: (typeof services)[number];
+  i: number;
+  className?: string;
+}) {
+  const yellow = i % 2 === 1;
+  return (
+    <motion.article
+      whileHover={{ y: -12, rotate: yellow ? 1.5 : -1.5 }}
+      transition={{ type: "spring", stiffness: 200, damping: 18 }}
+      className={`@container group relative rounded-[2rem] p-7 md:p-10 flex flex-col justify-between gap-10 overflow-hidden border ${
+        yellow
+          ? "bg-secondary text-secondary-foreground border-secondary"
+          : "surface-dark bg-card-gradient border-border"
+      } ${className}`}
+    >
+      <div className="flex items-start justify-between">
+        <div
+          className={`grid size-16 place-items-center rounded-2xl transition-transform duration-700 group-hover:rotate-[360deg] ${
+            yellow
+              ? "bg-secondary-foreground text-secondary"
+              : "bg-secondary text-secondary-foreground"
+          }`}
+        >
+          <s.icon className="size-7" />
+        </div>
+        <span aria-hidden className="font-mega text-8xl md:text-[9rem] leading-[0.8] opacity-15">
+          0{i + 1}
+        </span>
+      </div>
+
+      <div>
+        {/* longest word (OPTIMIZATION) is 4.92em: 16cqw keeps it inside the card padding */}
+        <h3 className="font-mega text-[clamp(2rem,16cqw,3.75rem)] leading-[1] [overflow-wrap:normal]">
+          {s.title}
+        </h3>
+        <p
+          className={`mt-5 max-w-sm leading-relaxed ${yellow ? "opacity-80" : "text-muted-foreground"}`}
+        >
+          {s.desc}
+        </p>
+        <div
+          className={`mt-8 pt-6 border-t flex items-center justify-between ${yellow ? "border-secondary-foreground/20" : "border-border"}`}
+        >
+          <span className="text-xs font-bold uppercase tracking-[0.3em]">{s.count}</span>
+          <ArrowUpRight className="size-6 transition-transform duration-500 group-hover:rotate-45" />
+        </div>
+      </div>
+    </motion.article>
+  );
+}
+
+/** Vertical scroll drives a pinned horizontal track of service cards (md+); a plain stack on phones. */
 export function Services() {
+  const stacked = useMedia("(max-width: 767px), (prefers-reduced-motion: reduce)");
+  return stacked ? <StackedServices /> : <PinnedServices />;
+}
+
+function StackedServices() {
+  return (
+    <section id="services" className="relative overflow-x-clip px-4 md:px-10 py-24">
+      <Heading />
+      <div className="mt-12 grid gap-5 sm:grid-cols-2">
+        {services.map((s, i) => (
+          <ServiceCard key={s.title} s={s} i={i} className="min-h-[380px]" />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function PinnedServices() {
   const sectionRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const [distance, setDistance] = useState(0);
@@ -39,7 +131,7 @@ export function Services() {
   useLayoutEffect(() => {
     const measure = () => {
       if (!trackRef.current) return;
-      setDistance(Math.max(0, trackRef.current.scrollWidth - window.innerWidth));
+      setDistance(Math.max(0, trackRef.current.scrollWidth - document.documentElement.clientWidth));
     };
     measure();
     const ro = new ResizeObserver(measure);
@@ -63,7 +155,8 @@ export function Services() {
       className="relative"
       style={{ height: `calc(100vh + ${distance}px)` }}
     >
-      <div className="sticky top-0 h-screen overflow-hidden flex flex-col justify-center">
+      {/* padded by the header height so the pinned row is centred in the visible area */}
+      <div className="sticky top-0 h-screen overflow-hidden flex flex-col justify-center pt-[var(--header-h)]">
         <motion.div
           aria-hidden
           style={{ x: bgText }}
@@ -75,68 +168,20 @@ export function Services() {
         <motion.div
           ref={trackRef}
           style={{ x }}
-          className="relative flex items-center gap-6 md:gap-10 pl-4 md:pl-10 pr-[10vw] w-max"
+          className="relative flex items-center gap-10 pl-10 pr-[10vw] w-max"
         >
-          <div className="w-[85vw] md:w-[42vw] shrink-0">
-            <Eyebrow index="02" label="Services" />
-            <h2 className="mt-8 font-mega text-[18vw] md:text-[9vw]">
-              My
-              <br />
-              <span className="text-secondary">Speciali</span>
-              <br />
-              zations
-            </h2>
-            <p className="mt-6 max-w-sm text-muted-foreground">
-              Keep scrolling — every service is a system I've shipped for real clients.
-            </p>
-          </div>
-
-          {services.map((s, i) => {
-            const yellow = i % 2 === 1;
-            return (
-              <motion.article
-                key={s.title}
-                whileHover={{ y: -12, rotate: yellow ? 1.5 : -1.5 }}
-                transition={{ type: "spring", stiffness: 200, damping: 18 }}
-                className={`group relative shrink-0 w-[80vw] sm:w-[60vw] md:w-[34vw] h-[62vh] md:h-[66vh] rounded-[2rem] p-7 md:p-10 flex flex-col justify-between overflow-hidden border ${
-                  yellow
-                    ? "bg-secondary text-secondary-foreground border-secondary"
-                    : "bg-card-gradient border-border"
-                }`}
-              >
-                <div className="flex items-start justify-between">
-                  <div
-                    className={`grid size-16 place-items-center rounded-2xl transition-transform duration-700 group-hover:rotate-[360deg] ${
-                      yellow
-                        ? "bg-secondary-foreground text-secondary"
-                        : "bg-secondary text-secondary-foreground"
-                    }`}
-                  >
-                    <s.icon className="size-7" />
-                  </div>
-                  <span className="font-mega text-8xl md:text-[9rem] opacity-15">0{i + 1}</span>
-                </div>
-
-                <div>
-                  <h3 className="font-mega text-5xl md:text-6xl">{s.title}</h3>
-                  <p
-                    className={`mt-5 max-w-sm leading-relaxed ${yellow ? "opacity-80" : "text-muted-foreground"}`}
-                  >
-                    {s.desc}
-                  </p>
-                  <div
-                    className={`mt-8 pt-6 border-t flex items-center justify-between ${yellow ? "border-secondary-foreground/20" : "border-border"}`}
-                  >
-                    <span className="text-xs font-bold uppercase tracking-[0.3em]">{s.count}</span>
-                    <ArrowUpRight className="size-6 transition-transform duration-500 group-hover:rotate-45" />
-                  </div>
-                </div>
-              </motion.article>
-            );
-          })}
+          <Heading />
+          {services.map((s, i) => (
+            <ServiceCard
+              key={s.title}
+              s={s}
+              i={i}
+              className="shrink-0 w-[60vw] lg:w-[34vw] h-[min(66vh,620px)] min-h-[440px]"
+            />
+          ))}
         </motion.div>
 
-        <div className="absolute bottom-8 left-4 right-4 md:left-10 md:right-10 h-px bg-border">
+        <div className="absolute bottom-8 left-10 right-10 h-px bg-border">
           <motion.div className="h-full bg-secondary origin-left" style={{ scaleX: bar }} />
         </div>
       </div>
