@@ -1,16 +1,45 @@
-import { motion, useScroll, useTransform, type MotionValue } from "framer-motion";
-import { useRef, type ReactNode } from "react";
+import { motion, useReducedMotion, useScroll, useTransform, type MotionValue } from "framer-motion";
+import { cloneElement, isValidElement, useRef, type ReactNode } from "react";
 
 const EASE = [0.76, 0, 0.24, 1] as const;
 
-/** Splits text into lines/words that slide up from behind a mask when scrolled into view. */
+const ramp = (v: number, a: number, b: number) => Math.min(1, Math.max(0, (v - a) / (b - a)));
+
+function textOf(node: ReactNode): string {
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (isValidElement<{ children?: ReactNode }>(node)) return textOf(node.props.children);
+  if (Array.isArray(node)) return node.map(textOf).join("");
+  return "";
+}
+
+/** One letter that rises out of its mask as the heading scrolls into view (scrubbed). */
+function ScrubChar({
+  ch,
+  p,
+  range,
+}: {
+  ch: string;
+  p: MotionValue<number>;
+  range: [number, number];
+}) {
+  const y = useTransform(p, (v) => `${(1 - ramp(v, range[0], range[1])) * 115}%`);
+  const rotate = useTransform(p, (v) => (1 - ramp(v, range[0], range[1])) * 14);
+  return (
+    <motion.span className="inline-block origin-bottom-left" style={{ y, rotate }}>
+      {ch === " " ? "\u00A0" : ch}
+    </motion.span>
+  );
+}
+
+/**
+ * Section headings: every letter rises from behind its line mask, staggered left to right and
+ * tied to scroll position (scrubs back on scroll up). Fully assembled once the heading's top
+ * reaches 55% of the viewport. Static for reduced motion.
+ */
 export function MaskText({
   lines,
   className = "",
   lineClassName = "",
-  delay = 0,
-  stagger = 0.08,
-  once = true,
 }: {
   lines: ReactNode[];
   className?: string;
@@ -19,19 +48,32 @@ export function MaskText({
   stagger?: number;
   once?: boolean;
 }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const reduce = useReducedMotion();
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 95%", "start 55%"] });
+  const total = Math.max(1, lines.map(textOf).join("").length);
+  let k = 0;
+
+  const split = (text: string) =>
+    text.split("").map((ch) => {
+      const start = (k++ / total) * 0.55;
+      return <ScrubChar key={k} ch={ch} p={scrollYProgress} range={[start, start + 0.45]} />;
+    });
+
+  const render = (line: ReactNode): ReactNode => {
+    if (reduce) return line;
+    if (typeof line === "string") return split(line);
+    if (isValidElement<{ children?: ReactNode }>(line))
+      return cloneElement(line, undefined, split(textOf(line)));
+    return line;
+  };
+
   return (
-    <span className={`block ${className}`}>
+    <span ref={ref} className={`block ${className}`}>
+      <span className="sr-only">{lines.map(textOf).join(" ")}</span>
       {lines.map((line, i) => (
-        <span key={i} className={`mask ${lineClassName}`}>
-          <motion.span
-            className="block"
-            initial={{ y: "110%", rotate: 4 }}
-            whileInView={{ y: "0%", rotate: 0 }}
-            viewport={{ once, margin: "-10% 0px" }}
-            transition={{ duration: 1, ease: EASE, delay: delay + i * stagger }}
-          >
-            {line}
-          </motion.span>
+        <span key={i} aria-hidden className={`mask whitespace-nowrap ${lineClassName}`}>
+          <span className="block">{render(line)}</span>
         </span>
       ))}
     </span>

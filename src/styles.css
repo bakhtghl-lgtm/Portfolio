@@ -102,6 +102,38 @@
     animation: none;
   }
 }
+/* Hero stage geometry. --ph: portrait height, --pw: its width (cut-out is 1.2:1).
+   The yellow panel is a full-screen layer clipped to a card behind the portrait; on scroll
+   --p goes 0 -> 1 and the clip opens until the panel fills the screen. */
+.hero-stage {
+  --ph: min(44svh, 83vw);
+  --pw: calc(var(--ph) * 1.2);
+  --photo-left: calc((100vw - var(--pw)) / 2);
+  --pl: calc(var(--photo-left) + var(--pw) * 0.08);
+  --pr: calc(var(--photo-left) + var(--pw) * 0.08);
+  --pt: calc(100svh - var(--ph) * 0.8);
+}
+@media (min-width: 1024px) {
+  .hero-stage {
+    --ph: min(68svh, 720px);
+    --photo-left: calc(95vw - var(--pw));
+    --pl: calc(var(--photo-left) + var(--pw) * 0.1);
+    --pr: 3vw;
+    --pt: calc(100svh - var(--ph) * 0.82);
+  }
+}
+.hero-photo {
+  left: var(--photo-left);
+  width: var(--pw);
+}
+.hero-panel {
+  --q: calc(1 - var(--p, 0));
+  clip-path: inset(
+    calc(var(--pt) * var(--q)) calc(var(--pr) * var(--q)) 0 calc(var(--pl) * var(--q)) round
+      calc(28px * var(--q)) calc(28px * var(--q)) 0 0
+  );
+}
+
 /* menu overlay open: give the pointer back to the system so nothing covers button labels */
 html[data-menu-open] .cursor-fx {
   opacity: 0 !important;
@@ -279,9 +311,10 @@ body {
     margin-block: -0.12em;
   }
   /* Display sizes: each fits its longest word (measured in Anton em-widths) inside the gutters. */
+  /* Poster headline: GOHIGHLEVEL (4.66em) spans the full width, capped so both lines fit the
+     viewport height with room for the list and buttons below */
   .fs-hero {
-    /* GOHIGHLEVEL = 4.66em + 0.2em marker padding */
-    font-size: clamp(2.25rem, min(15vw, calc((100vw - 2.5rem) / 5)), 16rem);
+    font-size: max(2.5rem, min(calc((100vw - 2rem) / 4.75), calc((100svh - 20rem) / 1.95)));
   }
   /* The one accent style for headings on cream: black text on a bright yellow marker block.
      The band is drawn only over Anton's cap height (caps sit 0.32em-1.18em down the 1.51em content
