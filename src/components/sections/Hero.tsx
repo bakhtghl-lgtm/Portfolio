@@ -1,75 +1,24 @@
 import { motion, useMotionValue, useScroll, useSpring, useTransform } from "framer-motion";
-import { ArrowDown } from "lucide-react";
-import { useId, useRef } from "react";
+import { ArrowDown, ArrowUpRight, LayoutTemplate, Workflow } from "lucide-react";
+import { useRef } from "react";
 import cutout from "@/assets/portrait-cutout.webp";
 import { useIntroDone } from "../fx/Preloader";
 import { scrollToId } from "../fx/SmoothScroll";
+import { Magnetic } from "../fx/Magnetic";
+import { WhatsAppButton } from "../social";
 
 const EASE = [0.76, 0, 0.24, 1] as const;
+const SOFT = [0.22, 1, 0.36, 1] as const;
 
-function ServiceList({ play, className = "" }: { play: boolean; className?: string }) {
-  return (
-    <motion.ul
-      className={`space-y-1 font-mega leading-none ${className}`}
-      initial="hidden"
-      animate={play ? "show" : "hidden"}
-      variants={{ show: { transition: { staggerChildren: 0.1, delayChildren: 1.1 } } }}
-    >
-      {["Funnels & Websites", "Automations", "CRM & SaaS Systems"].map((s) => (
-        <li key={s} className="mask">
-          <motion.span
-            className="block"
-            variants={{ hidden: { y: "110%" }, show: { y: "0%" } }}
-            transition={{ duration: 0.8, ease: EASE }}
-          >
-            <span className="text-highlight">/</span> {s}
-          </motion.span>
-        </li>
-      ))}
-    </motion.ul>
-  );
-}
+const proof = [
+  { value: "100+", label: "Funnels launched" },
+  { value: "80+", label: "CRM systems set up" },
+  { value: "100+", label: "Automations built" },
+];
 
-function Intro({ className = "" }: { className?: string }) {
-  return (
-    <p className={`leading-relaxed text-muted-foreground ${className}`}>
-      Hi, I&apos;m <span className="text-foreground font-semibold">Bakht Ali</span>. I build the
-      GoHighLevel funnels, automations and CRM systems that turn cold clicks into booked calls, and
-      keep following up long after your team logs off.
-    </p>
-  );
-}
+const stack = ["GoHighLevel", "Zapier", "Make", "HubSpot", "Zoho CRM", "Closebot"];
 
-function ScrollBadge({ className = "" }: { className?: string }) {
-  const pathId = useId();
-  return (
-    <button
-      type="button"
-      onClick={() => scrollToId("portfolio")}
-      aria-label="Scroll to portfolio"
-      data-cursor="Work"
-      className={`relative rounded-full bg-background/70 backdrop-blur border border-border grid place-items-center group ${className}`}
-    >
-      <motion.svg
-        viewBox="0 0 100 100"
-        className="absolute inset-0 size-full"
-        animate={{ rotate: 360 }}
-        transition={{ duration: 14, repeat: Infinity, ease: "linear" }}
-      >
-        <defs>
-          <path id={pathId} d="M50,50 m-38,0 a38,38 0 1,1 76,0 a38,38 0 1,1 -76,0" />
-        </defs>
-        <text className="fill-muted-foreground text-[10px] tracking-[0.4em] uppercase">
-          <textPath href={`#${pathId}`}>My Projects • My Projects • </textPath>
-        </text>
-      </motion.svg>
-      <span className="size-10 rounded-full bg-secondary text-secondary-foreground grid place-items-center shadow-glow transition group-hover:scale-125">
-        <ArrowDown className="size-5" />
-      </span>
-    </button>
-  );
-}
-
+/** Per-letter slide-up reveal inside a glyph-safe mask. */
 function Letters({ text, play, delay = 0 }: { text: string; play: boolean; delay?: number }) {
   return (
     <span className="mask-inline">
@@ -79,12 +28,78 @@ function Letters({ text, play, delay = 0 }: { text: string; play: boolean; delay
           className="inline-block"
           initial={{ y: "105%" }}
           animate={play ? { y: "0%" } : undefined}
-          transition={{ duration: 1.1, ease: EASE, delay: delay + i * 0.035 }}
+          transition={{ duration: 1, ease: EASE, delay: delay + i * 0.03 }}
         >
-          {ch === " " ? "\u00A0" : ch}
+          {ch === " " ? " " : ch}
         </motion.span>
       ))}
     </span>
+  );
+}
+
+/** Fade-and-rise for the supporting copy, sequenced after the headline. */
+function Rise({
+  play,
+  delay,
+  className = "",
+  children,
+}: {
+  play: boolean;
+  delay: number;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, y: 24 }}
+      animate={play ? { opacity: 1, y: 0 } : undefined}
+      transition={{ duration: 0.9, ease: SOFT, delay }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/** Small floating proof card pinned to the portrait. */
+function Chip({
+  icon,
+  title,
+  sub,
+  className,
+  play,
+  delay,
+  float,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  sub: string;
+  className: string;
+  play: boolean;
+  delay: number;
+  float: number;
+}) {
+  return (
+    <motion.div
+      className={`absolute z-20 ${className}`}
+      initial={{ opacity: 0, scale: 0.85, y: 16 }}
+      animate={play ? { opacity: 1, scale: 1, y: 0 } : undefined}
+      transition={{ type: "spring", stiffness: 160, damping: 16, delay }}
+    >
+      <motion.div
+        animate={{ y: [0, -float, 0] }}
+        transition={{ duration: 5 + float / 4, repeat: Infinity, ease: "easeInOut" }}
+        className="flex items-center gap-3 rounded-2xl border border-border bg-background/95 py-2.5 pl-2.5 pr-4 shadow-[0_18px_40px_-18px_rgba(0,0,0,0.35)] backdrop-blur"
+      >
+        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-secondary text-secondary-foreground">
+          {icon}
+        </span>
+        <span className="leading-tight">
+          <span className="block font-display text-sm font-bold text-foreground">{title}</span>
+          <span className="block text-xs text-muted-foreground">{sub}</span>
+        </span>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -93,210 +108,222 @@ export function Hero() {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
 
-  // scroll-out choreography: lines split apart, portrait sinks & shrinks, scene dims
-  const line1X = useTransform(scrollYProgress, [0, 1], ["0%", "-35%"]);
-  const line2X = useTransform(scrollYProgress, [0, 1], ["0%", "35%"]);
-  const portraitY = useTransform(scrollYProgress, [0, 1], ["0%", "25%"]);
-  const portraitScale = useTransform(scrollYProgress, [0, 1], [1, 0.82]);
-  const glowScale = useTransform(scrollYProgress, [0, 1], [1, 2.4]);
-  // function form: framer's accelerated scroll path mis-maps opacity offset arrays
-  const dim = useTransform(scrollYProgress, (v) => Math.min(0.85, (v / 0.9) * 0.85));
-  const sideY = useTransform(scrollYProgress, [0, 1], ["0%", "-120%"]);
+  // gentle scroll-out: copy drifts up and fades, portrait sinks a little slower (depth)
+  const copyY = useTransform(scrollYProgress, [0, 1], [0, -90]);
+  const copyFade = useTransform(scrollYProgress, (v) => 1 - Math.min(1, v * 1.4));
+  const photoY = useTransform(scrollYProgress, [0, 1], [0, 60]);
 
-  // pointer parallax: type and portrait drift in opposite directions
+  // pointer tilt on the portrait card
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
-  const smx = useSpring(mx, { stiffness: 60, damping: 20 });
-  const smy = useSpring(my, { stiffness: 60, damping: 20 });
-  // rounded to whole pixels: fractional translates make the big type render soft
-  const textPX = useTransform(smx, (v) => Math.round(v * -18));
-  const textPY = useTransform(smy, (v) => Math.round(v * -10));
-  const imgPX = useTransform(smx, (v) => v * 22);
-  const imgPY = useTransform(smy, (v) => v * 12);
+  const rotY = useSpring(
+    useTransform(mx, (v) => v * 6),
+    { stiffness: 80, damping: 18 },
+  );
+  const rotX = useSpring(
+    useTransform(my, (v) => v * -5),
+    { stiffness: 80, damping: 18 },
+  );
 
   return (
     <section
       id="intro"
       ref={ref}
-      className="relative h-[100svh] min-h-[640px] overflow-hidden"
+      className="relative overflow-x-clip"
       onPointerMove={(e) => {
         if (e.pointerType !== "mouse") return;
         mx.set(e.clientX / window.innerWidth - 0.5);
         my.set(e.clientY / window.innerHeight - 0.5);
       }}
     >
-      {/* backdrop grid */}
+      {/* quiet dot grid, fading out toward the edges */}
       <div
-        className="absolute inset-0 opacity-[0.06]"
-        style={{
-          backgroundImage:
-            "linear-gradient(var(--foreground) 1px, transparent 1px), linear-gradient(90deg, var(--foreground) 1px, transparent 1px)",
-          backgroundSize: "8vw 8vw",
-          maskImage: "radial-gradient(ellipse at 50% 60%, black, transparent 75%)",
-        }}
-      />
-
-      {/* yellow sun behind the portrait: wide soft bloom + hot core so the photo pops off the dark */}
-      <motion.div
-        className="absolute left-1/2 bottom-[-40vh] md:bottom-[-38vh] -translate-x-1/2 size-[150vw] md:size-[52vw] lg:size-[70vw] rounded-full"
-        style={{
-          scale: glowScale,
-          background:
-            "radial-gradient(circle, oklch(0.9 0.18 95) 0%, oklch(0.86 0.19 88 / 0.95) 30%, oklch(0.84 0.19 85 / 0.45) 52%, oklch(0.84 0.19 85 / 0) 72%)",
-        }}
-        initial={{ opacity: 0, y: 120 }}
-        animate={play ? { opacity: 1, y: 0 } : undefined}
-        transition={{ duration: 1.6, ease: EASE, delay: 0.2 }}
-      />
-      <motion.div
         aria-hidden
-        className="pointer-events-none absolute left-1/2 bottom-[-10vh] -translate-x-1/2 size-[110vw] md:size-[38vw] lg:size-[48vw] rounded-full bg-secondary/35 blur-[90px]"
-        initial={{ opacity: 0 }}
-        animate={play ? { opacity: 1 } : undefined}
-        transition={{ duration: 2, delay: 0.4 }}
+        className="pointer-events-none absolute inset-0 opacity-[0.18]"
+        style={{
+          backgroundImage: "radial-gradient(var(--foreground) 1px, transparent 1.2px)",
+          backgroundSize: "22px 22px",
+          maskImage: "radial-gradient(ellipse 70% 60% at 60% 45%, black, transparent 80%)",
+          WebkitMaskImage: "radial-gradient(ellipse 70% 60% at 60% 45%, black, transparent 80%)",
+        }}
       />
 
-      {/* giant type — behind the portrait */}
-      <motion.div
-        className="absolute inset-x-0 top-[calc(var(--header-h)+env(safe-area-inset-top,0px)+0.75rem)] md:top-[12vh] px-4 md:px-6 font-mega text-foreground select-none"
-        style={{ x: textPX, y: textPY }}
-      >
-        <motion.h1 style={{ x: line1X }} className="font-mega fs-hero whitespace-nowrap">
-          <span className="sr-only">Bakht Ali, senior GoHighLevel expert</span>
-          {/* both lines sit on the golden marker block, black type */}
-          <span aria-hidden className="hl">
-            <Letters text="GOHIGHLEVEL" play={play} />
-          </span>
-        </motion.h1>
-        <motion.div
-          aria-hidden
-          style={{ x: line2X }}
-          className="font-mega fs-hero whitespace-nowrap text-right md:pr-[4vw]"
-        >
-          {/* black type on the yellow marker block, same accent style as every section heading */}
-          <span className="hl">
-            <Letters text="EXPERT" play={play} delay={0.25} />
-            <motion.span
-              className="inline-block"
-              initial={{ scale: 0 }}
-              animate={play ? { scale: 1 } : undefined}
-              transition={{ type: "spring", stiffness: 260, damping: 12, delay: 1 }}
+      <div className="relative mx-auto grid min-h-[100svh] max-w-[1440px] items-center gap-12 px-4 pb-16 pt-[calc(var(--header-h)+env(safe-area-inset-top,0px)+2.5rem)] md:px-10 lg:grid-cols-[1.12fr_0.88fr] lg:gap-10 lg:pb-20">
+        {/* ── copy ─────────────────────────────────────────── */}
+        <motion.div style={{ y: copyY, opacity: copyFade }} className="relative z-10 min-w-0">
+          <Rise play={play} delay={0.1}>
+            <span className="inline-flex items-center gap-2.5 rounded-full border border-border bg-background/80 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.25em] text-muted-foreground backdrop-blur">
+              <span className="relative flex size-2">
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-green-500 opacity-70" />
+                <span className="relative inline-flex size-2 rounded-full bg-green-600" />
+              </span>
+              <span className="sm:hidden">Open for projects</span>
+              <span className="hidden sm:inline">Senior GHL Expert · Open for projects</span>
+            </span>
+          </Rise>
+
+          {/* GOHIGHLEVEL = 4.66em: sized to the copy column */}
+          <h1 className="mt-7 font-mega text-[clamp(3.25rem,calc((100vw-2rem)/5),8rem)] lg:text-[min(9.4vw,10.5rem)]">
+            <span className="sr-only">Bakht Ali, senior GoHighLevel expert</span>
+            <span aria-hidden className="block whitespace-nowrap">
+              <Letters text="GOHIGHLEVEL" play={play} delay={0.15} />
+            </span>
+            <span aria-hidden className="block whitespace-nowrap">
+              <span className="hl">
+                <Letters text="EXPERT." play={play} delay={0.4} />
+              </span>
+            </span>
+          </h1>
+
+          <Rise play={play} delay={0.75}>
+            <p className="mt-7 max-w-[34rem] text-lg leading-relaxed text-muted-foreground md:text-xl">
+              I build the <span className="font-semibold text-foreground">funnels</span>,{" "}
+              <span className="font-semibold text-foreground">automations</span> and{" "}
+              <span className="font-semibold text-foreground">CRM systems</span> that turn cold
+              clicks into booked calls, and keep following up long after your team logs off.
+            </p>
+          </Rise>
+
+          <Rise play={play} delay={0.9} className="mt-9 flex flex-wrap items-center gap-3">
+            <Magnetic strength={0.25}>
+              <button
+                type="button"
+                onClick={() => scrollToId("contact")}
+                className="group inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3.5 text-sm font-bold uppercase tracking-[0.15em] text-background transition hover:bg-secondary hover:text-secondary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ring)]"
+              >
+                Start a project
+                <ArrowUpRight className="size-4 transition-transform duration-300 group-hover:rotate-45" />
+              </button>
+            </Magnetic>
+            <WhatsAppButton label="WhatsApp me" className="py-3.5" />
+            <button
+              type="button"
+              onClick={() => scrollToId("portfolio")}
+              className="group inline-flex items-center gap-2 px-2 py-3 text-sm font-semibold text-foreground underline decoration-secondary decoration-[3px] underline-offset-[6px] transition hover:decoration-foreground"
             >
-              .
-            </motion.span>
-          </span>
-        </motion.div>
-      </motion.div>
+              See my work
+              <ArrowDown className="size-4 transition-transform duration-300 group-hover:translate-y-0.5" />
+            </button>
+          </Rise>
 
-      {/* portrait cut-out */}
-      <motion.div
-        className="absolute left-1/2 bottom-0 -translate-x-1/2 w-[min(100vw,calc((100svh-24rem)*1.2))] min-w-[78vw] sm:w-[78vw] md:min-w-0 md:w-[min(80vw,84svh)] lg:w-[min(54vw,84svh)] max-w-[1000px] origin-bottom"
-        style={{
-          y: portraitY,
-          scale: portraitScale,
-          // let the photo dissolve into the page instead of a hard cut at the section edge
-          maskImage: "linear-gradient(to bottom, #000 72%, transparent 100%)",
-          WebkitMaskImage: "linear-gradient(to bottom, #000 72%, transparent 100%)",
-        }}
-      >
+          <Rise play={play} delay={1.05}>
+            <dl className="mt-12 grid max-w-[34rem] grid-cols-3 divide-x divide-border border-t border-border pt-6">
+              {proof.map((p) => (
+                <div key={p.label} className="px-4 first:pl-0">
+                  <dt className="sr-only">{p.label}</dt>
+                  <dd>
+                    <span className="block font-mega text-4xl leading-none md:text-5xl">
+                      {p.value}
+                    </span>
+                    <span className="mt-2 block text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                      {p.label}
+                    </span>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </Rise>
+        </motion.div>
+
+        {/* ── portrait card ────────────────────────────────── */}
         <motion.div
-          initial={{ y: "40%", opacity: 0 }}
-          animate={play ? { y: "0%", opacity: 1 } : undefined}
-          transition={{ duration: 1.4, ease: EASE, delay: 0.35 }}
+          style={{ y: photoY, perspective: 1200 }}
+          className="relative mx-auto w-full max-w-[340px] sm:max-w-[420px] lg:max-w-[520px]"
         >
-          <motion.img
-            src={cutout}
-            alt="Bakht Ali Niazi"
-            width={1200}
-            height={996}
-            className="w-full h-auto [filter:drop-shadow(0_0_28px_oklch(0.88_0.18_95/0.5))_drop-shadow(0_30px_50px_rgba(0,0,0,0.22))]"
-            style={{ x: imgPX, y: imgPY }}
-            fetchPriority="high"
+          {/* soft yellow bloom behind the card */}
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute -inset-[12%] rounded-full bg-secondary/40 blur-[80px]"
+            initial={{ opacity: 0 }}
+            animate={play ? { opacity: 1 } : undefined}
+            transition={{ duration: 1.6, delay: 0.3 }}
           />
-        </motion.div>
-      </motion.div>
+          <motion.div
+            style={{ rotateX: rotX, rotateY: rotY, transformStyle: "preserve-3d" }}
+            className="relative aspect-[5/6]"
+          >
+            {/* the yellow card starts below the head, so the portrait pops out of it */}
+            <motion.div
+              className="absolute inset-x-0 bottom-0 top-[24%] overflow-hidden rounded-[2rem] bg-secondary shadow-[0_40px_80px_-40px_rgba(0,0,0,0.45)]"
+              initial={{ clipPath: "inset(100% 0% 0% 0% round 32px)" }}
+              animate={play ? { clipPath: "inset(0% 0% 0% 0% round 32px)" } : undefined}
+              transition={{ duration: 1.2, ease: EASE, delay: 0.25 }}
+            >
+              <div
+                aria-hidden
+                className="absolute inset-0 opacity-[0.14]"
+                style={{
+                  backgroundImage:
+                    "repeating-linear-gradient(135deg, var(--secondary-foreground) 0 1px, transparent 1px 14px)",
+                }}
+              />
+              <span
+                aria-hidden
+                className="absolute -right-3 bottom-3 font-mega text-[9rem] leading-none text-secondary-foreground/10"
+              >
+                GHL
+              </span>
+            </motion.div>
 
-      {/* crisp outline echo over the portrait so the letters the photo covers still read */}
-      <motion.div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-[calc(var(--header-h)+env(safe-area-inset-top,0px)+0.75rem)] md:top-[12vh] px-4 md:px-6 font-mega text-outline select-none [--outline-stroke:var(--foreground)]"
-        style={{ x: textPX, y: textPY }}
-        initial={{ opacity: 0 }}
-        animate={play ? { opacity: 1 } : undefined}
-        transition={{ delay: 1.4, duration: 1 }}
-      >
-        <motion.div
-          style={{ x: line1X }}
-          className="font-mega fs-hero whitespace-nowrap text-outline"
-        >
-          <span className="hl text-outline" style={{ backgroundImage: "none" }}>
-            <Letters text="GOHIGHLEVEL" play={play} />
-          </span>
-        </motion.div>
-        <motion.div
-          style={{ x: line2X }}
-          className="font-mega fs-hero whitespace-nowrap text-right md:pr-[4vw] text-outline"
-        >
-          {/* same box as the marker (padding) so the echo lines up; no fill, outline only */}
-          <span className="hl text-outline" style={{ backgroundImage: "none" }}>
-            <Letters text="EXPERT" play={play} delay={0.25} />
-            <span className="inline-block opacity-0">.</span>
-          </span>
-        </motion.div>
-      </motion.div>
+            {/* cut-out portrait: clipped to the card's rounded bottom, free above it */}
+            {/* 128% wide so the head rises out of the card; side insets (11% each) trim the
+                overflow back to the card's edges, the bottom keeps the card's rounded corners */}
+            <div
+              className="absolute bottom-0 left-[-14%] w-[128%]"
+              style={{ clipPath: "inset(-60% 11% 0% 11% round 0 0 32px 32px)" }}
+            >
+              <motion.img
+                src={cutout}
+                alt="Bakht Ali Niazi"
+                width={1200}
+                height={996}
+                fetchPriority="high"
+                className="block w-full max-w-none"
+                initial={{ opacity: 0, y: 60 }}
+                animate={play ? { opacity: 1, y: 0 } : undefined}
+                transition={{ duration: 1.3, ease: SOFT, delay: 0.5 }}
+              />
+            </div>
 
-      {/* bottom-left services list (lg+) */}
-      <ServiceList
+            <Chip
+              play={play}
+              delay={1.15}
+              float={7}
+              className="-left-2 bottom-[30%] sm:-left-10 sm:bottom-auto sm:top-[38%]"
+              icon={<LayoutTemplate className="size-5" />}
+              title="100+ funnels"
+              sub="Built & launched in GHL"
+            />
+            <Chip
+              play={play}
+              delay={1.3}
+              float={5}
+              className="-right-2 bottom-[6%] sm:-right-8 sm:bottom-[12%]"
+              icon={<Workflow className="size-5" />}
+              title="Senior GHL Expert"
+              sub="VA Hub Pro · Remote"
+            />
+          </motion.div>
+        </motion.div>
+      </div>
+
+      {/* stack strip */}
+      <Rise
         play={play}
-        className="hidden lg:block absolute left-8 bottom-12 z-10 text-3xl"
-      />
-
-      {/* phones + tablets: list + scroll button + intro under the headline, clear of the photo */}
-      <motion.div
-        className="lg:hidden absolute inset-x-4 md:inset-x-6 z-10 top-[calc(var(--header-h)+env(safe-area-inset-top,0px)+3.25rem+1.9*min(15vw,(100vw-2.5rem)/5))]"
-        initial={{ opacity: 0 }}
-        animate={play ? { opacity: 1 } : undefined}
-        transition={{ delay: 1, duration: 0.6 }}
+        delay={1.2}
+        className="relative mx-auto max-w-[1440px] px-4 pb-10 md:px-10 lg:-mt-6"
       >
-        <div className="flex items-start justify-between gap-4">
-          <ServiceList play={play} className="text-xl md:text-3xl" />
-          <ScrollBadge className="size-20 md:size-24 shrink-0" />
-        </div>
-        <Intro className="mt-3 max-w-[34ch] md:max-w-[44ch] text-[13px] md:text-base" />
-      </motion.div>
-
-      {/* right vertical motto */}
-      <motion.div
-        className="hidden lg:flex absolute right-8 top-[60%] z-10 items-center gap-4"
-        style={{ y: sideY }}
-        initial={{ opacity: 0, x: 30 }}
-        animate={play ? { opacity: 1, x: 0 } : undefined}
-        transition={{ delay: 1.3, duration: 0.8 }}
-      >
-        <span className="h-24 w-px bg-border" />
-        <ul className="space-y-2 text-[10px] uppercase tracking-[0.6em] text-muted-foreground">
-          {["Build", "Design", "Automate", "Repeat"].map((w) => (
-            <li key={w}>{w}</li>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-border pt-5 text-sm">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.25em] text-muted-foreground">
+            Works with
+          </span>
+          {stack.map((s) => (
+            <span key={s} className="font-display font-semibold text-foreground/80">
+              {s}
+            </span>
           ))}
-        </ul>
-      </motion.div>
-
-      {/* intro blurb + rotating projects badge (lg+) */}
-      <motion.div
-        className="hidden lg:flex absolute right-8 bottom-10 z-10 items-end gap-5"
-        initial={{ opacity: 0, y: 30 }}
-        animate={play ? { opacity: 1, y: 0 } : undefined}
-        transition={{ delay: 1.4, duration: 0.8 }}
-      >
-        {/* dark scrim keeps the grey copy at AA where the yellow bloom reaches it */}
-        <Intro className="hidden lg:block max-w-[290px] text-sm text-right rounded-2xl bg-background/75 px-4 py-3 backdrop-blur-md" />
-        <ScrollBadge className="size-28" />
-      </motion.div>
-
-      <motion.div
-        className="pointer-events-none absolute inset-0 z-20 bg-background"
-        style={{ opacity: dim }}
-      />
+        </div>
+      </Rise>
     </section>
   );
 }
