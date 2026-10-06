@@ -141,21 +141,51 @@ function ProjectIndex({ onOpen }: { onOpen: (p: PortfolioItem) => void }) {
   const [z, setZ] = useState(0);
   const n = projects.length;
 
+  const activeRef = useRef(0);
   const select = (i: number) => {
-    setActive((prev) => {
-      if (prev !== i) {
-        seq.current += 1;
-        setZ(seq.current);
-      }
-      return i;
-    });
+    if (activeRef.current === i) return;
+    activeRef.current = i;
+    seq.current += 1;
+    setZ(seq.current);
+    setActive(i);
   };
 
-  // scrolling through the list walks the preview through every project
-  const { scrollYProgress } = useScroll({ target: listRef, offset: ["start 55%", "end 55%"] });
-  useMotionValueEvent(scrollYProgress, "change", (v) =>
-    select(Math.min(n - 1, Math.max(0, Math.floor(v * n)))),
+  // Scrolling walks the preview toward the row at the reading line one project at a time,
+  // with a short pause between steps, so every screenshot gets a beat on screen even when
+  // the page is scrolled quickly. Hover/focus still jump straight to a project.
+  const STEP_MS = 520;
+  const target = useRef(0);
+  const timer = useRef<number | null>(null);
+  const tick = () => {
+    const cur = activeRef.current;
+    if (cur === target.current) {
+      timer.current = null;
+      return;
+    }
+    select(cur + Math.sign(target.current - cur));
+    timer.current = window.setTimeout(tick, STEP_MS);
+  };
+  useEffect(
+    () => () => {
+      if (timer.current) window.clearTimeout(timer.current);
+    },
+    [],
   );
+
+  const { scrollYProgress } = useScroll({ target: listRef, offset: ["start 55%", "end 55%"] });
+  useMotionValueEvent(scrollYProgress, "change", (v) => {
+    target.current = Math.min(n - 1, Math.max(0, Math.floor(v * n)));
+    if (timer.current === null && target.current !== activeRef.current)
+      timer.current = window.setTimeout(tick, 180);
+  });
+  const hover = (i: number) => {
+    target.current = i;
+    if (timer.current) {
+      window.clearTimeout(timer.current);
+      timer.current = null;
+    }
+    select(i);
+  };
 
   // pointer tilt on the preview card
   const mx = useMotionValue(0);
@@ -185,8 +215,8 @@ function ProjectIndex({ onOpen }: { onOpen: (p: PortfolioItem) => void }) {
               key={proj.title}
               type="button"
               data-cursor="View"
-              onMouseEnter={() => select(i)}
-              onFocus={() => select(i)}
+              onMouseEnter={() => hover(i)}
+              onFocus={() => hover(i)}
               onClick={() => onOpen(proj)}
               initial={{ opacity: 0, x: -40 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -202,7 +232,7 @@ function ProjectIndex({ onOpen }: { onOpen: (p: PortfolioItem) => void }) {
                 animate={{ scaleX: on ? 1 : 0 }}
                 transition={{ duration: 0.55, ease: [0.76, 0, 0.24, 1] }}
               />
-              <span className="relative grid grid-cols-[3rem_minmax(0,1fr)_auto] items-center gap-6 px-3 py-6">
+              <span className="relative grid grid-cols-[3rem_minmax(0,1fr)_auto] items-center gap-6 px-3 py-9">
                 <span
                   className={`font-mega text-2xl transition-colors ${on ? "text-secondary-foreground" : "text-muted-foreground"}`}
                 >
