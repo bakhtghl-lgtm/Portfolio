@@ -1,6 +1,14 @@
 import { ArrowUpRight, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, useScroll, useTransform, type MotionValue } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useMotionValue,
+  useMotionValueEvent,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 import { Eyebrow, MaskText } from "../fx/Reveal";
 import { lockScroll } from "../fx/SmoothScroll";
 import { useMedia } from "../fx/useMedia";
@@ -122,149 +130,297 @@ function PortfolioDetailBody({ detail }: { detail: PortfolioDetail }) {
   );
 }
 
-function CardBody({ p, i, className = "" }: { p: PortfolioItem; i: number; className?: string }) {
+const pad = (n: number) => String(n).padStart(2, "0");
+const coverOf = (p: PortfolioItem) => (p.gallery && p.gallery[0]?.src) || p.imageUrl;
+
+/** Desktop: a big type index of projects with a sticky preview that wipes between screenshots. */
+function ProjectIndex({ onOpen }: { onOpen: (p: PortfolioItem) => void }) {
+  const listRef = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(0);
+  const seq = useRef(0);
+  const [z, setZ] = useState(0);
+  const n = projects.length;
+
+  const select = (i: number) => {
+    setActive((prev) => {
+      if (prev !== i) {
+        seq.current += 1;
+        setZ(seq.current);
+      }
+      return i;
+    });
+  };
+
+  // scrolling through the list walks the preview through every project
+  const { scrollYProgress } = useScroll({ target: listRef, offset: ["start 55%", "end 55%"] });
+  useMotionValueEvent(scrollYProgress, "change", (v) =>
+    select(Math.min(n - 1, Math.max(0, Math.floor(v * n)))),
+  );
+
+  // pointer tilt on the preview card
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const rotY = useSpring(
+    useTransform(mx, (v) => v * 8),
+    { stiffness: 90, damping: 16 },
+  );
+  const rotX = useSpring(
+    useTransform(my, (v) => v * -6),
+    { stiffness: 90, damping: 16 },
+  );
+  const imgX = useSpring(
+    useTransform(mx, (v) => v * -10),
+    { stiffness: 90, damping: 16 },
+  );
+
+  const p = projects[active];
+
   return (
-    <div
-      className={`@container relative flex flex-col justify-between gap-8 p-6 md:p-10 lg:p-12 ${className}`}
-    >
-      <div className="flex items-center justify-between gap-4">
-        <span className="rounded-full bg-secondary px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-secondary-foreground">
-          {p.metric}
-        </span>
-        <span aria-hidden className="font-mega text-6xl md:text-8xl leading-[0.9] text-outline">
-          {String(i + 1).padStart(2, "0")}
-        </span>
+    <div className="grid grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-14">
+      <div ref={listRef} className="border-b border-border">
+        {projects.map((proj, i) => {
+          const on = i === active;
+          return (
+            <motion.button
+              key={proj.title}
+              type="button"
+              data-cursor="View"
+              onMouseEnter={() => select(i)}
+              onFocus={() => select(i)}
+              onClick={() => onOpen(proj)}
+              initial={{ opacity: 0, x: -40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-8%" }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: (i % 4) * 0.05 }}
+              className="group relative block w-full overflow-hidden border-t border-border text-left focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--ring)]"
+            >
+              {/* yellow sweep behind the active row */}
+              <motion.span
+                aria-hidden
+                className="absolute inset-0 origin-left bg-secondary"
+                initial={false}
+                animate={{ scaleX: on ? 1 : 0 }}
+                transition={{ duration: 0.55, ease: [0.76, 0, 0.24, 1] }}
+              />
+              <span className="relative grid grid-cols-[3rem_minmax(0,1fr)_auto] items-center gap-6 px-3 py-6">
+                <span
+                  className={`font-mega text-2xl transition-colors ${on ? "text-secondary-foreground" : "text-muted-foreground"}`}
+                >
+                  {pad(i + 1)}
+                </span>
+                <span className="min-w-0">
+                  <span
+                    className={`block font-mega text-[clamp(1.75rem,2.6vw,2.75rem)] leading-[1] transition-transform duration-500 ${on ? "translate-x-3" : ""}`}
+                  >
+                    {proj.title}
+                  </span>
+                  <span
+                    className={`mt-2 block text-xs font-semibold uppercase tracking-[0.2em] transition-colors ${on ? "text-secondary-foreground/75" : "text-muted-foreground"}`}
+                  >
+                    {proj.tags.join(" · ")}
+                  </span>
+                </span>
+                <span
+                  className={`grid size-11 place-items-center rounded-full border transition-all duration-500 ${on ? "rotate-45 border-secondary-foreground bg-secondary-foreground text-secondary" : "border-border text-foreground"}`}
+                >
+                  <ArrowUpRight className="size-5" />
+                </span>
+              </span>
+            </motion.button>
+          );
+        })}
       </div>
-      <div>
-        <div className="mb-5 flex flex-wrap gap-2">
-          {p.tags.map((t) => (
-            <TagPill key={t} tag={t} />
-          ))}
+
+      <div className="relative">
+        <div
+          className="sticky top-[calc(var(--header-h)+1.5rem)] h-[min(74vh,720px)]"
+          style={{ perspective: 1200 }}
+          onPointerMove={(e) => {
+            const r = e.currentTarget.getBoundingClientRect();
+            mx.set((e.clientX - r.left) / r.width - 0.5);
+            my.set((e.clientY - r.top) / r.height - 0.5);
+          }}
+          onPointerLeave={() => {
+            mx.set(0);
+            my.set(0);
+          }}
+        >
+          <motion.button
+            type="button"
+            data-cursor="Open"
+            onClick={() => onOpen(p)}
+            style={{ rotateX: rotX, rotateY: rotY }}
+            className="surface-dark relative block h-full w-full overflow-hidden rounded-[2rem] border border-border bg-card text-left shadow-[0_50px_100px_-50px_rgba(0,0,0,0.6)]"
+          >
+            {/* each new screenshot wipes up over the last one */}
+            <AnimatePresence initial={false}>
+              <motion.div
+                key={active}
+                className="absolute inset-0"
+                style={{ zIndex: z }}
+                initial={{ clipPath: "inset(100% 0% 0% 0%)" }}
+                animate={{ clipPath: "inset(0% 0% 0% 0%)" }}
+                exit={{ opacity: 0, transition: { delay: 0.75, duration: 0 } }}
+                transition={{ duration: 0.75, ease: [0.76, 0, 0.24, 1] }}
+              >
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    backgroundImage: `radial-gradient(circle at 30% 20%, oklch(0.88 0.18 ${p.hue} / 0.28), transparent 55%)`,
+                  }}
+                />
+                {/* whole screenshot, never side-cropped */}
+                <motion.img
+                  src={coverOf(p)}
+                  alt={`${p.title} preview`}
+                  className="absolute inset-x-5 top-5 max-h-[58%] w-[calc(100%-2.5rem)] rounded-xl object-contain object-top shadow-[0_30px_60px_-30px_rgba(0,0,0,0.8)]"
+                  style={{ x: imgX }}
+                  initial={{ scale: 1.12, y: 30 }}
+                  animate={{ scale: 1, y: 0 }}
+                  transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+                />
+              </motion.div>
+            </AnimatePresence>
+
+            <div className="pointer-events-none absolute inset-0 z-[999] flex flex-col justify-between p-8">
+              <span />
+              <div>
+                <div className="mb-4 flex items-end justify-between">
+                  <span className="font-mega text-6xl leading-none text-outline [--outline-stroke:oklch(1_0_0/0.85)]">
+                    {pad(active + 1)}
+                    <span className="text-2xl">/{pad(n)}</span>
+                  </span>
+                  <span className="rounded-full bg-secondary px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-secondary-foreground">
+                    {p.metric}
+                  </span>
+                </div>
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.p
+                    key={active}
+                    initial={{ y: 24, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -16, opacity: 0 }}
+                    transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                    className="font-mega text-4xl leading-[1] text-white"
+                  >
+                    {p.title}
+                  </motion.p>
+                </AnimatePresence>
+                <span className="mt-5 inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[0.25em] text-secondary">
+                  Explore project
+                  <span className="grid size-9 place-items-center rounded-full bg-secondary text-secondary-foreground">
+                    <ArrowUpRight className="size-4" />
+                  </span>
+                </span>
+                <span className="mt-6 block h-[3px] w-full overflow-hidden rounded-full bg-white/15">
+                  <motion.span
+                    className="block h-full origin-left bg-secondary"
+                    animate={{ scaleX: (active + 1) / n }}
+                    transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                  />
+                </span>
+              </div>
+            </div>
+          </motion.button>
         </div>
-        <h3 className="font-mega text-[clamp(1.75rem,9cqw,4rem)] leading-[1]">{p.title}</h3>
-        <span className="mt-6 inline-flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.25em] text-highlight">
-          Explore project
-          <span className="grid size-10 place-items-center rounded-full bg-secondary text-secondary-foreground transition-transform duration-500 group-hover:rotate-45">
-            <ArrowUpRight className="size-5" />
-          </span>
-        </span>
       </div>
     </div>
   );
 }
 
-function cardGlow(p: PortfolioItem) {
-  return `radial-gradient(circle at 30% 30%, oklch(0.88 0.18 ${p.hue} / 0.3), transparent 60%), radial-gradient(circle at 70% 70%, oklch(0.4 0.05 270 / 0.5), transparent 60%)`;
-}
+/** Phones and tablets: a swipeable, snapping row of tall project cards. */
+function ProjectCarousel({ onOpen }: { onOpen: (p: PortfolioItem) => void }) {
+  const rail = useRef<HTMLDivElement>(null);
+  const [idx, setIdx] = useState(0);
+  const n = projects.length;
 
-/** Phones / reduced motion: a plain list, each screenshot shown top-anchored at full width. */
-function ProjectListCard({
-  project: p,
-  index: i,
-  onOpen,
-}: {
-  project: PortfolioItem;
-  index: number;
-  onOpen: () => void;
-}) {
-  const cover = (p.gallery && p.gallery[0]?.src) || p.imageUrl;
-  return (
-    <motion.button
-      type="button"
-      onClick={onOpen}
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-10%" }}
-      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-      className="surface-dark group relative block w-full overflow-hidden rounded-[1.75rem] border border-border bg-card text-left"
-      style={{ backgroundImage: cardGlow(p) }}
-    >
-      {/* natural aspect at full width: wide screenshots are never side-cropped; very tall
-          full-page captures are capped and crop from the bottom only (top-anchored) */}
-      <img
-        src={cover}
-        alt={`${p.title} preview`}
-        className="block h-auto max-h-[75vw] w-full bg-black/30 object-cover object-top"
-        loading="lazy"
-      />
-      <CardBody p={p} i={i} />
-    </motion.button>
-  );
-}
-
-/** Linear 0..1 ramp between a and b, clamped. */
-function ramp(v: number, a: number, b: number) {
-  return Math.min(1, Math.max(0, (v - a) / (b - a)));
-}
-
-/** Sticky card that pins, then shrinks and dims as the next project slides over it. */
-function ProjectCard({
-  project: p,
-  index: i,
-  total,
-  progress,
-  onOpen,
-}: {
-  project: PortfolioItem;
-  index: number;
-  total: number;
-  progress: MotionValue<number>;
-  onOpen: () => void;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress: enter } = useScroll({
-    target: ref,
-    offset: ["start end", "start start"],
-  });
-  const imgScale = useTransform(enter, [0, 1], [1.25, 1]);
-  // card i pins at progress i/span; card i+1 has fully covered it at (i+1)/span
-  const span = Math.max(1, total - 1);
-  const targetScale = 1 - (total - 1 - i) * 0.04;
-  const scale = useTransform(progress, [i / span, 1], [1, targetScale]);
-  // only dim once the next card is mostly over this one, so the front card stays at full brightness
-  // function transforms (not offset arrays) so framer keeps these on the JS path:
-  // its native scroll-timeline acceleration mis-maps opacity ranges here.
-  // Only dim once the next card is mostly over this one, so the front card stays at full brightness.
-  const last = i === total - 1;
-  const dim = useTransform(progress, (v) =>
-    last ? 0 : 0.55 * ramp(v, (i + 0.55) / span, (i + 1) / span),
-  );
-  // cards buried 3+ deep fade out so at most ~2-3 stacked edges ever show
-  const buried = useTransform(progress, (v) =>
-    i + 2 >= span ? 1 : 1 - ramp(v, (i + 2) / span, (i + 3) / span),
-  );
-  const cover = (p.gallery && p.gallery[0]?.src) || p.imageUrl;
+  const step = () => {
+    const el = rail.current;
+    const card = el?.firstElementChild as HTMLElement | null;
+    return card ? card.offsetWidth + 16 : 1;
+  };
+  const go = (i: number) => {
+    const j = Math.min(n - 1, Math.max(0, i));
+    rail.current?.scrollTo({ left: j * step(), behavior: "smooth" });
+  };
 
   return (
-    <div
-      ref={ref}
-      className="sticky top-0 h-screen flex items-center justify-center pt-[var(--header-h)]"
-    >
-      <motion.button
-        type="button"
-        onClick={onOpen}
-        data-cursor="View"
-        style={{ scale, opacity: buried, top: `${Math.min(i, 2) * 16 - 16}px` }}
-        className="surface-dark group relative grid w-full h-[min(74vh,760px)] grid-cols-[minmax(0,40%)_minmax(0,1fr)] origin-top text-left rounded-[2rem] overflow-hidden border border-border bg-card"
+    <div>
+      <div
+        ref={rail}
+        onScroll={(e) => setIdx(Math.round(e.currentTarget.scrollLeft / step()))}
+        className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 scroll-px-4 [scrollbar-width:none] md:-mx-10 md:scroll-px-10 md:px-10 [&::-webkit-scrollbar]:hidden"
+        aria-label="Projects"
       >
-        <div className="relative min-h-0" style={{ backgroundImage: cardGlow(p) }}>
-          <CardBody p={p} i={i} className="h-full" />
-        </div>
-        <div className="relative min-h-0 overflow-hidden border-l border-border bg-black/30">
-          <motion.img
-            src={cover}
-            alt={`${p.title} preview`}
-            style={{ scale: imgScale }}
-            className="absolute inset-0 h-full w-full origin-top object-cover object-top transition duration-700 group-hover:scale-[1.04]"
-            loading="lazy"
-          />
-        </div>
+        {projects.map((p, i) => (
+          <motion.button
+            key={p.title}
+            type="button"
+            onClick={() => onOpen(p)}
+            initial={{ opacity: 0, x: 60 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: Math.min(i, 3) * 0.08 }}
+            className="surface-dark group relative w-[82vw] max-w-[420px] shrink-0 snap-start overflow-hidden rounded-[1.75rem] border border-border bg-card text-left"
+          >
+            <div className="relative aspect-[16/10] overflow-hidden bg-black/30">
+              <img
+                src={coverOf(p)}
+                alt={`${p.title} preview`}
+                loading="lazy"
+                className="absolute inset-0 h-full w-full object-contain object-top"
+              />
+              <span className="absolute left-4 top-4 rounded-full bg-secondary px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-secondary-foreground">
+                {p.metric}
+              </span>
+            </div>
+            <div className="p-5">
+              <div className="flex items-start justify-between gap-3">
+                <p className="font-mega text-[1.75rem] leading-[1]">{p.title}</p>
+                <span className="font-mega text-4xl leading-none text-outline">{pad(i + 1)}</span>
+              </div>
+              <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                {p.tags.join(" · ")}
+              </p>
+              <span className="mt-4 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.25em] text-highlight">
+                Explore project <ArrowUpRight className="size-4" />
+              </span>
+            </div>
+          </motion.button>
+        ))}
+      </div>
 
-        <motion.div
-          className="pointer-events-none absolute inset-0 bg-background"
-          style={{ opacity: dim }}
-        />
-      </motion.button>
+      <div className="mt-6 flex items-center gap-4">
+        <span className="font-mega text-2xl tabular-nums">
+          {pad(idx + 1)}
+          <span className="text-muted-foreground">/{pad(n)}</span>
+        </span>
+        <span className="h-[3px] flex-1 overflow-hidden rounded-full bg-foreground/10">
+          <motion.span
+            className="block h-full origin-left bg-secondary"
+            animate={{ scaleX: (idx + 1) / n }}
+            transition={{ duration: 0.4 }}
+          />
+        </span>
+        <button
+          type="button"
+          aria-label="Previous project"
+          onClick={() => go(idx - 1)}
+          className="grid size-11 place-items-center rounded-full border border-border transition hover:bg-secondary disabled:opacity-40"
+          disabled={idx === 0}
+        >
+          <ArrowUpRight className="size-5 -rotate-[135deg]" />
+        </button>
+        <button
+          type="button"
+          aria-label="Next project"
+          onClick={() => go(idx + 1)}
+          className="grid size-11 place-items-center rounded-full bg-foreground text-background transition hover:bg-secondary hover:text-secondary-foreground disabled:opacity-40"
+          disabled={idx === n - 1}
+        >
+          <ArrowUpRight className="size-5 rotate-45" />
+        </button>
+      </div>
     </div>
   );
 }
@@ -477,12 +633,7 @@ export function Portfolio() {
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const [mediaZoomed, setMediaZoomed] = useState(false);
   const [workflowDetailsOpen, setWorkflowDetailsOpen] = useState(false);
-  const stackRef = useRef<HTMLDivElement>(null);
-  const stacked = useMedia("(max-width: 767px), (prefers-reduced-motion: reduce)");
-  const { scrollYProgress: stackProgress } = useScroll({
-    target: stackRef,
-    offset: ["start start", "end end"],
-  });
+  const wide = useMedia("(min-width: 1024px)");
 
   useEffect(() => {
     lockScroll(Boolean(activeProject));
@@ -516,7 +667,10 @@ export function Portfolio() {
   }, [activeMediaIndex]);
 
   return (
-    <section id="portfolio" className="relative overflow-x-clip px-4 md:px-10 pt-24 md:pt-40 pb-24">
+    <section
+      id="portfolio"
+      className="relative overflow-x-clip px-4 md:px-10 pt-24 md:pt-40 pb-24 md:pb-32"
+    >
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 md:mb-24">
         <div>
           <Eyebrow index="05" label="Portfolio" />
@@ -525,35 +679,16 @@ export function Portfolio() {
           </h2>
         </div>
         <p className="max-w-xs text-muted-foreground md:text-right">
-          Funnels, websites and automation systems — click any card to explore every screen and the
-          full workflow.
+          Funnels, websites and automation systems. Scroll or hover to preview, click to open every
+          screen and the full workflow.
         </p>
       </div>
 
-      {stacked ? (
-        <div className="grid gap-8">
-          {projects.map((p, i) => (
-            <ProjectListCard
-              key={p.title}
-              project={p}
-              index={i}
-              onOpen={() => setActiveProject(p)}
-            />
-          ))}
-        </div>
-      ) : null}
-      <div ref={stackRef} className={stacked ? "hidden" : "relative"}>
-        {projects.map((p, i) => (
-          <ProjectCard
-            key={p.title}
-            project={p}
-            index={i}
-            total={projects.length}
-            progress={stackProgress}
-            onOpen={() => setActiveProject(p)}
-          />
-        ))}
-      </div>
+      {wide ? (
+        <ProjectIndex onOpen={setActiveProject} />
+      ) : (
+        <ProjectCarousel onOpen={setActiveProject} />
+      )}
 
       {activeProject ? (
         <div
