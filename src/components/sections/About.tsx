@@ -88,7 +88,7 @@ export function About() {
   // exactly the original reveal (oval -> rounded rect), mixed with framer's own interpolator but
   // through a function transform so it stays off the native scroll-timeline path
   const clip = useTransform(scrollYProgress, mixClip);
-  const imgScale = useTransform(scrollYProgress, [0, 1], [1.12, 1]);
+  const imgScale = useTransform(scrollYProgress, [0, 1], [1.06, 1]);
   // the cut-out sits on the bottom edge, so it only drifts down into place (never lifts off it)
   const imgY = useTransform(scrollYProgress, [0, 0.6], ["8%", "0%"]);
   const rotate = useTransform(scrollYProgress, [0, 1], [-6, 6]);
@@ -161,7 +161,7 @@ export function About() {
           <div ref={imgRef} className="relative lg:sticky lg:top-28">
             <motion.div
               style={{ clipPath: clip, rotate, backgroundColor: PHOTO_BACKDROP }}
-              className="relative aspect-[4/5] overflow-hidden"
+              className="relative aspect-square overflow-hidden"
             >
               <motion.img
                 src={cutout}
@@ -169,7 +169,9 @@ export function About() {
                 width={1200}
                 height={996}
                 loading="lazy"
-                className="absolute bottom-0 left-[-6%] h-auto w-[112%] max-w-none origin-bottom"
+                /* 108% wide and shifted -1% so the head (at 47.3% of the cut-out) sits on the centre line,
+                   with ~10% headroom in the square */
+                className="absolute bottom-0 left-[-1%] h-auto w-[108%] max-w-none origin-[47%_100%]"
                 style={{ scale: imgScale, y: imgY }}
               />
             </motion.div>
