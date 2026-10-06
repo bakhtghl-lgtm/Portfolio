@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import emailjs from "@emailjs/browser";
 import { Eyebrow } from "../fx/Reveal";
 import { Magnetic } from "../fx/Magnetic";
-import { hireMeHref } from "../social";
+import { hireMeHref, WhatsAppButton } from "../social";
 import { submitContact } from "@/server/submit-contact";
 
 const initialForm = {
@@ -120,13 +120,13 @@ export function Contact() {
       <Eyebrow index="07" label="Contact" />
 
       <motion.div ref={ctaRef} style={{ scale: ctaScale }} className="mt-10 origin-center">
-        {/* LET'S WORK = 4.16em: sized to the gutters so neither line clips or collides */}
-        <h2 className="font-mega text-[clamp(2.5rem,calc((100vw-2rem)/4.4),13rem)] md:text-[min(14vw,calc((100vw-5rem)/4.4),13rem)] leading-[0.95]">
+        {/* YOURS NEXT. = 4.49em + marker padding: sized to the gutters so neither line clips */}
+        <h2 className="font-mega text-[clamp(2.5rem,calc((100vw-2rem)/4.8),13rem)] md:text-[min(14vw,calc((100vw-5rem)/4.8),13rem)] leading-[0.95]">
           <motion.span className="block" style={{ x: ctaX1 }}>
-            Let's work
+            Let&apos;s build
           </motion.span>
           <motion.span className="block text-right" style={{ x: ctaX2 }}>
-            <span className="hl">Together!</span>
+            <span className="hl">Yours next.</span>
           </motion.span>
         </h2>
       </motion.div>
@@ -146,7 +146,11 @@ export function Contact() {
             </span>
           </a>
         </Magnetic>
-        <div className="space-y-2">
+        <div className="space-y-4">
+          <p className="max-w-xl text-lg text-muted-foreground">
+            Tell me where leads slip through the cracks. I&apos;ll map the system that catches them,
+            whether you need one funnel or a full GHL build.
+          </p>
           <a
             href={hireMeHref}
             target="_blank"
@@ -155,9 +159,10 @@ export function Contact() {
           >
             bakht.ghl@gmail.com
           </a>
-          <p className="text-lg text-muted-foreground">
-            +92 325 1203232 · Gulgasht, Multan, Pakistan
-          </p>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+            <WhatsAppButton label="Chat on WhatsApp" />
+            <p className="text-muted-foreground">Gulgasht, Multan, Pakistan · Working worldwide</p>
+          </div>
         </div>
       </div>
 

@@ -3,7 +3,14 @@ import { ArrowUp } from "lucide-react";
 import { useRef } from "react";
 import { scrollToId } from "./fx/SmoothScroll";
 import { Magnetic } from "./fx/Magnetic";
-import { FacebookIcon, LinkedInIcon, facebookUrl, linkedinUrl } from "./social";
+import {
+  FacebookIcon,
+  LinkedInIcon,
+  WhatsAppIcon,
+  facebookUrl,
+  linkedinUrl,
+  whatsappHref,
+} from "./social";
 
 export function Footer() {
   const ref = useRef<HTMLElement>(null);
@@ -25,6 +32,7 @@ export function Footer() {
           {[
             { href: facebookUrl, label: "Facebook", Icon: FacebookIcon },
             { href: linkedinUrl, label: "LinkedIn", Icon: LinkedInIcon },
+            { href: whatsappHref, label: "WhatsApp", Icon: WhatsAppIcon },
           ].map(({ href, label, Icon }) => (
             <Magnetic key={label}>
               <a

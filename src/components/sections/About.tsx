@@ -1,33 +1,63 @@
-import { interpolate, motion, useInView, useScroll, useTransform } from "framer-motion";
+import {
+  animate,
+  interpolate,
+  motion,
+  useInView,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import portrait from "@/assets/portrait.jpg";
 import { Eyebrow, ScrollLitText } from "../fx/Reveal";
 import { VelocityMarquee } from "../fx/VelocityMarquee";
 
+/** Counts up from 0 once the number scrolls into view (instantly final with reduced motion). */
 function Counter({ to, suffix = "+" }: { to: number; suffix?: string }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true });
+  const inView = useInView(ref, { once: true, margin: "0px 0px -15% 0px" });
+  const reduce = useReducedMotion();
   const [n, setN] = useState(0);
   useEffect(() => {
     if (!inView) return;
-    const dur = 1600;
-    const t0 = performance.now();
-    const step = (t: number) => {
-      const p = Math.min((t - t0) / dur, 1);
-      setN(Math.floor(to * (1 - Math.pow(1 - p, 3))));
-      if (p < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }, [inView, to]);
+    if (reduce) {
+      setN(to);
+      return;
+    }
+    const controls = animate(0, to, {
+      duration: 1.8,
+      ease: [0.22, 1, 0.36, 1],
+      onUpdate: (v) => setN(Math.round(v)),
+    });
+    return () => controls.stop();
+  }, [inView, reduce, to]);
   return (
-    <span ref={ref}>
-      {n}
-      <span className="text-highlight">{suffix}</span>
+    <span ref={ref} className="tabular-nums" aria-label={`${to}${suffix}`}>
+      <span aria-hidden>
+        {n}
+        <span className="text-highlight">{suffix}</span>
+      </span>
     </span>
   );
 }
 
-const band = ["Funnels", "Automations", "CRM Pipelines", "Email & SMS", "Chatbots", "Integrations"];
+const stats = [
+  { to: 3, label: "Years building in GoHighLevel" },
+  { to: 100, label: "Funnels built and launched" },
+  { to: 80, label: "CRM systems set up" },
+  { to: 100, label: "Automations built from scratch" },
+];
+
+const band = [
+  "GoHighLevel",
+  "Funnels",
+  "Automations",
+  "CRM Systems",
+  "SaaS Builds",
+  "Zapier",
+  "Make",
+  "HubSpot",
+];
 
 function Band({ reverse = false }: { reverse?: boolean }) {
   return (
@@ -84,7 +114,7 @@ export function About() {
           <div>
             <ScrollLitText
               className="font-display text-3xl sm:text-4xl md:text-6xl font-bold leading-[1.08] tracking-tight"
-              text="Every successful business runs on a smart *automation *system. I turn messy processes into clean systems your team can actually run."
+              text="Most businesses don't have a lead problem. They have a *follow-up *problem. I build the systems that fix it."
             />
 
             <motion.p
@@ -94,30 +124,36 @@ export function About() {
               transition={{ duration: 0.9 }}
               className="mt-12 max-w-2xl text-muted-foreground text-lg leading-relaxed"
             >
-              I'm Bakht Ali Niazi — a GoHighLevel specialist with 3+ years of hands-on experience
-              building funnels, pipelines, and automation workflows for agencies and service
-              businesses. My background in Computer Science helps me turn messy processes into clean
-              systems: lead capture, follow-up, routing, and reporting that teams can actually run
-              day-to-day.
+              I&apos;m Bakht Ali Niazi, a senior GoHighLevel expert. Since 2023 I&apos;ve launched
+              100+ funnels, set up 80+ CRM systems and built 100+ automations from scratch, from
+              quick two-step follow-ups to 30+ full lead-to-close systems. I&apos;ve been the senior
+              GHL expert for two white-label agencies, Markelop (Mexico) and Convertio, and I hold
+              the same seat at VA Hub Pro today, alongside a long list of freelance clients.
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-10%" }}
+              transition={{ duration: 0.9, delay: 0.1 }}
+              className="mt-5 max-w-2xl text-muted-foreground text-lg leading-relaxed"
+            >
+              Real estate, insurance, home services, education, travel: I&apos;ve built GHL SaaS
+              systems for all of them. Before GoHighLevel I spent three years in design and two in
+              Amazon e-commerce, so I build funnels that look the part and systems that answer to
+              revenue.
             </motion.p>
 
-            <div className="mt-16 grid grid-cols-2 gap-6 border-t border-border pt-10">
-              <div>
-                <p className="font-mega text-7xl md:text-9xl">
-                  <Counter to={3} />
-                </p>
-                <p className="mt-3 text-xs tracking-[0.25em] uppercase text-muted-foreground">
-                  Years of experience
-                </p>
-              </div>
-              <div>
-                <p className="font-mega text-7xl md:text-9xl">
-                  <Counter to={50} />
-                </p>
-                <p className="mt-3 text-xs tracking-[0.25em] uppercase text-muted-foreground">
-                  High-converting funnels delivered
-                </p>
-              </div>
+            <div className="mt-16 grid grid-cols-2 gap-x-6 gap-y-10 border-t border-border pt-10">
+              {stats.map((st) => (
+                <div key={st.label}>
+                  <p className="font-mega text-6xl sm:text-7xl md:text-8xl">
+                    <Counter to={st.to} />
+                  </p>
+                  <p className="mt-3 text-xs tracking-[0.25em] uppercase text-muted-foreground">
+                    {st.label}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
 

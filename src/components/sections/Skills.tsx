@@ -3,13 +3,15 @@ import { useEffect, useRef, useState } from "react";
 import { Eyebrow, MaskText } from "../fx/Reveal";
 
 const skills = [
-  { name: "Funnels", value: 92 },
-  { name: "React", value: 90 },
-  { name: "Email & SMS", value: 86 },
-  { name: "Automations", value: 85 },
-  { name: "CRM Pipelines", value: 80 },
-  { name: "Chatbots", value: 78 },
-  { name: "Integrations", value: 70 },
+  { name: "GoHighLevel", value: 98 },
+  { name: "Automations", value: 97 },
+  { name: "Funnels", value: 96 },
+  { name: "Zapier", value: 95 },
+  { name: "Make", value: 94 },
+  { name: "HubSpot", value: 93 },
+  { name: "Zoho CRM", value: 92 },
+  { name: "Closebot", value: 91 },
+  { name: "Claude Code", value: 90 },
 ];
 
 function Percent({ to, play }: { to: number; play: boolean }) {
@@ -80,14 +82,18 @@ export function Skills() {
         style={{ x }}
         className="pointer-events-none absolute top-10 left-0 whitespace-nowrap font-mega text-[22vw] text-outline opacity-30"
       >
-        Advantages Advantages
+        Toolkit Toolkit Toolkit
       </motion.div>
 
       <div className="relative">
-        <Eyebrow index="03" label="My Skills" />
-        <h2 className="mt-8 mb-16 font-mega text-[clamp(2.5rem,calc((100vw-2rem)/4.7),9rem)] md:text-[min(9vw,9rem)]">
-          <MaskText lines={["My", <span className="hl">Advantages</span>]} />
+        <Eyebrow index="03" label="Tools & Skills" />
+        <h2 className="mt-8 mb-6 font-mega text-[clamp(2.5rem,calc((100vw-2rem)/4.7),9rem)] md:text-[min(9vw,9rem)]">
+          <MaskText lines={["My", <span className="hl">Toolkit</span>]} />
         </h2>
+        <p className="mb-14 max-w-xl text-lg text-muted-foreground">
+          GoHighLevel at the core, wired into the tools your team already uses. One stack, no duct
+          tape.
+        </p>
         <div className="border-b border-border">
           {skills.map((s, i) => (
             <SkillRow key={s.name} {...s} i={i} />

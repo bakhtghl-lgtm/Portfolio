@@ -1,4 +1,4 @@
-import { Workflow, LayoutTemplate, MailPlus, TrendingUp, ArrowUpRight } from "lucide-react";
+import { Workflow, LayoutTemplate, Database, Layers, ArrowUpRight } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useLayoutEffect, useRef, useState } from "react";
 import { Eyebrow } from "../fx/Reveal";
@@ -7,27 +7,27 @@ import { useMedia } from "../fx/useMedia";
 const services = [
   {
     icon: LayoutTemplate,
-    title: "Funnel Building",
-    desc: "High-converting GoHighLevel funnels & landing pages built to capture and close.",
-    count: "20+ Funnels",
+    title: "Funnels & Websites",
+    desc: "Conversion-first GoHighLevel funnels and sites: a sharp offer, fast pages, and booking and payments wired in from day one.",
+    count: "100+ Funnels Built",
   },
   {
     icon: Workflow,
     title: "Automation Workflows",
-    desc: "Smart triggers, pipelines, and CRM logic that nurture leads on autopilot.",
-    count: "50+ Workflows",
+    desc: "Speed-to-lead, nurture, reminders and win-backs that run on their own, from two-step follow-ups to full lead-to-close systems.",
+    count: "100+ Built From Scratch",
   },
   {
-    icon: MailPlus,
-    title: "Email & SMS Campaigns",
-    desc: "Multi-channel sequences that re-engage leads and drive measurable revenue.",
-    count: "100+ Campaigns",
+    icon: Database,
+    title: "CRM & Pipeline Setup",
+    desc: "Pipelines, tags, custom fields, routing and reporting, set up so your team always knows who to call next and why.",
+    count: "80+ Systems Set Up",
   },
   {
-    icon: TrendingUp,
-    title: "Conversion Optimization",
-    desc: "A/B tests, integrations, and pipeline tuning — up to 35% lift for clients.",
-    count: "+35% Avg. Lift",
+    icon: Layers,
+    title: "GHL SaaS Builds",
+    desc: "White-label SaaS systems and snapshots for real estate, insurance, home services, education and travel businesses.",
+    count: "5 Industries Served",
   },
 ];
 
@@ -35,14 +35,15 @@ function Heading() {
   return (
     <div className="w-full md:w-[42vw] shrink-0">
       <Eyebrow index="02" label="Services" />
-      {/* SPECIALIZATIONS = 5.96em in Anton: sized so the word always fits on one line */}
-      <h2 className="mt-8 font-mega text-[clamp(2.25rem,calc((100vw-2rem)/6.4),6rem)] md:text-[6.3vw]">
-        My
+      {/* "WHAT I" is the longest line (~2.9em in Anton): sized to the column */}
+      <h2 className="mt-8 font-mega text-[clamp(3rem,calc((100vw-2rem)/3.4),8rem)] md:text-[min(11vw,11rem)]">
+        What I
         <br />
-        <span className="hl">Specializations</span>
+        <span className="hl">Build</span>
       </h2>
       <p className="mt-6 max-w-sm text-muted-foreground">
-        Keep scrolling — every service is a system I've shipped for real clients.
+        Four ways I turn GoHighLevel into revenue. Every one is a system I&apos;ve shipped for
+        paying clients, not a template.
       </p>
     </div>
   );
@@ -162,7 +163,7 @@ function PinnedServices() {
           style={{ x: bgText }}
           className="pointer-events-none absolute bottom-[4vh] left-0 whitespace-nowrap font-mega text-[28vw] text-outline opacity-40"
         >
-          Specializations
+          What I Build
         </motion.div>
 
         <motion.div

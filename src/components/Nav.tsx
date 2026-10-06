@@ -2,7 +2,14 @@ import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring } fr
 import { useEffect, useState } from "react";
 import { lockScroll, scrollToId } from "./fx/SmoothScroll";
 import { Magnetic } from "./fx/Magnetic";
-import { FacebookIcon, LinkedInIcon, facebookUrl, linkedinUrl, hireMeHref } from "./social";
+import {
+  FacebookIcon,
+  LinkedInIcon,
+  WhatsAppButton,
+  facebookUrl,
+  linkedinUrl,
+  hireMeHref,
+} from "./social";
 
 const links = [
   { id: "intro", label: "Home" },
@@ -207,7 +214,7 @@ export function Nav() {
                   >
                     bakht.ghl@gmail.com
                   </a>
-                  <p className="mt-1">+92 325 1203232</p>
+                  <WhatsAppButton className="mt-4" />
                 </div>
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.3em] opacity-60 mb-2">Based in</p>

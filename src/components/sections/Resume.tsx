@@ -13,34 +13,57 @@ const timeline: { period: string; items: TimelineItem[] }[] = [
     period: "2025 — Present",
     items: [
       {
-        title: "GoHighLevel Automation Specialist",
-        org: "Remote · Agency & SMB clients",
+        title: "Senior GoHighLevel Expert",
+        org: "VA Hub Pro · Remote",
         points: [
-          "Built appointment + lead workflows with email/SMS/WhatsApp touchpoints and internal notifications.",
-          "Designed pipelines and stages with clear ownership, follow-up rules, and reporting.",
-          "Integrated tools like Zapier/webhooks and CRMs to reduce manual data entry.",
+          "Lead GoHighLevel builds for the agency's clients: funnels, automations, CRM setup and SaaS snapshots.",
+          "Turn client briefs into working systems and own them from first call to go-live.",
         ],
       },
       {
-        title: "Funnel Builder (Landing → Form → Thank-you)",
-        org: "GoHighLevel funnels",
+        title: "Freelance GoHighLevel Consultant",
+        org: "Direct clients · Since 2023",
         points: [
-          "Created multi-page funnels focused on clarity, proof, and conversion (mobile-first).",
-          "Implemented forms, tagging/segmentation, and routing to the correct pipeline/user.",
-          "Iterated layouts based on real feedback to improve opt-in and booking rates.",
+          "A long roster of freelance clients across real estate, insurance, home services, education and travel.",
+          "End-to-end GHL SaaS systems: snapshots, onboarding flows, automations and reporting.",
         ],
       },
     ],
   },
   {
-    period: "2023 — 2024",
+    period: "2023 — 2025",
     items: [
       {
-        title: "GHL Setup & CRM Implementation",
-        org: "Freelance / early client projects",
+        title: "Senior GoHighLevel Expert",
+        org: "Markelop (Mexico) & Convertio · White-label agencies",
         points: [
-          "Set up calendars, forms, tags, triggers, and basic follow-up sequences.",
-          "Cleaned contact data and standardized fields for consistent reporting.",
+          "The go-to GHL builder behind two white-label agencies, delivering under their brands.",
+          "Shipped funnels, pipelines and automation systems for their clients, from quick fixes to full builds.",
+        ],
+      },
+    ],
+  },
+  {
+    period: "2021 — 2023",
+    items: [
+      {
+        title: "Amazon Seller Services: FBA, FBM & Private Label",
+        org: "E-commerce services",
+        points: [
+          "Provided FBA, FBM and private label services to Amazon sellers.",
+          "Learned how revenue really moves: listings, inventory and the numbers behind every sale.",
+        ],
+      },
+    ],
+  },
+  {
+    period: "2018 — 2021",
+    items: [
+      {
+        title: "Adobe Creative Work",
+        org: "Design · Adobe Creative Suite",
+        points: [
+          "Three years of design work in Adobe, the eye for layout that shapes every funnel I build today.",
         ],
       },
     ],
@@ -52,7 +75,7 @@ const timeline: { period: string; items: TimelineItem[] }[] = [
         title: "Bachelor's in Computer Science",
         org: "Multan University of Science and Technology",
         points: [
-          "Strong foundation in problem-solving, systems thinking, and building reliable workflows.",
+          "A foundation in problem-solving and systems thinking: the logic behind every workflow I build.",
         ],
       },
     ],
@@ -74,7 +97,8 @@ export function Resume() {
             <MaskText lines={["Education", "&", <span className="hl">Experience</span>]} />
           </h2>
           <p className="mt-6 max-w-sm text-muted-foreground">
-            From cleaning up contact data to architecting full multi-channel automation systems.
+            From design to e-commerce to senior GoHighLevel builds: eight years of learning what
+            makes a business actually grow.
           </p>
         </div>
 

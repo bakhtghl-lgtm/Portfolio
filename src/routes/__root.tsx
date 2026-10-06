@@ -29,23 +29,23 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { title: "bakhtaliniazi.com" },
+      { title: "Bakht Ali Niazi · Senior GoHighLevel Expert" },
       {
         name: "description",
         content:
-          "bakhtaliniazi.com — Bakht Ali Niazi portfolio (funnels, automations, CRM systems).",
+          "Bakht Ali Niazi, senior GoHighLevel expert. 100+ funnels, 80+ CRM systems and 100+ automations built for real estate, insurance, home services, education and travel businesses.",
       },
       { name: "author", content: "Bakht" },
-      { property: "og:title", content: "bakhtaliniazi.com" },
+      { property: "og:title", content: "Bakht Ali Niazi · Senior GoHighLevel Expert" },
       {
         property: "og:description",
         content:
-          "bakhtaliniazi.com — Bakht Ali Niazi portfolio (funnels, automations, CRM systems).",
+          "Bakht Ali Niazi, senior GoHighLevel expert. 100+ funnels, 80+ CRM systems and 100+ automations built for real estate, insurance, home services, education and travel businesses.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://bakhtaliniazi.com/" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "bakhtaliniazi.com" },
+      { name: "twitter:title", content: "Bakht Ali Niazi · Senior GoHighLevel Expert" },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
