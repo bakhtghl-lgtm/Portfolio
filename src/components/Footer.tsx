@@ -57,7 +57,7 @@ export function Footer() {
         // BAKHT ALI = 3.58em: fits the gutters at every width; settles fully inside the footer
         className="mt-10 pb-4 font-mega text-[min(24vw,calc((100vw-2rem)/3.75))] leading-[0.95] text-center whitespace-nowrap select-none"
       >
-        Bakht <span className="text-highlight">Ali</span>
+        Bakht <span className="hl">Ali</span>
       </motion.p>
     </footer>
   );

@@ -1,4 +1,4 @@
-import { motion, useInView, useScroll, useTransform } from "framer-motion";
+import { interpolate, motion, useInView, useScroll, useTransform } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import portrait from "@/assets/portrait.jpg";
 import { Eyebrow, ScrollLitText } from "../fx/Reveal";
@@ -44,14 +44,20 @@ function Band({ reverse = false }: { reverse?: boolean }) {
   );
 }
 
+const mixClip = interpolate(
+  [0, 0.45],
+  ["inset(30% 30% 30% 30% round 50%)", "inset(0% 0% 0% 0% round 24px)"],
+);
+
+/* the photo frame keeps the original theme yellow regardless of page theme */
+const PHOTO_BACKDROP = "oklch(0.88 0.18 95)";
+
 export function About() {
   const imgRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: imgRef, offset: ["start end", "end start"] });
-  // function form: framer's native scroll-timeline path mis-maps partial offset ranges
-  const clip = useTransform(scrollYProgress, (v) => {
-    const k = 1 - Math.min(1, Math.max(0, v / 0.45));
-    return `inset(${30 * k}% ${30 * k}% ${30 * k}% ${30 * k}% round ${24 + 276 * k}px)`;
-  });
+  // exactly the original reveal (oval -> rounded rect), mixed with framer's own interpolator but
+  // through a function transform so it stays off the native scroll-timeline path
+  const clip = useTransform(scrollYProgress, mixClip);
   const imgScale = useTransform(scrollYProgress, [0, 1], [1.35, 1]);
   const imgY = useTransform(scrollYProgress, [0, 1], ["-8%", "8%"]);
   const rotate = useTransform(scrollYProgress, [0, 1], [-6, 6]);
@@ -117,8 +123,8 @@ export function About() {
 
           <div ref={imgRef} className="relative lg:sticky lg:top-28">
             <motion.div
-              style={{ clipPath: clip, rotate }}
-              className="relative aspect-[4/5] overflow-hidden bg-secondary"
+              style={{ clipPath: clip, rotate, backgroundColor: PHOTO_BACKDROP }}
+              className="relative aspect-[4/5] overflow-hidden"
             >
               <motion.img
                 src={portrait}

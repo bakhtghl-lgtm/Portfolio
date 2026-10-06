@@ -86,7 +86,7 @@ export function Skills() {
       <div className="relative">
         <Eyebrow index="03" label="My Skills" />
         <h2 className="mt-8 mb-16 font-mega text-[clamp(2.5rem,calc((100vw-2rem)/4.7),9rem)] md:text-[min(9vw,9rem)]">
-          <MaskText lines={["My", <span className="text-highlight">Advantages</span>]} />
+          <MaskText lines={["My", <span className="hl">Advantages</span>]} />
         </h2>
         <div className="border-b border-border">
           {skills.map((s, i) => (

@@ -58,13 +58,6 @@ export const Route = createRootRoute({
       },
       { rel: "stylesheet", href: appCss },
     ],
-    scripts: [
-      {
-        // returning visitors in this session never see the intro loader, not even for a frame
-        children:
-          "try{if(sessionStorage.getItem('intro-seen')==='1')document.documentElement.setAttribute('data-intro-seen','')}catch(e){}",
-      },
-    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,

@@ -77,7 +77,7 @@ function LitWord({
       <motion.span
         aria-hidden
         style={{ opacity }}
-        className={`pointer-events-none absolute inset-0 ${highlight ? "text-highlight" : "text-foreground"}`}
+        className={`pointer-events-none absolute inset-0 ${highlight ? "hl hl-body" : "text-foreground"}`}
       >
         {clean}
       </motion.span>

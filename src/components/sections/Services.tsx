@@ -36,10 +36,10 @@ function Heading() {
     <div className="w-full md:w-[42vw] shrink-0">
       <Eyebrow index="02" label="Services" />
       {/* SPECIALIZATIONS = 5.96em in Anton: sized so the word always fits on one line */}
-      <h2 className="mt-8 font-mega text-[clamp(2.25rem,calc((100vw-2rem)/6.1),6rem)] md:text-[6.6vw]">
+      <h2 className="mt-8 font-mega text-[clamp(2.25rem,calc((100vw-2rem)/6.4),6rem)] md:text-[6.3vw]">
         My
         <br />
-        <span className="text-highlight">Specializations</span>
+        <span className="hl">Specializations</span>
       </h2>
       <p className="mt-6 max-w-sm text-muted-foreground">
         Keep scrolling — every service is a system I've shipped for real clients.

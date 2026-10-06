@@ -70,10 +70,8 @@ export function Resume() {
         <div className="min-w-0 lg:sticky lg:top-28 lg:self-start">
           <Eyebrow index="04" label="Resume" />
           {/* EXPERIENCE = 4.18em: sized to the column so it never clips */}
-          <h2 className="mt-8 font-mega text-[clamp(2.5rem,calc((100vw-2rem)/4.4),9rem)] md:text-[min(10vw,9rem)] lg:text-[min(6.4vw,8rem)]">
-            <MaskText
-              lines={["Education", "&", <span className="text-highlight">Experience</span>]}
-            />
+          <h2 className="mt-8 font-mega text-[clamp(2.5rem,calc((100vw-2rem)/4.6),9rem)] md:text-[min(10vw,9rem)] lg:text-[min(6.4vw,8rem)]">
+            <MaskText lines={["Education", "&", <span className="hl">Experience</span>]} />
           </h2>
           <p className="mt-6 max-w-sm text-muted-foreground">
             From cleaning up contact data to architecting full multi-channel automation systems.

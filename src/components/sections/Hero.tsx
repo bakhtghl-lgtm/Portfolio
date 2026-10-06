@@ -168,17 +168,20 @@ export function Hero() {
         <motion.div
           aria-hidden
           style={{ x: line2X }}
-          className="font-mega fs-hero whitespace-nowrap text-right md:pr-[4vw] text-highlight"
+          className="font-mega fs-hero whitespace-nowrap text-right md:pr-[4vw]"
         >
-          <Letters text="EXPERT" play={play} delay={0.25} />
-          <motion.span
-            className="inline-block text-highlight"
-            initial={{ scale: 0 }}
-            animate={play ? { scale: 1 } : undefined}
-            transition={{ type: "spring", stiffness: 260, damping: 12, delay: 1 }}
-          >
-            .
-          </motion.span>
+          {/* black type on the yellow marker block, same accent style as every section heading */}
+          <span className="hl">
+            <Letters text="EXPERT" play={play} delay={0.25} />
+            <motion.span
+              className="inline-block"
+              initial={{ scale: 0 }}
+              animate={play ? { scale: 1 } : undefined}
+              transition={{ type: "spring", stiffness: 260, damping: 12, delay: 1 }}
+            >
+              .
+            </motion.span>
+          </span>
         </motion.div>
       </motion.div>
 
@@ -203,7 +206,7 @@ export function Hero() {
             alt="Bakht Ali Niazi"
             width={1200}
             height={996}
-            className="w-full h-auto [filter:drop-shadow(0_0_28px_oklch(0.88_0.18_95/0.45))_drop-shadow(0_30px_60px_rgba(0,0,0,0.5))]"
+            className="w-full h-auto [filter:drop-shadow(0_0_28px_oklch(0.88_0.18_95/0.5))_drop-shadow(0_30px_50px_rgba(0,0,0,0.22))]"
             style={{ x: imgPX, y: imgPY }}
             fetchPriority="high"
           />
@@ -227,10 +230,13 @@ export function Hero() {
         </motion.div>
         <motion.div
           style={{ x: line2X }}
-          className="font-mega fs-hero whitespace-nowrap text-right md:pr-[4vw] text-outline [--outline-stroke:var(--secondary)]"
+          className="font-mega fs-hero whitespace-nowrap text-right md:pr-[4vw] text-outline"
         >
-          <Letters text="EXPERT" play={play} delay={0.25} />
-          <span className="inline-block opacity-0">.</span>
+          {/* same box as the marker (padding) so the echo lines up; no fill, outline only */}
+          <span className="hl text-outline" style={{ backgroundImage: "none" }}>
+            <Letters text="EXPERT" play={play} delay={0.25} />
+            <span className="inline-block opacity-0">.</span>
+          </span>
         </motion.div>
       </motion.div>
 

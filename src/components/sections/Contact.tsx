@@ -125,8 +125,8 @@ export function Contact() {
           <motion.span className="block" style={{ x: ctaX1 }}>
             Let's work
           </motion.span>
-          <motion.span className="block text-highlight text-right" style={{ x: ctaX2 }}>
-            Together!
+          <motion.span className="block text-right" style={{ x: ctaX2 }}>
+            <span className="hl">Together!</span>
           </motion.span>
         </h2>
       </motion.div>
@@ -151,7 +151,7 @@ export function Contact() {
             href={hireMeHref}
             target="_blank"
             rel="noopener noreferrer"
-            className="block font-display text-2xl md:text-4xl font-bold hover:text-highlight transition"
+            className="block font-display text-2xl md:text-4xl font-bold underline-offset-8 decoration-secondary decoration-4 hover:underline transition"
           >
             bakht.ghl@gmail.com
           </a>

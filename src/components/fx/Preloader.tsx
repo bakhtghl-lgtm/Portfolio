@@ -22,65 +22,52 @@ export function useIntroDone() {
 
 const words = ["Funnels", "Automations", "Pipelines", "Campaigns", "Bakht Ali"];
 const EASE = [0.76, 0, 0.24, 1] as const;
-const SEEN_KEY = "intro-seen";
-const DURATION = 1300; // count-up; the curtain then lifts in 0.8s (0.45s when skipped)
+const DURATION = 2200; // original count-up length; 300ms when the user prefers reduced motion
+const HOLD = 250; // pause on 100 before the curtain lifts
+const EXIT = 1.1; // original curtain lift
 
-function readSeen() {
-  try {
-    return sessionStorage.getItem(SEEN_KEY) === "1";
-  } catch {
-    return false;
-  }
-}
-
-/** First visit per session only; any click or key press skips it. */
+/** Plays on every load; any click or key press skips it. */
 export function Preloader() {
   const [count, setCount] = useState(0);
   const [wordIdx, setWordIdx] = useState(0);
   const [visible, setVisible] = useState(true);
-  const [exitSpeed, setExitSpeed] = useState(0.8);
+  const [exitSpeed, setExitSpeed] = useState(EXIT);
 
   useEffect(() => {
     let done = false;
     let raf = 0;
-    const finish = (mode: "done" | "skip" | "instant" = "done") => {
+    let hold = 0;
+    const finish = (skipped = false) => {
       if (done) return;
       done = true;
       cancelAnimationFrame(raf);
-      try {
-        sessionStorage.setItem(SEEN_KEY, "1");
-      } catch {
-        /* storage blocked: loader simply shows again next visit */
-      }
-      setExitSpeed(mode === "instant" ? 0 : mode === "skip" ? 0.45 : 0.8);
+      window.clearTimeout(hold);
+      setExitSpeed(skipped ? 0.5 : EXIT);
       setVisible(false);
       lockScroll(false);
       finishIntro();
     };
 
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (readSeen() || reduce) {
-      finish("instant");
-      return;
-    }
-
     lockScroll(true);
     window.scrollTo(0, 0);
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const dur = reduce ? 300 : DURATION;
     const t0 = performance.now();
     const tick = (t: number) => {
-      const p = Math.min((t - t0) / DURATION, 1);
+      const p = Math.min((t - t0) / dur, 1);
       setCount(Math.round((1 - Math.pow(1 - p, 3)) * 100));
       setWordIdx(Math.min(words.length - 1, Math.floor(p * words.length)));
       if (p < 1) raf = requestAnimationFrame(tick);
-      else finish();
+      else hold = window.setTimeout(() => finish(), HOLD);
     };
     raf = requestAnimationFrame(tick);
 
-    const skip = () => finish("skip");
+    const skip = () => finish(true);
     window.addEventListener("pointerdown", skip);
     window.addEventListener("keydown", skip);
     return () => {
       cancelAnimationFrame(raf);
+      window.clearTimeout(hold);
       window.removeEventListener("pointerdown", skip);
       window.removeEventListener("keydown", skip);
       lockScroll(false);
@@ -128,7 +115,7 @@ export function Preloader() {
                     initial={{ y: "100%" }}
                     animate={{ y: "0%" }}
                     exit={{ y: "-100%" }}
-                    transition={{ duration: 0.4, ease: EASE }}
+                    transition={{ duration: 0.45, ease: EASE }}
                   >
                     {words[wordIdx]}
                   </motion.span>

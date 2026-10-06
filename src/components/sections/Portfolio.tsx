@@ -521,7 +521,7 @@ export function Portfolio() {
         <div>
           <Eyebrow index="05" label="Portfolio" />
           <h2 className="mt-8 font-mega text-[clamp(2.5rem,calc((100vw-2rem)/3.8),11rem)] md:text-[min(11vw,11rem)]">
-            <MaskText lines={["Featured", <span className="text-highlight">Projects</span>]} />
+            <MaskText lines={["Featured", <span className="hl">Projects</span>]} />
           </h2>
         </div>
         <p className="max-w-xs text-muted-foreground md:text-right">

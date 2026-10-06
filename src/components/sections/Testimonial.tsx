@@ -119,10 +119,8 @@ export function Testimonial() {
       <div className="px-4 md:px-10 flex flex-col items-center text-center">
         <Eyebrow index="06" label="Testimonials" />
         {/* HUNDRED CLIENTS = 6.29em */}
-        <h2 className="mt-8 font-mega text-[clamp(2.25rem,calc((100vw-2rem)/6.5),9rem)] md:text-[min(9vw,9rem)]">
-          <MaskText
-            lines={["Trusted by", <span className="text-highlight">Hundred Clients</span>]}
-          />
+        <h2 className="mt-8 font-mega text-[clamp(2.25rem,calc((100vw-2rem)/6.7),9rem)] md:text-[min(9vw,9rem)]">
+          <MaskText lines={["Trusted by", <span className="hl">Hundred Clients</span>]} />
         </h2>
       </div>
 
