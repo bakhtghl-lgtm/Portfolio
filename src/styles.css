@@ -280,8 +280,8 @@ body {
   }
   /* Display sizes: each fits its longest word (measured in Anton em-widths) inside the gutters. */
   .fs-hero {
-    /* "SYSTEMS THAT" = 5.26em + 0.2em marker padding */
-    font-size: clamp(2.25rem, min(14vw, calc((100vw - 2.5rem) / 5.55)), 16rem);
+    /* GOHIGHLEVEL = 4.66em + 0.2em marker padding */
+    font-size: clamp(2.25rem, min(15vw, calc((100vw - 2.5rem) / 5)), 16rem);
   }
   /* The one accent style for headings on cream: black text on a bright yellow marker block.
      The band is drawn only over Anton's cap height (caps sit 0.32em-1.18em down the 1.51em content

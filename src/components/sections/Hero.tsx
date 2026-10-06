@@ -33,8 +33,8 @@ function ServiceList({ play, className = "" }: { play: boolean; className?: stri
 function Intro({ className = "" }: { className?: string }) {
   return (
     <p className={`leading-relaxed text-muted-foreground ${className}`}>
-      <span className="text-foreground font-semibold">Bakht Ali</span>, senior GoHighLevel expert. I
-      build the funnels, automations and CRM systems that turn cold clicks into booked calls, and
+      Hi, I&apos;m <span className="text-foreground font-semibold">Bakht Ali</span>. I build the
+      GoHighLevel funnels, automations and CRM systems that turn cold clicks into booked calls, and
       keep following up long after your team logs off.
     </p>
   );
@@ -162,10 +162,10 @@ export function Hero() {
         style={{ x: textPX, y: textPY }}
       >
         <motion.h1 style={{ x: line1X }} className="font-mega fs-hero whitespace-nowrap">
-          <span className="sr-only">Bakht Ali, senior GoHighLevel expert: systems that sell</span>
+          <span className="sr-only">Bakht Ali, senior GoHighLevel expert</span>
           {/* both lines sit on the golden marker block, black type */}
           <span aria-hidden className="hl">
-            <Letters text="SYSTEMS THAT" play={play} />
+            <Letters text="GOHIGHLEVEL" play={play} />
           </span>
         </motion.h1>
         <motion.div
@@ -175,7 +175,7 @@ export function Hero() {
         >
           {/* black type on the yellow marker block, same accent style as every section heading */}
           <span className="hl">
-            <Letters text="SELL" play={play} delay={0.25} />
+            <Letters text="EXPERT" play={play} delay={0.25} />
             <motion.span
               className="inline-block"
               initial={{ scale: 0 }}
@@ -230,7 +230,7 @@ export function Hero() {
           className="font-mega fs-hero whitespace-nowrap text-outline"
         >
           <span className="hl text-outline" style={{ backgroundImage: "none" }}>
-            <Letters text="SYSTEMS THAT" play={play} />
+            <Letters text="GOHIGHLEVEL" play={play} />
           </span>
         </motion.div>
         <motion.div
@@ -239,7 +239,7 @@ export function Hero() {
         >
           {/* same box as the marker (padding) so the echo lines up; no fill, outline only */}
           <span className="hl text-outline" style={{ backgroundImage: "none" }}>
-            <Letters text="SELL" play={play} delay={0.25} />
+            <Letters text="EXPERT" play={play} delay={0.25} />
             <span className="inline-block opacity-0">.</span>
           </span>
         </motion.div>
@@ -253,7 +253,7 @@ export function Hero() {
 
       {/* phones + tablets: list + scroll button + intro under the headline, clear of the photo */}
       <motion.div
-        className="lg:hidden absolute inset-x-4 md:inset-x-6 z-10 top-[calc(var(--header-h)+env(safe-area-inset-top,0px)+3.25rem+1.9*min(14vw,(100vw-2.5rem)/5.55))]"
+        className="lg:hidden absolute inset-x-4 md:inset-x-6 z-10 top-[calc(var(--header-h)+env(safe-area-inset-top,0px)+3.25rem+1.9*min(15vw,(100vw-2.5rem)/5))]"
         initial={{ opacity: 0 }}
         animate={play ? { opacity: 1 } : undefined}
         transition={{ delay: 1, duration: 0.6 }}

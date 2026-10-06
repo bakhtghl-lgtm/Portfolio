@@ -14,7 +14,7 @@ const services = [
   {
     icon: Workflow,
     title: "Automation Workflows",
-    desc: "Speed-to-lead, nurture, reminders and win-backs that run on their own, from two-step follow-ups to full lead-to-close systems.",
+    desc: "Speed-to-lead, nurture, reminders and win-backs that run without you, from two-step follow-ups to full lead-to-close systems.",
     count: "100+ Built From Scratch",
   },
   {
@@ -26,7 +26,7 @@ const services = [
   {
     icon: Layers,
     title: "GHL SaaS Builds",
-    desc: "White-label SaaS systems and snapshots for real estate, insurance, home services, education and travel businesses.",
+    desc: "White-label GHL SaaS builds with snapshots, onboarding and automations, for real estate, insurance, home services, education and travel.",
     count: "5 Industries Served",
   },
 ];

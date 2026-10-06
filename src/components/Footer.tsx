@@ -25,7 +25,7 @@ export function Footer() {
       <div className="flex flex-col md:flex-row justify-between gap-10 text-sm">
         <div className="space-y-1 text-muted-foreground">
           <p className="text-foreground font-medium">bakht.ghl@gmail.com</p>
-          <p>Gulgasht, Multan, Pakistan</p>
+          <p>Pakistan · Working worldwide</p>
           <p>© 2026 Bakht Ali. All Rights Reserved</p>
         </div>
         <div className="flex items-center gap-3">

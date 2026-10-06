@@ -161,7 +161,7 @@ export function Contact() {
           </a>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
             <WhatsAppButton label="Chat on WhatsApp" />
-            <p className="text-muted-foreground">Gulgasht, Multan, Pakistan · Working worldwide</p>
+            <p className="text-muted-foreground">Based in Pakistan · Working worldwide</p>
           </div>
         </div>
       </div>

@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring } fr
 import { useEffect, useState } from "react";
 import { lockScroll, scrollToId } from "./fx/SmoothScroll";
 import { Magnetic } from "./fx/Magnetic";
+import avatar from "@/assets/avatar.webp";
 import {
   FacebookIcon,
   LinkedInIcon,
@@ -85,23 +86,23 @@ export function Nav() {
             aria-label="Bakht Ali — back to top"
             className={`group flex min-w-0 items-center gap-2 font-display text-base sm:text-lg font-bold tracking-tight transition-colors duration-500 ${open ? "text-secondary-foreground" : "text-foreground"}`}
           >
-            <span
-              className={`grid size-9 shrink-0 place-items-center rounded-full text-sm transition-[transform,background-color,color] duration-500 group-hover:rotate-[360deg] ${
-                open
-                  ? "bg-secondary-foreground text-secondary"
-                  : "bg-secondary text-secondary-foreground"
+            <img
+              src={avatar}
+              alt=""
+              width={36}
+              height={36}
+              className={`size-9 shrink-0 rounded-full object-cover ring-2 ring-offset-0 transition-transform duration-500 group-hover:scale-110 ${
+                open ? "ring-secondary-foreground" : "ring-secondary"
               }`}
-            >
-              B
-            </span>
-            <span className="overflow-hidden h-[1.4em] whitespace-nowrap">
+            />
+            <span className="overflow-hidden h-[1.4em] whitespace-nowrap text-left">
               <span className="block transition-transform duration-500 group-hover:-translate-y-full">
                 Bakht Ali®
               </span>
               <span
                 className={`block transition-transform duration-500 group-hover:-translate-y-full ${open ? "" : "text-highlight"}`}
               >
-                GHL Expert
+                Senior GHL Expert
               </span>
             </span>
           </button>
@@ -114,7 +115,7 @@ export function Nav() {
                 <span className="absolute inline-flex size-full animate-ping rounded-full bg-green-500 opacity-75" />
                 <span className="relative inline-flex size-2 rounded-full bg-green-600" />
               </span>
-              Available · Multan {time}
+              Available · Pakistan {time}
             </div>
             {!open ? (
               <button
@@ -218,7 +219,7 @@ export function Nav() {
                 </div>
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.3em] opacity-60 mb-2">Based in</p>
-                  <p>Gulgasht, Multan, Pakistan</p>
+                  <p>Pakistan · Working with clients worldwide</p>
                 </div>
                 <div className="flex gap-3 lg:justify-end">
                   <a

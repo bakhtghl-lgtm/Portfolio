@@ -97,8 +97,8 @@ export function Resume() {
             <MaskText lines={["Education", "&", <span className="hl">Experience</span>]} />
           </h2>
           <p className="mt-6 max-w-sm text-muted-foreground">
-            From design to e-commerce to senior GoHighLevel builds: eight years of learning what
-            makes a business actually grow.
+            Design, then e-commerce, then GoHighLevel. Eight years of learning what actually makes a
+            business grow.
           </p>
         </div>
 

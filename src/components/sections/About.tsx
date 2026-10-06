@@ -42,7 +42,7 @@ function Counter({ to, suffix = "+" }: { to: number; suffix?: string }) {
 }
 
 const stats = [
-  { to: 3, label: "Years building in GoHighLevel" },
+  { to: 3, label: "Years in GoHighLevel" },
   { to: 100, label: "Funnels built and launched" },
   { to: 80, label: "CRM systems set up" },
   { to: 100, label: "Automations built from scratch" },
@@ -124,11 +124,11 @@ export function About() {
               transition={{ duration: 0.9 }}
               className="mt-12 max-w-2xl text-muted-foreground text-lg leading-relaxed"
             >
-              I&apos;m Bakht Ali Niazi, a senior GoHighLevel expert. Since 2023 I&apos;ve launched
-              100+ funnels, set up 80+ CRM systems and built 100+ automations from scratch, from
-              quick two-step follow-ups to 30+ full lead-to-close systems. I&apos;ve been the senior
-              GHL expert for two white-label agencies, Markelop (Mexico) and Convertio, and I hold
-              the same seat at VA Hub Pro today, alongside a long list of freelance clients.
+              I&apos;m Bakht Ali Niazi. Since 2023 I&apos;ve launched 100+ funnels, set up 80+ CRM
+              systems and built 100+ automations from scratch, from quick two-step follow-ups to 30+
+              complete lead-to-close systems. Two white-label agencies, Markelop (Mexico) and
+              Convertio, trusted me as their senior GHL expert. Today I hold the same seat at VA Hub
+              Pro, and I still work directly with my own freelance clients.
             </motion.p>
             <motion.p
               initial={{ opacity: 0, y: 30 }}
@@ -138,9 +138,9 @@ export function About() {
               className="mt-5 max-w-2xl text-muted-foreground text-lg leading-relaxed"
             >
               Real estate, insurance, home services, education, travel: I&apos;ve built GHL SaaS
-              systems for all of them. Before GoHighLevel I spent three years in design and two in
-              Amazon e-commerce, so I build funnels that look the part and systems that answer to
-              revenue.
+              systems for all of them. Three years in design and two in Amazon e-commerce taught me
+              two rules I still build by: a funnel has to look the part, and every system has to
+              answer to revenue.
             </motion.p>
 
             <div className="mt-16 grid grid-cols-2 gap-x-6 gap-y-10 border-t border-border pt-10">
