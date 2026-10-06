@@ -104,10 +104,10 @@ export function Hero() {
           style={{ opacity: typeFade }}
         >
           <span className="sr-only">Bakht Ali, senior GoHighLevel expert</span>
-          <motion.span aria-hidden className="block whitespace-nowrap" style={{ x: line1X }}>
+          <motion.span aria-hidden className="gpu block whitespace-nowrap" style={{ x: line1X }}>
             <Letters text="GOHIGHLEVEL" play={play} delay={0.1} />
           </motion.span>
-          <motion.span aria-hidden className="block whitespace-nowrap" style={{ x: line2X }}>
+          <motion.span aria-hidden className="gpu block whitespace-nowrap" style={{ x: line2X }}>
             <Letters text="EXPERT" play={play} delay={0.3} />
             {/* the full stop is a yellow square, the one spot of colour in the type */}
             <motion.span
@@ -121,7 +121,7 @@ export function Hero() {
 
         {/* portrait, in front of the type */}
         <motion.div
-          className="hero-photo absolute bottom-0 z-20 origin-bottom"
+          className="hero-photo gpu absolute bottom-0 z-20 origin-bottom"
           style={{ scale: photoScale }}
         >
           <motion.img

@@ -161,7 +161,7 @@ function PinnedServices() {
         <motion.div
           aria-hidden
           style={{ x: bgText }}
-          className="pointer-events-none absolute bottom-[4vh] left-0 whitespace-nowrap font-mega text-[28vw] text-outline opacity-40"
+          className="gpu pointer-events-none absolute bottom-[4vh] left-0 whitespace-nowrap font-mega text-[28vw] text-outline opacity-40"
         >
           What I Build
         </motion.div>
@@ -169,7 +169,7 @@ function PinnedServices() {
         <motion.div
           ref={trackRef}
           style={{ x }}
-          className="relative flex items-center gap-10 pl-10 pr-[10vw] w-max"
+          className="gpu relative flex items-center gap-10 pl-10 pr-[10vw] w-max"
         >
           <Heading />
           {services.map((s, i) => (

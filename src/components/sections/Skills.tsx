@@ -80,7 +80,7 @@ export function Skills() {
       <motion.div
         aria-hidden
         style={{ x }}
-        className="pointer-events-none absolute top-10 left-0 whitespace-nowrap font-mega text-[22vw] text-outline opacity-30"
+        className="gpu pointer-events-none absolute top-10 left-0 whitespace-nowrap font-mega text-[22vw] text-outline opacity-30"
       >
         Toolkit Toolkit Toolkit
       </motion.div>

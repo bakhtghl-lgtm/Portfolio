@@ -161,7 +161,7 @@ export function About() {
           <div ref={imgRef} className="relative lg:sticky lg:top-28">
             <motion.div
               style={{ clipPath: clip, rotate, backgroundColor: PHOTO_BACKDROP }}
-              className="relative aspect-square overflow-hidden"
+              className="gpu relative aspect-square overflow-hidden"
             >
               <motion.img
                 src={cutout}

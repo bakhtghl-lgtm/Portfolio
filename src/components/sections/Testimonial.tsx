@@ -139,7 +139,7 @@ export function Testimonial() {
           ))}
         </div>
       ) : (
-        <motion.div style={{ rotate }} className="mt-16 space-y-6 py-6">
+        <motion.div style={{ rotate }} className="gpu mt-16 space-y-6 py-6">
           <VelocityMarquee baseVelocity={-1.2}>
             {testimonials
               .slice(0, half)

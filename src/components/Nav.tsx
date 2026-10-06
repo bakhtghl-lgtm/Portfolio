@@ -76,7 +76,7 @@ export function Nav() {
         <div
           className={`flex items-center justify-between gap-3 px-4 md:px-10 transition-[padding,background-color,box-shadow,backdrop-filter] duration-500 ${
             scrolled && !open
-              ? "py-2.5 bg-background/85 backdrop-blur-md shadow-[0_1px_0_var(--border),0_10px_30px_-20px_oklch(0_0_0/0.35)]"
+              ? "py-2.5 bg-background/95 shadow-[0_1px_0_var(--border),0_10px_30px_-20px_oklch(0_0_0/0.35)]"
               : "py-4 md:py-5"
           }`}
         >

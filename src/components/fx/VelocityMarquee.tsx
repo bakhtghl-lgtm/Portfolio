@@ -5,6 +5,7 @@ import {
   useScroll,
   useSpring,
   useTransform,
+  useInView,
   useReducedMotion,
   useVelocity,
 } from "framer-motion";
@@ -34,10 +35,13 @@ export function VelocityMarquee({
   const x = useTransform(baseX, (v) => `${wrap(-25, 0, v)}%`);
   const direction = useRef(1);
   const reduce = useReducedMotion();
+  // only run the per-frame update while the band is on (or near) screen
+  const box = useRef<HTMLDivElement>(null);
+  const visible = useInView(box, { margin: "200px 0px" });
 
   useAnimationFrame((_, delta) => {
     // data-freeze-motion on <html> holds marquees still (used for screenshot/QA runs)
-    if (reduce || document.documentElement.hasAttribute("data-freeze-motion")) return;
+    if (!visible || reduce || document.documentElement.hasAttribute("data-freeze-motion")) return;
     let moveBy = direction.current * baseVelocity * (delta / 1000);
     const vf = velocityFactor.get();
     if (vf < 0) direction.current = -1;
@@ -47,9 +51,9 @@ export function VelocityMarquee({
   });
 
   return (
-    <div className={`overflow-hidden whitespace-nowrap flex ${className}`}>
+    <div ref={box} className={`overflow-hidden whitespace-nowrap flex ${className}`}>
       <motion.div
-        className="flex whitespace-nowrap"
+        className="gpu flex whitespace-nowrap"
         style={reduce ? undefined : { x, skewX: skew }}
       >
         {[0, 1, 2, 3].map((i) => (

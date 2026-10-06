@@ -205,6 +205,15 @@ function ProjectIndex({ onOpen }: { onOpen: (p: PortfolioItem) => void }) {
 
   const p = projects[active];
 
+  // decode every cover up front so switching projects never stalls on an image decode
+  useEffect(() => {
+    projects.forEach((proj) => {
+      const img = new Image();
+      img.src = coverOf(proj);
+      img.decode?.().catch(() => {});
+    });
+  }, []);
+
   return (
     <div className="grid grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-14">
       <div ref={listRef} className="border-b border-border">
@@ -280,7 +289,7 @@ function ProjectIndex({ onOpen }: { onOpen: (p: PortfolioItem) => void }) {
             data-cursor="Open"
             onClick={() => onOpen(p)}
             style={{ rotateX: rotX, rotateY: rotY }}
-            className="surface-dark relative block h-full w-full overflow-hidden rounded-[2rem] border border-border bg-card text-left shadow-[0_50px_100px_-50px_rgba(0,0,0,0.6)]"
+            className="gpu surface-dark relative block h-full w-full overflow-hidden rounded-[2rem] border border-border bg-card text-left shadow-[0_50px_100px_-50px_rgba(0,0,0,0.6)]"
           >
             {/* each new screenshot wipes up over the last one */}
             <AnimatePresence initial={false}>

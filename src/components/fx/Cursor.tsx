@@ -20,9 +20,12 @@ export function Cursor() {
     setEnabled(true);
     document.documentElement.classList.add("has-cursor");
 
+    let lastTarget: EventTarget | null = null;
     const move = (e: PointerEvent) => {
       x.set(e.clientX);
       y.set(e.clientY);
+      if (e.target === lastTarget) return;
+      lastTarget = e.target;
       const t = e.target as HTMLElement | null;
       const labelled = t?.closest<HTMLElement>("[data-cursor]");
       setLabel(labelled?.dataset.cursor ?? null);
