@@ -33,14 +33,14 @@ export const Route = createRootRoute({
       {
         name: "description",
         content:
-          "Bakht Ali Niazi, senior GoHighLevel expert. 100+ funnels, 80+ CRM systems and 100+ automations built for real estate, insurance, home services, education and travel businesses.",
+          "Bakht Ali Niazi, senior GoHighLevel expert. 350+ funnels, 200+ CRM systems and 800+ automations built for real estate, insurance, home services, education and travel businesses.",
       },
       { name: "author", content: "Bakht" },
       { property: "og:title", content: "Bakht Ali Niazi · Senior GoHighLevel Expert" },
       {
         property: "og:description",
         content:
-          "Bakht Ali Niazi, senior GoHighLevel expert. 100+ funnels, 80+ CRM systems and 100+ automations built for real estate, insurance, home services, education and travel businesses.",
+          "Bakht Ali Niazi, senior GoHighLevel expert. 350+ funnels, 200+ CRM systems and 800+ automations built for real estate, insurance, home services, education and travel businesses.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://bakhtaliniazi.com/" },

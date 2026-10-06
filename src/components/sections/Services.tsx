@@ -9,19 +9,19 @@ const services = [
     icon: LayoutTemplate,
     title: "Funnels & Websites",
     desc: "Conversion-first GoHighLevel funnels and sites: a sharp offer, fast pages, and booking and payments wired in from day one.",
-    count: "100+ Funnels Built",
+    count: "350+ Funnels Built",
   },
   {
     icon: Workflow,
     title: "Automation Workflows",
     desc: "Speed-to-lead, nurture, reminders and win-backs that run without you, from two-step follow-ups to full lead-to-close systems.",
-    count: "100+ Built From Scratch",
+    count: "800+ Built From Scratch",
   },
   {
     icon: Database,
     title: "CRM & Pipeline Setup",
     desc: "Pipelines, tags, custom fields, routing and reporting, set up so your team always knows who to call next and why.",
-    count: "80+ Systems Set Up",
+    count: "200+ Systems Set Up",
   },
   {
     icon: Layers,

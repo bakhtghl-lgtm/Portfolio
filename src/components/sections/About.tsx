@@ -8,7 +8,7 @@ import {
   useTransform,
 } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import portrait from "@/assets/portrait.jpg";
+import cutout from "@/assets/portrait-cutout.webp";
 import { Eyebrow, ScrollLitText } from "../fx/Reveal";
 import { VelocityMarquee } from "../fx/VelocityMarquee";
 
@@ -43,9 +43,9 @@ function Counter({ to, suffix = "+" }: { to: number; suffix?: string }) {
 
 const stats = [
   { to: 3, label: "Years in GoHighLevel" },
-  { to: 100, label: "Funnels built and launched" },
-  { to: 80, label: "CRM systems set up" },
-  { to: 100, label: "Automations built from scratch" },
+  { to: 350, label: "Funnels built and launched" },
+  { to: 200, label: "CRM systems set up" },
+  { to: 800, label: "Automations built from scratch" },
 ];
 
 const band = [
@@ -88,8 +88,9 @@ export function About() {
   // exactly the original reveal (oval -> rounded rect), mixed with framer's own interpolator but
   // through a function transform so it stays off the native scroll-timeline path
   const clip = useTransform(scrollYProgress, mixClip);
-  const imgScale = useTransform(scrollYProgress, [0, 1], [1.35, 1]);
-  const imgY = useTransform(scrollYProgress, [0, 1], ["-8%", "8%"]);
+  const imgScale = useTransform(scrollYProgress, [0, 1], [1.12, 1]);
+  // the cut-out sits on the bottom edge, so it only drifts down into place (never lifts off it)
+  const imgY = useTransform(scrollYProgress, [0, 0.6], ["8%", "0%"]);
   const rotate = useTransform(scrollYProgress, [0, 1], [-6, 6]);
 
   return (
@@ -124,8 +125,8 @@ export function About() {
               transition={{ duration: 0.9 }}
               className="mt-12 max-w-2xl text-muted-foreground text-lg leading-relaxed"
             >
-              I&apos;m Bakht Ali Niazi. Since 2023 I&apos;ve launched 100+ funnels, set up 80+ CRM
-              systems and built 100+ automations from scratch, from quick two-step follow-ups to 30+
+              I&apos;m Bakht Ali Niazi. Since 2023 I&apos;ve launched 350+ funnels, set up 200+ CRM
+              systems and built 800+ automations from scratch, from quick two-step follow-ups to
               complete lead-to-close systems. Two white-label agencies, Markelop (Mexico) and
               Convertio, trusted me as their senior GHL expert. Today I hold the same seat at VA Hub
               Pro, and I still work directly with my own freelance clients.
@@ -163,12 +164,12 @@ export function About() {
               className="relative aspect-[4/5] overflow-hidden"
             >
               <motion.img
-                src={portrait}
+                src={cutout}
                 alt="Bakht Ali Niazi"
-                width={1600}
-                height={1600}
+                width={1200}
+                height={996}
                 loading="lazy"
-                className="absolute inset-0 h-full w-full object-cover"
+                className="absolute bottom-0 left-[-6%] h-auto w-[112%] max-w-none origin-bottom"
                 style={{ scale: imgScale, y: imgY }}
               />
             </motion.div>
