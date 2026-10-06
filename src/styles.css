@@ -125,49 +125,48 @@ html[data-menu-open] .cursor-fx {
 
 :root {
   --radius: 1rem;
-  /* Light (cream) page, dark + yellow cards. Dark surfaces re-scope the tokens via .surface-dark. */
-  color-scheme: light;
+  /* Dark page, white type, bright yellow accent. Cards sit one step lighter with a hairline border. */
+  color-scheme: dark;
   --header-h: 4.5rem;
-  --background: oklch(0.982 0.005 95);
-  --foreground: oklch(0.2 0.006 270);
-  --card: oklch(0.2 0.006 270);
+  --background: oklch(0.16 0.005 270);
+  --foreground: oklch(0.98 0 0);
+  --card: oklch(0.225 0.007 270);
   --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.2 0.006 270);
+  --popover: oklch(0.225 0.007 270);
   --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.2 0.006 270);
-  --primary-foreground: oklch(0.982 0.005 95);
-  --secondary: oklch(0.88 0.18 95); /* warm yellow (fills) */
+  --primary: oklch(0.98 0 0);
+  --primary-foreground: oklch(0.16 0.005 270);
+  --secondary: oklch(0.88 0.18 95); /* warm yellow */
   --secondary-foreground: oklch(0.16 0.005 270);
-  /* yellow used as TEXT: bright on dark surfaces, deepened to mustard on cream for contrast */
-  --highlight: oklch(0.49 0.115 80);
-  --muted: oklch(0.93 0.006 95);
-  --muted-foreground: oklch(0.45 0.01 270);
+  /* yellow used as text: the same bright theme yellow (~12:1 on the page) */
+  --highlight: oklch(0.88 0.18 95);
+  --muted: oklch(0.26 0.008 270);
+  /* body grey: ~8:1 on the page, ~6:1 on cards */
+  --muted-foreground: oklch(0.76 0.01 270);
   --accent: oklch(0.88 0.18 95);
   --accent-foreground: oklch(0.16 0.005 270);
-  --destructive: oklch(0.55 0.22 25);
+  --destructive: oklch(0.65 0.22 25);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.2 0.006 270 / 12%);
-  --input: oklch(0.2 0.006 270 / 14%);
-  --ring: oklch(0.49 0.115 80);
-  --outline-stroke: oklch(0.2 0.006 270 / 72%);
-
-  --gradient-yellow: linear-gradient(135deg, oklch(0.92 0.18 100), oklch(0.84 0.19 85));
-  --gradient-card: linear-gradient(160deg, oklch(0.22 0.007 270) 0%, oklch(0.17 0.005 270) 100%);
-  --shadow-glow: 0 20px 60px -20px oklch(0.88 0.18 95 / 0.55);
-  --shadow-card: 0 30px 80px -30px oklch(0 0 0 / 0.35);
-}
-
-/* Any dark surface (cards, form panel): light text tokens inside it. */
-.surface-dark {
-  color-scheme: dark;
-  --background: oklch(0.17 0.005 270);
-  --foreground: oklch(0.98 0 0);
-  --muted-foreground: oklch(0.76 0.01 270);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 14%);
-  --highlight: oklch(0.88 0.18 95);
   --ring: oklch(0.88 0.18 95);
-  --outline-stroke: oklch(1 0 0 / 70%);
+  --outline-stroke: oklch(1 0 0 / 80%);
+
+  --gradient-yellow: linear-gradient(135deg, oklch(0.92 0.18 100), oklch(0.84 0.19 85));
+  /* lifted off the page background so dark cards still read as objects */
+  --gradient-card: linear-gradient(160deg, oklch(0.255 0.008 270) 0%, oklch(0.205 0.006 270) 100%);
+  --shadow-glow: 0 20px 60px -20px oklch(0.88 0.18 95 / 0.45);
+  --shadow-card: 0 30px 80px -30px oklch(0 0 0 / 0.6);
+}
+
+/* Dark cards, form panel, loader, modal: same light text tokens, own surface for overlays. */
+.surface-dark {
+  color-scheme: dark;
+  --background: oklch(0.16 0.005 270);
+  --foreground: oklch(0.98 0 0);
+  --muted-foreground: oklch(0.78 0.01 270);
+  --border: oklch(1 0 0 / 12%);
+  --highlight: oklch(0.88 0.18 95);
   color: var(--foreground);
 }
 
@@ -228,7 +227,7 @@ body {
     height: 8px;
   }
   ::-webkit-scrollbar-thumb {
-    background: oklch(0 0 0 / 0.18);
+    background: oklch(1 0 0 / 0.14);
     border-radius: 8px;
   }
   ::-webkit-scrollbar-thumb:hover {

@@ -134,17 +134,24 @@ export function Hero() {
         }}
       />
 
-      {/* yellow sun behind the portrait */}
+      {/* yellow sun behind the portrait: wide soft bloom + hot core so the photo pops off the dark */}
       <motion.div
-        className="absolute left-1/2 bottom-[-40vh] md:bottom-[-38vh] -translate-x-1/2 size-[150vw] md:size-[62vw] rounded-full"
+        className="absolute left-1/2 bottom-[-40vh] md:bottom-[-38vh] -translate-x-1/2 size-[150vw] md:size-[52vw] lg:size-[70vw] rounded-full"
         style={{
           scale: glowScale,
           background:
-            "radial-gradient(circle, oklch(0.88 0.18 95) 0%, oklch(0.84 0.19 85 / 0.9) 38%, oklch(0.84 0.19 85 / 0) 70%)",
+            "radial-gradient(circle, oklch(0.9 0.18 95) 0%, oklch(0.86 0.19 88 / 0.95) 30%, oklch(0.84 0.19 85 / 0.45) 52%, oklch(0.84 0.19 85 / 0) 72%)",
         }}
         initial={{ opacity: 0, y: 120 }}
         animate={play ? { opacity: 1, y: 0 } : undefined}
         transition={{ duration: 1.6, ease: EASE, delay: 0.2 }}
+      />
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 bottom-[-10vh] -translate-x-1/2 size-[110vw] md:size-[38vw] lg:size-[48vw] rounded-full bg-secondary/35 blur-[90px]"
+        initial={{ opacity: 0 }}
+        animate={play ? { opacity: 1 } : undefined}
+        transition={{ duration: 2, delay: 0.4 }}
       />
 
       {/* giant type — behind the portrait */}
@@ -161,7 +168,7 @@ export function Hero() {
         <motion.div
           aria-hidden
           style={{ x: line2X }}
-          className="font-mega fs-hero whitespace-nowrap text-right md:pr-[4vw]"
+          className="font-mega fs-hero whitespace-nowrap text-right md:pr-[4vw] text-highlight"
         >
           <Letters text="EXPERT" play={play} delay={0.25} />
           <motion.span
@@ -196,14 +203,14 @@ export function Hero() {
             alt="Bakht Ali Niazi"
             width={1200}
             height={996}
-            className="w-full h-auto drop-shadow-[0_30px_50px_rgba(0,0,0,0.22)]"
+            className="w-full h-auto [filter:drop-shadow(0_0_28px_oklch(0.88_0.18_95/0.45))_drop-shadow(0_30px_60px_rgba(0,0,0,0.5))]"
             style={{ x: imgPX, y: imgPY }}
             fetchPriority="high"
           />
         </motion.div>
       </motion.div>
 
-      {/* outline echo of the type, in front of the portrait for depth */}
+      {/* crisp outline echo over the portrait so the letters the photo covers still read */}
       <motion.div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-[calc(var(--header-h)+env(safe-area-inset-top,0px)+0.75rem)] md:top-[12vh] px-4 md:px-6 font-mega text-outline select-none"
@@ -212,41 +219,44 @@ export function Hero() {
         animate={play ? { opacity: 1 } : undefined}
         transition={{ delay: 1.4, duration: 1 }}
       >
-        <motion.div style={{ x: line1X }} className="font-mega fs-hero whitespace-nowrap">
+        <motion.div
+          style={{ x: line1X }}
+          className="font-mega fs-hero whitespace-nowrap text-outline"
+        >
           <Letters text="GOHIGHLEVEL" play={play} />
         </motion.div>
         <motion.div
           style={{ x: line2X }}
-          className="font-mega fs-hero whitespace-nowrap text-right md:pr-[4vw]"
+          className="font-mega fs-hero whitespace-nowrap text-right md:pr-[4vw] text-outline [--outline-stroke:var(--secondary)]"
         >
           <Letters text="EXPERT" play={play} delay={0.25} />
           <span className="inline-block opacity-0">.</span>
         </motion.div>
       </motion.div>
 
-      {/* bottom-left services list (md+) */}
+      {/* bottom-left services list (lg+) */}
       <ServiceList
         play={play}
-        className="hidden md:block absolute left-8 bottom-12 z-10 text-3xl"
+        className="hidden lg:block absolute left-8 bottom-12 z-10 text-3xl"
       />
 
-      {/* mobile: list + scroll button + intro under the headline, clear of the photo */}
+      {/* phones + tablets: list + scroll button + intro under the headline, clear of the photo */}
       <motion.div
-        className="md:hidden absolute inset-x-4 z-10 top-[calc(var(--header-h)+env(safe-area-inset-top,0px)+2rem+(100vw-2.5rem)*0.4)]"
+        className="lg:hidden absolute inset-x-4 md:inset-x-6 z-10 top-[calc(var(--header-h)+env(safe-area-inset-top,0px)+3.25rem+1.9*min(15.4vw,(100vw-2.5rem)/4.8))]"
         initial={{ opacity: 0 }}
         animate={play ? { opacity: 1 } : undefined}
         transition={{ delay: 1, duration: 0.6 }}
       >
         <div className="flex items-start justify-between gap-4">
-          <ServiceList play={play} className="text-xl" />
-          <ScrollBadge className="size-20 shrink-0" />
+          <ServiceList play={play} className="text-xl md:text-3xl" />
+          <ScrollBadge className="size-20 md:size-24 shrink-0" />
         </div>
-        <Intro className="mt-3 max-w-[34ch] text-[13px]" />
+        <Intro className="mt-3 max-w-[34ch] md:max-w-[44ch] text-[13px] md:text-base" />
       </motion.div>
 
       {/* right vertical motto */}
       <motion.div
-        className="hidden md:flex absolute right-8 top-[60%] z-10 items-center gap-4"
+        className="hidden lg:flex absolute right-8 top-[60%] z-10 items-center gap-4"
         style={{ y: sideY }}
         initial={{ opacity: 0, x: 30 }}
         animate={play ? { opacity: 1, x: 0 } : undefined}
@@ -260,14 +270,15 @@ export function Hero() {
         </ul>
       </motion.div>
 
-      {/* intro blurb + rotating projects badge (md+) */}
+      {/* intro blurb + rotating projects badge (lg+) */}
       <motion.div
-        className="hidden md:flex absolute right-8 bottom-10 z-10 items-end gap-5"
+        className="hidden lg:flex absolute right-8 bottom-10 z-10 items-end gap-5"
         initial={{ opacity: 0, y: 30 }}
         animate={play ? { opacity: 1, y: 0 } : undefined}
         transition={{ delay: 1.4, duration: 0.8 }}
       >
-        <Intro className="hidden lg:block max-w-[260px] text-sm text-right" />
+        {/* dark scrim keeps the grey copy at AA where the yellow bloom reaches it */}
+        <Intro className="hidden lg:block max-w-[290px] text-sm text-right rounded-2xl bg-background/75 px-4 py-3 backdrop-blur-md" />
         <ScrollBadge className="size-28" />
       </motion.div>
 
