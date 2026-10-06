@@ -107,8 +107,9 @@ export function Hero() {
   const my = useMotionValue(0);
   const smx = useSpring(mx, { stiffness: 60, damping: 20 });
   const smy = useSpring(my, { stiffness: 60, damping: 20 });
-  const textPX = useTransform(smx, (v) => v * -18);
-  const textPY = useTransform(smy, (v) => v * -10);
+  // rounded to whole pixels: fractional translates make the big type render soft
+  const textPX = useTransform(smx, (v) => Math.round(v * -18));
+  const textPY = useTransform(smy, (v) => Math.round(v * -10));
   const imgPX = useTransform(smx, (v) => v * 22);
   const imgPY = useTransform(smy, (v) => v * 12);
 
@@ -161,7 +162,8 @@ export function Hero() {
       >
         <motion.h1 style={{ x: line1X }} className="font-mega fs-hero whitespace-nowrap">
           <span className="sr-only">Bakht Ali — GoHighLevel Expert</span>
-          <span aria-hidden>
+          {/* both lines sit on the golden marker block, black type */}
+          <span aria-hidden className="hl">
             <Letters text="GOHIGHLEVEL" play={play} />
           </span>
         </motion.h1>
@@ -216,7 +218,7 @@ export function Hero() {
       {/* crisp outline echo over the portrait so the letters the photo covers still read */}
       <motion.div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-[calc(var(--header-h)+env(safe-area-inset-top,0px)+0.75rem)] md:top-[12vh] px-4 md:px-6 font-mega text-outline select-none"
+        className="pointer-events-none absolute inset-x-0 top-[calc(var(--header-h)+env(safe-area-inset-top,0px)+0.75rem)] md:top-[12vh] px-4 md:px-6 font-mega text-outline select-none [--outline-stroke:var(--foreground)]"
         style={{ x: textPX, y: textPY }}
         initial={{ opacity: 0 }}
         animate={play ? { opacity: 1 } : undefined}
@@ -226,7 +228,9 @@ export function Hero() {
           style={{ x: line1X }}
           className="font-mega fs-hero whitespace-nowrap text-outline"
         >
-          <Letters text="GOHIGHLEVEL" play={play} />
+          <span className="hl text-outline" style={{ backgroundImage: "none" }}>
+            <Letters text="GOHIGHLEVEL" play={play} />
+          </span>
         </motion.div>
         <motion.div
           style={{ x: line2X }}
@@ -248,7 +252,7 @@ export function Hero() {
 
       {/* phones + tablets: list + scroll button + intro under the headline, clear of the photo */}
       <motion.div
-        className="lg:hidden absolute inset-x-4 md:inset-x-6 z-10 top-[calc(var(--header-h)+env(safe-area-inset-top,0px)+3.25rem+1.9*min(15.4vw,(100vw-2.5rem)/4.8))]"
+        className="lg:hidden absolute inset-x-4 md:inset-x-6 z-10 top-[calc(var(--header-h)+env(safe-area-inset-top,0px)+3.25rem+1.9*min(15vw,(100vw-2.5rem)/5))]"
         initial={{ opacity: 0 }}
         animate={play ? { opacity: 1 } : undefined}
         transition={{ delay: 1, duration: 0.6 }}
