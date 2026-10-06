@@ -9,7 +9,7 @@ export function SectionTag({ icon, label }: { icon: ReactNode; label: string }) 
       viewport={{ once: true }}
       className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-border glass text-xs font-semibold tracking-[0.2em] uppercase"
     >
-      <span className="text-secondary">{icon}</span>
+      <span className="text-highlight">{icon}</span>
       {label}
     </motion.div>
   );

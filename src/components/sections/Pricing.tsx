@@ -80,7 +80,7 @@ export function Pricing() {
             <ul className="mb-8 flex min-h-0 flex-1 flex-col gap-3">
               {p.perks.map((perk) => (
                 <li key={perk} className="flex gap-3 text-sm">
-                  <Check className="size-4 text-secondary shrink-0 mt-0.5" />
+                  <Check className="size-4 text-highlight shrink-0 mt-0.5" />
                   <span className="text-muted-foreground">{perk}</span>
                 </li>
               ))}
@@ -88,7 +88,7 @@ export function Pricing() {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className={`mt-auto w-full py-3.5 rounded-full font-semibold tracking-wide transition ${p.featured ? "bg-secondary text-secondary-foreground shadow-glow hover:brightness-110" : "border border-border hover:border-secondary hover:text-secondary"}`}
+              className={`mt-auto w-full py-3.5 rounded-full font-semibold tracking-wide transition ${p.featured ? "bg-secondary text-secondary-foreground shadow-glow hover:brightness-110" : "border border-border hover:border-secondary hover:text-highlight"}`}
             >
               PICK THIS PACKAGE
             </motion.button>

@@ -1,9 +1,11 @@
 import { useRef, useState, type FormEvent } from "react";
-import { Mail, Send } from "lucide-react";
-import { motion } from "framer-motion";
+import { ArrowUpRight, Send } from "lucide-react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { toast } from "sonner";
 import emailjs from "@emailjs/browser";
-import { Section, SectionTag } from "../Section";
+import { Eyebrow } from "../fx/Reveal";
+import { Magnetic } from "../fx/Magnetic";
+import { hireMeHref, WhatsAppButton } from "../social";
 import { submitContact } from "@/server/submit-contact";
 
 const initialForm = {
@@ -20,6 +22,11 @@ export function Contact() {
   const [form, setForm] = useState(initialForm);
   const [pending, setPending] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ctaRef, offset: ["start end", "center center"] });
+  const ctaScale = useTransform(scrollYProgress, [0, 1], [0.55, 1]);
+  const ctaX1 = useTransform(scrollYProgress, [0, 1], ["-30%", "0%"]);
+  const ctaX2 = useTransform(scrollYProgress, [0, 1], ["30%", "0%"]);
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -109,19 +116,60 @@ export function Contact() {
   }
 
   return (
-    <Section id="contact">
-      <SectionTag icon={<Mail className="size-3.5" />} label="Contact" />
-      <h2 className="mt-8 font-display text-4xl md:text-6xl font-bold">
-        Let's Work <span className="text-gradient-yellow">Together!</span>
-      </h2>
-      <p className="mt-6 text-lg text-foreground font-medium">
-        bakht.ghl@gmail.com · +92 325 1203232
-      </p>
+    <section id="contact" className="relative overflow-x-clip px-4 md:px-10 py-24 md:py-40">
+      <Eyebrow index="07" label="Contact" />
+
+      <motion.div ref={ctaRef} style={{ scale: ctaScale }} className="mt-10 origin-center">
+        {/* YOURS NEXT. = 4.49em + marker padding: sized to the gutters so neither line clips */}
+        <h2 className="font-mega text-[clamp(2.5rem,calc((100vw-2rem)/4.8),13rem)] md:text-[min(14vw,calc((100vw-5rem)/4.8),13rem)] leading-[0.95]">
+          <motion.span className="block" style={{ x: ctaX1 }}>
+            Let&apos;s build
+          </motion.span>
+          <motion.span className="block text-right" style={{ x: ctaX2 }}>
+            <span className="hl">Yours next.</span>
+          </motion.span>
+        </h2>
+      </motion.div>
+
+      <div className="mt-14 flex flex-col md:flex-row md:items-center gap-10 border-t border-border pt-10">
+        <Magnetic strength={0.4}>
+          <a
+            href={hireMeHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-cursor="Hire"
+            className="group relative grid size-40 md:size-48 place-items-center overflow-hidden rounded-full bg-secondary text-secondary-foreground font-display text-lg font-bold uppercase tracking-wider shadow-glow"
+          >
+            <span className="absolute inset-0 translate-y-full rounded-full bg-foreground transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:translate-y-0" />
+            <span className="relative flex items-center gap-2 transition-colors duration-500 group-hover:text-background">
+              Hire me <ArrowUpRight className="size-5" />
+            </span>
+          </a>
+        </Magnetic>
+        <div className="space-y-4">
+          <p className="max-w-xl text-lg text-muted-foreground">
+            Tell me where leads slip through the cracks. I&apos;ll map the system that catches them,
+            whether you need one funnel or a full GHL build.
+          </p>
+          <a
+            href={hireMeHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block font-display text-2xl md:text-4xl font-bold underline-offset-8 decoration-secondary decoration-4 hover:underline transition"
+          >
+            bakht.ghl@gmail.com
+          </a>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+            <WhatsAppButton label="Chat on WhatsApp" />
+            <p className="text-muted-foreground">Based in Pakistan · Working worldwide</p>
+          </div>
+        </div>
+      </div>
 
       <form
         ref={formRef}
         onSubmit={onSubmit}
-        className="relative mt-10 grid md:grid-cols-2 gap-x-10 gap-y-8"
+        className="surface-dark relative mt-20 grid md:grid-cols-2 gap-x-10 gap-y-10 rounded-[2rem] border border-border bg-card-gradient p-6 md:p-12"
       >
         {(
           [
@@ -167,7 +215,7 @@ export function Contact() {
               value={form[f.key]}
               onChange={(e) => setForm((s) => ({ ...s, [f.key]: e.target.value }))}
               required={f.key === "full_name" || f.key === "email" || f.key === "subject"}
-              className="w-full bg-transparent border-b border-border pb-3 focus:border-secondary outline-none transition placeholder:text-muted-foreground/60"
+              className="w-full bg-transparent border-b border-border pb-3 text-lg focus:border-secondary outline-none transition placeholder:text-muted-foreground/60"
             />
           </motion.div>
         ))}
@@ -183,7 +231,7 @@ export function Contact() {
             name="budget"
             value={form.budget}
             onChange={(e) => setForm((s) => ({ ...s, budget: e.target.value }))}
-            className="w-full bg-transparent border-b border-border pb-3 focus:border-secondary outline-none transition placeholder:text-muted-foreground/60"
+            className="w-full bg-transparent border-b border-border pb-3 text-lg focus:border-secondary outline-none transition placeholder:text-muted-foreground/60"
             placeholder="A range budget for your project"
           />
         </div>
@@ -201,7 +249,7 @@ export function Contact() {
             value={form.message}
             onChange={(e) => setForm((s) => ({ ...s, message: e.target.value }))}
             placeholder="Write your message here..."
-            className="w-full bg-transparent border-b border-border pb-3 focus:border-secondary outline-none transition placeholder:text-muted-foreground/60 resize-none"
+            className="w-full bg-transparent border-b border-border pb-3 text-lg focus:border-secondary outline-none transition placeholder:text-muted-foreground/60 resize-none"
           />
         </div>
 
@@ -230,6 +278,6 @@ export function Contact() {
           <Send className="size-4" /> {pending ? "SENDING…" : "SEND MESSAGE"}
         </motion.button>
       </form>
-    </Section>
+    </section>
   );
 }

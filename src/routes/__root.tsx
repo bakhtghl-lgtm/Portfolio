@@ -28,24 +28,24 @@ export const Route = createRootRoute({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "bakhtaliniazi.com" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      { title: "Bakht Ali Niazi · Senior GoHighLevel Expert" },
       {
         name: "description",
         content:
-          "bakhtaliniazi.com — Bakht Ali Niazi portfolio (funnels, automations, CRM systems).",
+          "Bakht Ali Niazi, senior GoHighLevel expert. 350+ funnels, 200+ CRM systems and 800+ automations built for real estate, insurance, home services, education and travel businesses.",
       },
       { name: "author", content: "Bakht" },
-      { property: "og:title", content: "bakhtaliniazi.com" },
+      { property: "og:title", content: "Bakht Ali Niazi · Senior GoHighLevel Expert" },
       {
         property: "og:description",
         content:
-          "bakhtaliniazi.com — Bakht Ali Niazi portfolio (funnels, automations, CRM systems).",
+          "Bakht Ali Niazi, senior GoHighLevel expert. 350+ funnels, 200+ CRM systems and 800+ automations built for real estate, insurance, home services, education and travel businesses.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://bakhtaliniazi.com/" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "bakhtaliniazi.com" },
+      { name: "twitter:title", content: "Bakht Ali Niazi · Senior GoHighLevel Expert" },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
@@ -54,7 +54,7 @@ export const Route = createRootRoute({
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap",
       },
       { rel: "stylesheet", href: appCss },
     ],

@@ -1,14 +1,13 @@
-import { MessageSquare, ChevronLeft, ChevronRight } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
-import { Section, SectionTag } from "../Section";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useRef } from "react";
+import { Eyebrow, MaskText } from "../fx/Reveal";
+import { VelocityMarquee } from "../fx/VelocityMarquee";
+import { useMedia } from "../fx/useMedia";
 
 type TestimonialItem = {
   name: string;
   role?: string;
-  company?: string;
   quote: string;
-  project?: string;
 };
 
 const testimonials = [
@@ -57,93 +56,108 @@ function initials(name: string) {
     .map((p) => p.trim())
     .filter(Boolean);
   const first = parts[0]?.[0] ?? "";
-  const last = parts.length > 1 ? parts[parts.length - 1]?.[0] ?? "" : "";
+  const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
   return (first + last).toUpperCase();
 }
 
+function Card({
+  t,
+  yellow,
+  className = "mx-3",
+}: {
+  t: TestimonialItem;
+  yellow?: boolean;
+  className?: string;
+}) {
+  return (
+    <figure
+      className={`w-[80vw] sm:w-[460px] shrink-0 whitespace-normal rounded-[2rem] border p-7 md:p-9 transition-transform duration-500 hover:-rotate-2 hover:scale-[1.03] ${
+        yellow
+          ? "bg-secondary text-secondary-foreground border-secondary"
+          : "surface-dark bg-card-gradient border-border"
+      } ${className}`}
+    >
+      <span className={`font-mega text-7xl leading-none ${yellow ? "" : "text-highlight"}`}>“</span>
+      <blockquote
+        className={`-mt-4 text-base md:text-lg leading-relaxed ${yellow ? "" : "text-foreground/90"}`}
+      >
+        {t.quote}
+      </blockquote>
+      <figcaption className="mt-7 flex items-center gap-3">
+        <span
+          className={`grid size-11 place-items-center rounded-full font-display text-sm font-bold ${
+            yellow
+              ? "bg-secondary-foreground text-secondary"
+              : "bg-secondary text-secondary-foreground"
+          }`}
+        >
+          {initials(t.name)}
+        </span>
+        <span>
+          <span className="block font-display font-semibold">{t.name}</span>
+          <span
+            className={`block text-xs uppercase tracking-[0.25em] ${yellow ? "opacity-70" : "text-muted-foreground"}`}
+          >
+            {t.role}
+          </span>
+        </span>
+      </figcaption>
+    </figure>
+  );
+}
+
 export function Testimonial() {
-  const [i, setI] = useState(0);
-  const t = testimonials[i];
-  const next = () => setI((p) => (p + 1) % testimonials.length);
-  const prev = () => setI((p) => (p - 1 + testimonials.length) % testimonials.length);
+  const ref = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const rotate = useTransform(scrollYProgress, [0, 1], [-4, 4]);
+  const half = Math.ceil(testimonials.length / 2);
+  // phones and reduced motion get a swipeable, snapping row where a whole card is always readable
+  const swipe = useMedia("(max-width: 767px), (prefers-reduced-motion: reduce)");
 
   return (
-    <Section id="testimonial">
-      <div className="flex justify-center">
-        <SectionTag icon={<MessageSquare className="size-3.5" />} label="Testimonial" />
-      </div>
-      <h2 className="mt-8 mb-12 text-center font-display text-4xl md:text-6xl font-bold leading-tight">
-        Trusted by <span className="text-gradient-yellow">Hundred Clients</span>
-      </h2>
-
-      <div className="relative bg-card-gradient border border-border rounded-3xl p-7 sm:p-8 md:p-12 overflow-hidden min-h-[360px] sm:min-h-[420px] flex items-center justify-center">
-        <div className="absolute -top-24 -right-24 size-72 rounded-full bg-secondary/10 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 size-72 rounded-full bg-secondary/5 blur-3xl pointer-events-none" />
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.4 }}
-            className="relative flex flex-col items-center text-center"
-          >
-            <div className="relative mb-6">
-              <div className="grid size-20 place-items-center rounded-full border-2 border-secondary/40 bg-secondary/10 shadow-glow">
-                <span className="font-display text-lg font-semibold text-secondary">
-                  {initials(t.name)}
-                </span>
-              </div>
-            </div>
-            <p className="font-display text-lg font-semibold">{t.name}</p>
-            {t.role || t.company ? (
-              <p className="text-sm text-muted-foreground mb-6">
-                {t.role ? <span>{t.role}</span> : null}
-                {t.role && t.company ? <span> · </span> : null}
-                {t.company ? <span className="text-secondary font-medium">{t.company}</span> : null}
-              </p>
-            ) : (
-              <div className="mb-6" />
-            )}
-            <p className="max-w-2xl text-lg md:text-xl leading-relaxed text-foreground/90">
-              <span className="text-secondary text-3xl align-top mr-1">“</span>
-              {t.quote}
-              <span className="text-secondary text-3xl align-top ml-1">”</span>
-            </p>
-            {t.project ? (
-              <p className="mt-8 text-xs tracking-[0.25em] uppercase text-muted-foreground">
-                {t.project}
-              </p>
-            ) : null}
-          </motion.div>
-        </AnimatePresence>
+    <section id="testimonial" ref={ref} className="relative py-24 md:py-40 overflow-x-clip">
+      <div className="px-4 md:px-10 flex flex-col items-center text-center">
+        <Eyebrow index="06" label="Testimonials" />
+        {/* 100+ CLIENTS = 4.65em + marker padding */}
+        <h2 className="mt-8 font-mega text-[clamp(2.25rem,calc((100vw-2rem)/5.1),9rem)] md:text-[min(9vw,9rem)]">
+          <MaskText lines={["Trusted by", <span className="hl">100+ Clients</span>]} />
+        </h2>
       </div>
 
-      <div className="mt-8 flex items-center justify-center gap-4">
-        <motion.button
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.92 }}
-          onClick={prev}
-          aria-label="Previous"
-          className="size-11 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-secondary hover:border-secondary transition"
+      {swipe ? (
+        <div
+          className="mt-12 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 scroll-px-4 [scrollbar-width:none]"
+          aria-label="Client testimonials"
         >
-          <ChevronLeft className="size-5" />
-        </motion.button>
-        <p className="text-sm text-muted-foreground tabular-nums">
-          <span className="text-foreground font-semibold">{i + 1}</span>
-          <span className="mx-2">/</span>
-          {testimonials.length}
-        </p>
-        <motion.button
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.92 }}
-          onClick={next}
-          aria-label="Next"
-          className="size-11 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-secondary hover:border-secondary transition"
-        >
-          <ChevronRight className="size-5" />
-        </motion.button>
-      </div>
-    </Section>
+          {testimonials.map((t, i) => (
+            <Card
+              key={t.name}
+              t={t}
+              yellow={i % 3 === 1}
+              className="snap-start w-[min(85vw,420px)]"
+            />
+          ))}
+        </div>
+      ) : (
+        <motion.div style={{ rotate }} className="gpu mt-16 space-y-6 py-6">
+          <VelocityMarquee baseVelocity={-1.2}>
+            {testimonials
+              .slice(0, half)
+              .concat(testimonials.slice(0, half))
+              .map((t, i) => (
+                <Card key={i} t={t} yellow={i % 3 === 1} />
+              ))}
+          </VelocityMarquee>
+          <VelocityMarquee baseVelocity={1.2}>
+            {testimonials
+              .slice(half)
+              .concat(testimonials.slice(half))
+              .map((t, i) => (
+                <Card key={i} t={t} yellow={i % 3 === 2} />
+              ))}
+          </VelocityMarquee>
+        </motion.div>
+      )}
+    </section>
   );
 }

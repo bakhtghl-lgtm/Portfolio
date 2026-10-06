@@ -1,7 +1,17 @@
-import { LayoutGrid, ArrowUpRight, X } from "lucide-react";
-import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { Section, SectionTag } from "../Section";
+import { ArrowUpRight, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  AnimatePresence,
+  motion,
+  useMotionValue,
+  useMotionValueEvent,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "framer-motion";
+import { Eyebrow, MaskText } from "../fx/Reveal";
+import { lockScroll } from "../fx/SmoothScroll";
+import { useMedia } from "../fx/useMedia";
 import { cn } from "@/lib/utils";
 import appointmentWorkflow from "@/assets/portfolio-appointment-workflow.png";
 import ghlZapierHubspotFlow from "@/assets/portfolio-ghl-zapier-hubspot.png";
@@ -76,7 +86,7 @@ function TagPill({ tag }: { tag: string }) {
   const isFunnels = tag.toLowerCase() === "funnels";
   return (
     <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-background/70 backdrop-blur text-xs font-medium border border-border group-hover:border-secondary/40 transition">
-      {isFunnels ? <FunnelIcon className="size-3.5 text-secondary" /> : null}
+      {isFunnels ? <FunnelIcon className="size-3.5 text-highlight" /> : null}
       <span>{tag}</span>
     </span>
   );
@@ -86,7 +96,7 @@ function PortfolioDetailBody({ detail }: { detail: PortfolioDetail }) {
   return (
     <div className="space-y-5">
       <div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-secondary">
+        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-highlight">
           What it does
         </p>
         <p className="mt-2 whitespace-pre-line break-words text-sm leading-relaxed text-foreground/90">
@@ -94,7 +104,7 @@ function PortfolioDetailBody({ detail }: { detail: PortfolioDetail }) {
         </p>
       </div>
       <div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-secondary">The flow</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-highlight">The flow</p>
         <ul className="mt-3 space-y-2">
           {detail.flow.map((step, idx) => (
             <li
@@ -102,7 +112,7 @@ function PortfolioDetailBody({ detail }: { detail: PortfolioDetail }) {
               className="overflow-hidden rounded-xl border border-border/60 bg-background/50 px-3 py-2.5"
             >
               <div className="flex gap-3">
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary/25 text-xs font-bold text-secondary">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-secondary/25 text-xs font-bold text-highlight">
                   {idx + 1}
                 </span>
                 <div className="min-w-0">
@@ -115,6 +125,340 @@ function PortfolioDetailBody({ detail }: { detail: PortfolioDetail }) {
             </li>
           ))}
         </ul>
+      </div>
+    </div>
+  );
+}
+
+const pad = (n: number) => String(n).padStart(2, "0");
+const coverOf = (p: PortfolioItem) => (p.gallery && p.gallery[0]?.src) || p.imageUrl;
+
+/** Desktop: a big type index of projects with a sticky preview that wipes between screenshots. */
+function ProjectIndex({ onOpen }: { onOpen: (p: PortfolioItem) => void }) {
+  const listRef = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(0);
+  const seq = useRef(0);
+  const [z, setZ] = useState(0);
+  const n = projects.length;
+
+  const activeRef = useRef(0);
+  const select = (i: number) => {
+    if (activeRef.current === i) return;
+    activeRef.current = i;
+    seq.current += 1;
+    setZ(seq.current);
+    setActive(i);
+  };
+
+  // Scrolling walks the preview toward the row at the reading line one project at a time,
+  // with a short pause between steps, so every screenshot gets a beat on screen even when
+  // the page is scrolled quickly. Hover/focus still jump straight to a project.
+  const STEP_MS = 520;
+  const target = useRef(0);
+  const timer = useRef<number | null>(null);
+  const tick = () => {
+    const cur = activeRef.current;
+    if (cur === target.current) {
+      timer.current = null;
+      return;
+    }
+    select(cur + Math.sign(target.current - cur));
+    timer.current = window.setTimeout(tick, STEP_MS);
+  };
+  useEffect(
+    () => () => {
+      if (timer.current) window.clearTimeout(timer.current);
+    },
+    [],
+  );
+
+  const { scrollYProgress } = useScroll({ target: listRef, offset: ["start 55%", "end 55%"] });
+  useMotionValueEvent(scrollYProgress, "change", (v) => {
+    target.current = Math.min(n - 1, Math.max(0, Math.floor(v * n)));
+    if (timer.current === null && target.current !== activeRef.current)
+      timer.current = window.setTimeout(tick, 180);
+  });
+  const hover = (i: number) => {
+    target.current = i;
+    if (timer.current) {
+      window.clearTimeout(timer.current);
+      timer.current = null;
+    }
+    select(i);
+  };
+
+  // pointer tilt on the preview card
+  const mx = useMotionValue(0);
+  const my = useMotionValue(0);
+  const rotY = useSpring(
+    useTransform(mx, (v) => v * 8),
+    { stiffness: 90, damping: 16 },
+  );
+  const rotX = useSpring(
+    useTransform(my, (v) => v * -6),
+    { stiffness: 90, damping: 16 },
+  );
+  const imgX = useSpring(
+    useTransform(mx, (v) => v * -10),
+    { stiffness: 90, damping: 16 },
+  );
+
+  const p = projects[active];
+
+  // decode every cover up front so switching projects never stalls on an image decode
+  useEffect(() => {
+    projects.forEach((proj) => {
+      const img = new Image();
+      img.src = coverOf(proj);
+      img.decode?.().catch(() => {});
+    });
+  }, []);
+
+  return (
+    <div className="grid grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-14">
+      <div ref={listRef} className="border-b border-border">
+        {projects.map((proj, i) => {
+          const on = i === active;
+          return (
+            <motion.button
+              key={proj.title}
+              type="button"
+              data-cursor="View"
+              onMouseEnter={() => hover(i)}
+              onFocus={() => hover(i)}
+              onClick={() => onOpen(proj)}
+              initial={{ opacity: 0, x: -40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-8%" }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: (i % 4) * 0.05 }}
+              className="group relative block w-full overflow-hidden border-t border-border text-left focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--ring)]"
+            >
+              {/* yellow sweep behind the active row */}
+              <motion.span
+                aria-hidden
+                className="absolute inset-0 origin-left bg-secondary"
+                initial={false}
+                animate={{ scaleX: on ? 1 : 0 }}
+                transition={{ duration: 0.55, ease: [0.76, 0, 0.24, 1] }}
+              />
+              <span className="relative grid grid-cols-[3rem_minmax(0,1fr)_auto] items-center gap-6 px-3 py-9">
+                <span
+                  className={`font-mega text-2xl transition-colors ${on ? "text-secondary-foreground" : "text-muted-foreground"}`}
+                >
+                  {pad(i + 1)}
+                </span>
+                <span className="min-w-0">
+                  <span
+                    className={`block font-mega text-[clamp(1.75rem,2.6vw,2.75rem)] leading-[1] transition-transform duration-500 ${on ? "translate-x-3" : ""}`}
+                  >
+                    {proj.title}
+                  </span>
+                  <span
+                    className={`mt-2 block text-xs font-semibold uppercase tracking-[0.2em] transition-colors ${on ? "text-secondary-foreground/75" : "text-muted-foreground"}`}
+                  >
+                    {proj.tags.join(" · ")}
+                  </span>
+                </span>
+                <span
+                  className={`grid size-11 place-items-center rounded-full border transition-all duration-500 ${on ? "rotate-45 border-secondary-foreground bg-secondary-foreground text-secondary" : "border-border text-foreground"}`}
+                >
+                  <ArrowUpRight className="size-5" />
+                </span>
+              </span>
+            </motion.button>
+          );
+        })}
+      </div>
+
+      <div className="relative">
+        <div
+          className="sticky top-[calc(var(--header-h)+1.5rem)] h-[min(74vh,720px)]"
+          style={{ perspective: 1200 }}
+          onPointerMove={(e) => {
+            const r = e.currentTarget.getBoundingClientRect();
+            mx.set((e.clientX - r.left) / r.width - 0.5);
+            my.set((e.clientY - r.top) / r.height - 0.5);
+          }}
+          onPointerLeave={() => {
+            mx.set(0);
+            my.set(0);
+          }}
+        >
+          <motion.button
+            type="button"
+            data-cursor="Open"
+            onClick={() => onOpen(p)}
+            style={{ rotateX: rotX, rotateY: rotY }}
+            className="gpu surface-dark relative block h-full w-full overflow-hidden rounded-[2rem] border border-border bg-card text-left shadow-[0_50px_100px_-50px_rgba(0,0,0,0.6)]"
+          >
+            {/* each new screenshot wipes up over the last one */}
+            <AnimatePresence initial={false}>
+              <motion.div
+                key={active}
+                className="absolute inset-0"
+                style={{ zIndex: z }}
+                initial={{ clipPath: "inset(100% 0% 0% 0%)" }}
+                animate={{ clipPath: "inset(0% 0% 0% 0%)" }}
+                exit={{ opacity: 0, transition: { delay: 0.75, duration: 0 } }}
+                transition={{ duration: 0.75, ease: [0.76, 0, 0.24, 1] }}
+              >
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    backgroundImage: `radial-gradient(circle at 30% 20%, oklch(0.88 0.18 ${p.hue} / 0.28), transparent 55%)`,
+                  }}
+                />
+                {/* whole screenshot, never side-cropped */}
+                <motion.img
+                  src={coverOf(p)}
+                  alt={`${p.title} preview`}
+                  className="absolute inset-x-5 top-5 max-h-[58%] w-[calc(100%-2.5rem)] rounded-xl object-contain object-top shadow-[0_30px_60px_-30px_rgba(0,0,0,0.8)]"
+                  style={{ x: imgX }}
+                  initial={{ scale: 1.12, y: 30 }}
+                  animate={{ scale: 1, y: 0 }}
+                  transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+                />
+              </motion.div>
+            </AnimatePresence>
+
+            <div className="pointer-events-none absolute inset-0 z-[999] flex flex-col justify-between p-8">
+              <span />
+              <div>
+                <div className="mb-4 flex items-end justify-between">
+                  <span className="font-mega text-6xl leading-none text-outline [--outline-stroke:oklch(1_0_0/0.85)]">
+                    {pad(active + 1)}
+                    <span className="text-2xl">/{pad(n)}</span>
+                  </span>
+                  <span className="rounded-full bg-secondary px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-secondary-foreground">
+                    {p.metric}
+                  </span>
+                </div>
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.p
+                    key={active}
+                    initial={{ y: 24, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -16, opacity: 0 }}
+                    transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                    className="font-mega text-4xl leading-[1] text-white"
+                  >
+                    {p.title}
+                  </motion.p>
+                </AnimatePresence>
+                <span className="mt-5 inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[0.25em] text-secondary">
+                  Explore project
+                  <span className="grid size-9 place-items-center rounded-full bg-secondary text-secondary-foreground">
+                    <ArrowUpRight className="size-4" />
+                  </span>
+                </span>
+                <span className="mt-6 block h-[3px] w-full overflow-hidden rounded-full bg-white/15">
+                  <motion.span
+                    className="block h-full origin-left bg-secondary"
+                    animate={{ scaleX: (active + 1) / n }}
+                    transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                  />
+                </span>
+              </div>
+            </div>
+          </motion.button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Phones and tablets: a swipeable, snapping row of tall project cards. */
+function ProjectCarousel({ onOpen }: { onOpen: (p: PortfolioItem) => void }) {
+  const rail = useRef<HTMLDivElement>(null);
+  const [idx, setIdx] = useState(0);
+  const n = projects.length;
+
+  const step = () => {
+    const el = rail.current;
+    const card = el?.firstElementChild as HTMLElement | null;
+    return card ? card.offsetWidth + 16 : 1;
+  };
+  const go = (i: number) => {
+    const j = Math.min(n - 1, Math.max(0, i));
+    rail.current?.scrollTo({ left: j * step(), behavior: "smooth" });
+  };
+
+  return (
+    <div>
+      <div
+        ref={rail}
+        onScroll={(e) => setIdx(Math.round(e.currentTarget.scrollLeft / step()))}
+        className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 scroll-px-4 [scrollbar-width:none] md:-mx-10 md:scroll-px-10 md:px-10 [&::-webkit-scrollbar]:hidden"
+        aria-label="Projects"
+      >
+        {projects.map((p, i) => (
+          <motion.button
+            key={p.title}
+            type="button"
+            onClick={() => onOpen(p)}
+            initial={{ opacity: 0, x: 60 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: Math.min(i, 3) * 0.08 }}
+            className="surface-dark group relative w-[82vw] max-w-[420px] shrink-0 snap-start overflow-hidden rounded-[1.75rem] border border-border bg-card text-left"
+          >
+            <div className="relative aspect-[16/10] overflow-hidden bg-black/30">
+              <img
+                src={coverOf(p)}
+                alt={`${p.title} preview`}
+                loading="lazy"
+                className="absolute inset-0 h-full w-full object-contain object-top"
+              />
+              <span className="absolute left-4 top-4 rounded-full bg-secondary px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-secondary-foreground">
+                {p.metric}
+              </span>
+            </div>
+            <div className="p-5">
+              <div className="flex items-start justify-between gap-3">
+                <p className="font-mega text-[1.75rem] leading-[1]">{p.title}</p>
+                <span className="font-mega text-4xl leading-none text-outline">{pad(i + 1)}</span>
+              </div>
+              <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                {p.tags.join(" · ")}
+              </p>
+              <span className="mt-4 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.25em] text-highlight">
+                Explore project <ArrowUpRight className="size-4" />
+              </span>
+            </div>
+          </motion.button>
+        ))}
+      </div>
+
+      <div className="mt-6 flex items-center gap-4">
+        <span className="font-mega text-2xl tabular-nums">
+          {pad(idx + 1)}
+          <span className="text-muted-foreground">/{pad(n)}</span>
+        </span>
+        <span className="h-[3px] flex-1 overflow-hidden rounded-full bg-foreground/10">
+          <motion.span
+            className="block h-full origin-left bg-secondary"
+            animate={{ scaleX: (idx + 1) / n }}
+            transition={{ duration: 0.4 }}
+          />
+        </span>
+        <button
+          type="button"
+          aria-label="Previous project"
+          onClick={() => go(idx - 1)}
+          className="grid size-11 place-items-center rounded-full border border-border transition hover:bg-secondary disabled:opacity-40"
+          disabled={idx === 0}
+        >
+          <ArrowUpRight className="size-5 -rotate-[135deg]" />
+        </button>
+        <button
+          type="button"
+          aria-label="Next project"
+          onClick={() => go(idx + 1)}
+          className="grid size-11 place-items-center rounded-full bg-foreground text-background transition hover:bg-secondary hover:text-secondary-foreground disabled:opacity-40"
+          disabled={idx === n - 1}
+        >
+          <ArrowUpRight className="size-5 rotate-45" />
+        </button>
       </div>
     </div>
   );
@@ -328,6 +672,12 @@ export function Portfolio() {
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const [mediaZoomed, setMediaZoomed] = useState(false);
   const [workflowDetailsOpen, setWorkflowDetailsOpen] = useState(false);
+  const wide = useMedia("(min-width: 1024px)");
+
+  useEffect(() => {
+    lockScroll(Boolean(activeProject));
+    return () => lockScroll(false);
+  }, [activeProject]);
 
   useEffect(() => {
     if (!activeProject) return;
@@ -356,96 +706,35 @@ export function Portfolio() {
   }, [activeMediaIndex]);
 
   return (
-    <Section id="portfolio">
-      <SectionTag icon={<LayoutGrid className="size-3.5" />} label="Portfolio" />
-      <h2 className="mt-8 mb-12 font-display text-4xl md:text-6xl font-bold">
-        Featured <span className="text-gradient-yellow">Projects</span>
-      </h2>
-
-      <div className="space-y-10">
-        {projects.map((p, i) => (
-          <motion.button
-            type="button"
-            key={p.title}
-            onClick={() => setActiveProject(p)}
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ delay: i * 0.12, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="block w-full text-left group"
-          >
-            <motion.div
-              whileHover={{ y: -10, scale: 1.01 }}
-              transition={{ type: "spring", stiffness: 200, damping: 20 }}
-              className="relative aspect-[16/10] rounded-3xl overflow-hidden border border-border bg-card-gradient cursor-pointer"
-              style={{
-                backgroundImage: `radial-gradient(circle at 30% 30%, oklch(0.88 0.18 ${p.hue} / 0.3), transparent 60%), radial-gradient(circle at 70% 70%, oklch(0.4 0.05 270 / 0.4), transparent 60%)`,
-              }}
-            >
-              <img
-                src={(p.gallery && p.gallery[0]?.src) || p.imageUrl}
-                alt={`${p.title} preview`}
-                className={cn(
-                  "absolute inset-0 h-full w-full opacity-80 transition duration-700 group-hover:scale-[1.02] group-hover:opacity-95",
-                  p.imageThumbFit === "contain"
-                    ? "object-contain object-top p-2 md:p-4"
-                    : "object-cover",
-                )}
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-background/25" />
-              <div
-                className="absolute inset-0 opacity-20 group-hover:opacity-40 transition duration-700"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(oklch(1 0 0 / 0.05) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0 / 0.05) 1px, transparent 1px)",
-                  backgroundSize: "40px 40px",
-                }}
-              />
-
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-secondary/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1500" />
-
-              <motion.div
-                className="absolute inset-0 flex items-center justify-center"
-                whileHover={{ scale: 1.05 }}
-              >
-                <div className="font-display text-7xl md:text-9xl font-bold opacity-10 tracking-tighter group-hover:opacity-20 transition duration-500">
-                  {`0${i + 1}`}
-                </div>
-              </motion.div>
-
-              <div className="absolute top-6 left-6 px-3 py-1.5 rounded-full bg-secondary/15 border border-secondary/30 backdrop-blur text-xs font-semibold text-secondary tracking-wide">
-                {p.metric}
-              </div>
-
-              <motion.div
-                whileHover={{ rotate: 45 }}
-                className="absolute top-6 right-6 size-12 rounded-full glass flex items-center justify-center group-hover:bg-secondary group-hover:text-secondary-foreground transition duration-500"
-              >
-                <ArrowUpRight className="size-5" />
-              </motion.div>
-
-              <div className="absolute bottom-6 left-6 flex flex-wrap gap-2">
-                {p.tags.map((t) => (
-                  <TagPill key={t} tag={t} />
-                ))}
-              </div>
-            </motion.div>
-            <h3 className="mt-5 font-display text-2xl md:text-3xl font-semibold group-hover:text-secondary transition flex items-center gap-3">
-              {p.title}
-              <motion.span className="inline-block opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition duration-500">
-                →
-              </motion.span>
-            </h3>
-          </motion.button>
-        ))}
+    <section
+      id="portfolio"
+      className="relative overflow-x-clip px-4 md:px-10 pt-24 md:pt-40 pb-24 md:pb-32"
+    >
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 md:mb-24">
+        <div>
+          <Eyebrow index="05" label="Portfolio" />
+          <h2 className="mt-8 font-mega text-[clamp(2.5rem,calc((100vw-2rem)/3.8),11rem)] md:text-[min(11vw,11rem)]">
+            <MaskText lines={["Featured", <span className="hl">Projects</span>]} />
+          </h2>
+        </div>
+        <p className="max-w-xs text-muted-foreground md:text-right">
+          Funnels, websites and automation systems. Scroll or hover to preview, click to open every
+          screen and the full workflow.
+        </p>
       </div>
+
+      {wide ? (
+        <ProjectIndex onOpen={setActiveProject} />
+      ) : (
+        <ProjectCarousel onOpen={setActiveProject} />
+      )}
 
       {activeProject ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-background/75 p-3 backdrop-blur-md sm:p-6 md:p-8"
+          className="surface-dark fixed inset-0 z-[80] flex items-center justify-center bg-background/80 p-3 backdrop-blur-md sm:p-6 md:p-8"
           onClick={() => setActiveProject(null)}
           role="presentation"
+          data-lenis-prevent
         >
           <motion.div
             initial={{ opacity: 0, y: 16, scale: 0.98 }}
@@ -467,7 +756,7 @@ export function Portfolio() {
             </button>
 
             <div className="relative z-10 border-b border-border/80 px-4 pb-3 pt-4 pr-14 md:px-6 md:pb-4 md:pt-5 md:pr-16">
-              <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-secondary">
+              <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-highlight">
                 Project
               </p>
               <h3 className="mt-1 font-display text-xl font-bold tracking-tight text-foreground md:text-3xl">
@@ -504,10 +793,18 @@ export function Portfolio() {
                               }}
                               className={cn(
                                 "relative h-full w-full",
-                                workflowDetailsOpen ? "cursor-default" : mediaZoomed ? "cursor-zoom-out" : "cursor-zoom-in",
+                                workflowDetailsOpen
+                                  ? "cursor-default"
+                                  : mediaZoomed
+                                    ? "cursor-zoom-out"
+                                    : "cursor-zoom-in",
                               )}
                               aria-label={
-                                workflowDetailsOpen ? "Preview" : mediaZoomed ? "Zoom out" : "Zoom in"
+                                workflowDetailsOpen
+                                  ? "Preview"
+                                  : mediaZoomed
+                                    ? "Zoom out"
+                                    : "Zoom in"
                               }
                             >
                               <img
@@ -534,7 +831,7 @@ export function Portfolio() {
                           }}
                         />
 
-                        <div className="absolute top-4 left-4 rounded-full border border-secondary/30 bg-secondary/15 px-3 py-1.5 text-xs font-semibold tracking-wide text-secondary backdrop-blur">
+                        <div className="absolute top-4 left-4 rounded-full border border-secondary/30 bg-secondary/15 px-3 py-1.5 text-xs font-semibold tracking-wide text-highlight backdrop-blur">
                           {activeProject.metric}
                         </div>
 
@@ -549,7 +846,7 @@ export function Portfolio() {
                                     activeProject.gallery!.length,
                                 )
                               }
-                              className="pointer-events-auto absolute left-3 top-1/2 -translate-y-1/2 inline-flex size-11 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-secondary"
+                              className="pointer-events-auto absolute left-3 top-1/2 -translate-y-1/2 inline-flex size-11 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-highlight"
                               aria-label="Previous screenshot"
                             >
                               ←
@@ -559,7 +856,7 @@ export function Portfolio() {
                               onClick={() =>
                                 setActiveMediaIndex((i) => (i + 1) % activeProject.gallery!.length)
                               }
-                              className="pointer-events-auto absolute right-3 top-1/2 -translate-y-1/2 inline-flex size-11 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-secondary"
+                              className="pointer-events-auto absolute right-3 top-1/2 -translate-y-1/2 inline-flex size-11 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-highlight"
                               aria-label="Next screenshot"
                             >
                               →
@@ -620,7 +917,7 @@ export function Portfolio() {
                                 className="absolute inset-0 overflow-hidden rounded-3xl border border-border/70 bg-background/85 backdrop-blur-md"
                               >
                                 <div className="flex items-center justify-between border-b border-border/70 px-4 py-3">
-                                  <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-secondary">
+                                  <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-highlight">
                                     Details
                                   </p>
                                   <button
@@ -696,7 +993,7 @@ export function Portfolio() {
                           </div>
                         </div>
 
-                        <div className="absolute top-5 left-5 rounded-full border border-secondary/30 bg-secondary/15 px-3 py-1.5 text-xs font-semibold tracking-wide text-secondary backdrop-blur">
+                        <div className="absolute top-5 left-5 rounded-full border border-secondary/30 bg-secondary/15 px-3 py-1.5 text-xs font-semibold tracking-wide text-highlight backdrop-blur">
                           {activeProject.metric}
                         </div>
 
@@ -708,7 +1005,7 @@ export function Portfolio() {
                             >
                               {t.toLowerCase() === "funnels" ? (
                                 <span className="inline-flex items-center gap-2">
-                                  <FunnelIcon className="size-3.5 text-secondary" />
+                                  <FunnelIcon className="size-3.5 text-highlight" />
                                   {t}
                                 </span>
                               ) : (
@@ -730,7 +1027,7 @@ export function Portfolio() {
                                       activeProject.gallery!.length,
                                   )
                                 }
-                                className="pointer-events-auto inline-flex size-10 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-secondary"
+                                className="pointer-events-auto inline-flex size-10 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-highlight"
                                 aria-label="Previous screenshot"
                               >
                                 ←
@@ -742,7 +1039,7 @@ export function Portfolio() {
                                     (i) => (i + 1) % activeProject.gallery!.length,
                                   )
                                 }
-                                className="pointer-events-auto inline-flex size-10 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-secondary"
+                                className="pointer-events-auto inline-flex size-10 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-highlight"
                                 aria-label="Next screenshot"
                               >
                                 →
@@ -842,7 +1139,7 @@ export function Portfolio() {
                       </div>
                     </div>
 
-                    <div className="absolute top-5 left-5 rounded-full border border-secondary/30 bg-secondary/15 px-3 py-1.5 text-xs font-semibold tracking-wide text-secondary backdrop-blur">
+                    <div className="absolute top-5 left-5 rounded-full border border-secondary/30 bg-secondary/15 px-3 py-1.5 text-xs font-semibold tracking-wide text-highlight backdrop-blur">
                       {activeProject.metric}
                     </div>
 
@@ -854,10 +1151,11 @@ export function Portfolio() {
                           onClick={() =>
                             setActiveMediaIndex(
                               (i) =>
-                                (i - 1 + activeProject.gallery!.length) % activeProject.gallery!.length,
+                                (i - 1 + activeProject.gallery!.length) %
+                                activeProject.gallery!.length,
                             )
                           }
-                          className="md:hidden pointer-events-auto absolute left-3 top-1/2 -translate-y-1/2 inline-flex size-11 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-secondary"
+                          className="md:hidden pointer-events-auto absolute left-3 top-1/2 -translate-y-1/2 inline-flex size-11 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-highlight"
                           aria-label="Previous screenshot"
                         >
                           ←
@@ -867,7 +1165,7 @@ export function Portfolio() {
                           onClick={() =>
                             setActiveMediaIndex((i) => (i + 1) % activeProject.gallery!.length)
                           }
-                          className="md:hidden pointer-events-auto absolute right-3 top-1/2 -translate-y-1/2 inline-flex size-11 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-secondary"
+                          className="md:hidden pointer-events-auto absolute right-3 top-1/2 -translate-y-1/2 inline-flex size-11 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-highlight"
                           aria-label="Next screenshot"
                         >
                           →
@@ -884,7 +1182,7 @@ export function Portfolio() {
                                   activeProject.gallery!.length,
                               )
                             }
-                            className="pointer-events-auto inline-flex size-10 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-secondary"
+                            className="pointer-events-auto inline-flex size-10 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-highlight"
                             aria-label="Previous screenshot"
                           >
                             ←
@@ -894,7 +1192,7 @@ export function Portfolio() {
                             onClick={() =>
                               setActiveMediaIndex((i) => (i + 1) % activeProject.gallery!.length)
                             }
-                            className="pointer-events-auto inline-flex size-10 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-secondary"
+                            className="pointer-events-auto inline-flex size-10 items-center justify-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition hover:border-secondary/50 hover:text-highlight"
                             aria-label="Next screenshot"
                           >
                             →
@@ -938,7 +1236,7 @@ export function Portfolio() {
                         >
                           {t.toLowerCase() === "funnels" ? (
                             <span className="inline-flex items-center gap-2">
-                              <FunnelIcon className="size-3.5 text-secondary" />
+                              <FunnelIcon className="size-3.5 text-highlight" />
                               {t}
                             </span>
                           ) : (
@@ -954,6 +1252,6 @@ export function Portfolio() {
           </motion.div>
         </div>
       ) : null}
-    </Section>
+    </section>
   );
 }
