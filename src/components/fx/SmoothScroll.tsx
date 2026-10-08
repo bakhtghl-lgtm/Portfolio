@@ -12,6 +12,7 @@ export function SmoothScroll() {
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const lenis = new Lenis({
+      // lower lerp = longer glide after the wheel stops (the Sway wrapper adds the soft landing)
       lerp: 0.09,
       wheelMultiplier: 1,
       touchMultiplier: 1.2,
@@ -42,7 +43,11 @@ export function scrollToId(id: string) {
   const el = document.getElementById(id);
   if (!el) return;
   const headerH = document.querySelector("header")?.getBoundingClientRect().height ?? 0;
-  const top = id === "intro" ? 0 : el.getBoundingClientRect().top + window.scrollY - headerH;
+  // ignore the sway wrapper's momentary offset so the target lands exactly under the header
+  const sway = document.querySelector<HTMLElement>("[data-sway]");
+  const swayY = sway ? new DOMMatrixReadOnly(getComputedStyle(sway).transform).m42 : 0;
+  const top =
+    id === "intro" ? 0 : el.getBoundingClientRect().top - swayY + window.scrollY - headerH;
   if (window.__lenis) window.__lenis.scrollTo(top, { duration: 1.4 });
   else window.scrollTo({ top, behavior: "smooth" });
 }
