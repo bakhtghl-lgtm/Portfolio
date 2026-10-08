@@ -12,8 +12,8 @@ export function SmoothScroll() {
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const lenis = new Lenis({
-      // lower lerp = longer glide after the wheel stops
-      lerp: 0.07,
+      // lower lerp = longer glide after the wheel stops (the Sway wrapper adds the soft landing)
+      lerp: 0.09,
       wheelMultiplier: 1,
       touchMultiplier: 1.2,
       anchors: { offset: 0 },
