@@ -5,6 +5,7 @@ import { Footer } from "@/components/Footer";
 import { SmoothScroll } from "@/components/fx/SmoothScroll";
 import { Cursor } from "@/components/fx/Cursor";
 import { Preloader } from "@/components/fx/Preloader";
+import { Sway } from "@/components/fx/Sway";
 import { Hero } from "@/components/sections/Hero";
 import { About } from "@/components/sections/About";
 import { Resume } from "@/components/sections/Resume";
@@ -25,17 +26,19 @@ function Index() {
       <Preloader />
       <Cursor />
       <Nav />
-      <main>
-        <Hero />
-        <About />
-        <Services />
-        <Skills />
-        <Resume />
-        <Portfolio />
-        <Testimonial />
-        <Contact />
-      </main>
-      <Footer />
+      <Sway>
+        <main>
+          <Hero />
+          <About />
+          <Services />
+          <Skills />
+          <Resume />
+          <Portfolio />
+          <Testimonial />
+          <Contact />
+        </main>
+        <Footer />
+      </Sway>
       <Toaster />
     </div>
   );
