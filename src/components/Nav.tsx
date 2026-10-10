@@ -2,7 +2,7 @@ import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring } fr
 import { useEffect, useState } from "react";
 import { lockScroll, scrollToId } from "./fx/SmoothScroll";
 import { Magnetic } from "./fx/Magnetic";
-import avatar from "@/assets/avatar.webp";
+import avatar from "@/assets/avatar-cartoon.svg";
 import {
   FacebookIcon,
   LinkedInIcon,
@@ -92,7 +92,7 @@ export function Nav() {
               width={36}
               height={36}
               className={`size-9 shrink-0 rounded-full object-cover ring-2 ring-offset-0 transition-transform duration-500 group-hover:scale-110 ${
-                open ? "ring-secondary-foreground" : "ring-secondary"
+                open ? "ring-secondary-foreground" : "ring-foreground"
               }`}
             />
             <span className="overflow-hidden h-[1.4em] whitespace-nowrap text-left">
