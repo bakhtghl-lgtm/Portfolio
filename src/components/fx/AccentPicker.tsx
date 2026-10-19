@@ -68,8 +68,7 @@ function Swatch({
   return (
     <button
       type="button"
-      role="radio"
-      aria-checked={selected}
+      aria-pressed={selected}
       aria-label={name}
       title={name}
       data-accent={id}
@@ -112,11 +111,7 @@ function pick(id: AccentId, el: HTMLElement) {
 export function AccentSwatches({ className = "" }: { className?: string }) {
   const current = useAccent();
   return (
-    <div
-      role="radiogroup"
-      aria-label="Accent colour"
-      className={`flex flex-wrap gap-4 ${className}`}
-    >
+    <div role="group" aria-label="Accent colour" className={`flex flex-wrap gap-4 ${className}`}>
       {ACCENTS.map((a) => (
         <Swatch key={a.id} {...a} selected={a.id === current} size="lg" onPick={pick} />
       ))}
@@ -174,7 +169,7 @@ export function AccentPicker({ className = "" }: { className?: string }) {
             <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground">
               Accent · <span className="text-foreground">{name}</span>
             </p>
-            <div role="radiogroup" aria-label="Accent colour" className="flex gap-3">
+            <div role="group" aria-label="Accent colour" className="flex gap-3">
               {ACCENTS.map((a) => (
                 <Swatch key={a.id} {...a} selected={a.id === current} size="sm" onPick={pick} />
               ))}
