@@ -193,6 +193,9 @@ html[data-menu-open] .cursor-fx {
   --a-ink: oklch(0.16 0.005 270);
   --a-text: oklch(0.88 0.18 95);
   --secondary: oklch(var(--a-l) var(--a-c) var(--a-h));
+  /* --a-solid (1 on deep accents with cream ink): text on accent fills drops its fade, since cream
+     on a mid-tone fill has no contrast to spare. --fade-rest: see ScrollLitText. */
+  --fade-rest: var(--a-solid, 0);
   --secondary-foreground: var(--a-ink);
   /* accent TEXT: black on cream (yellow text can't pass there), theme yellow on dark surfaces */
   --highlight: oklch(0.2 0.006 270);
@@ -236,6 +239,7 @@ html[data-menu-open] .cursor-fx {
   --ring: var(--a-text);
   --outline-stroke: oklch(1 0 0 / 60%);
   --scrollbar: oklch(1 0 0 / 0.2);
+  --fade-rest: 1;
   /* cards sit one clear step above the page */
   --gradient-card: linear-gradient(160deg, oklch(0.27 0.008 270) 0%, oklch(0.215 0.006 270) 100%);
   --shadow-card: 0 30px 80px -30px oklch(0 0 0 / 0.7);
@@ -260,6 +264,7 @@ html[data-menu-open] .cursor-fx {
   --a-h: 48;
   --a-ink: oklch(0.975 0.01 90);
   --a-text: oklch(0.8 0.07 55);
+  --a-solid: 1;
 }
 [data-accent="teal"] {
   /* WGSN / Coloro 2026 colour of the year family */
@@ -268,6 +273,7 @@ html[data-menu-open] .cursor-fx {
   --a-h: 195;
   --a-ink: oklch(0.975 0.01 90);
   --a-text: oklch(0.8 0.1 190);
+  --a-solid: 1;
 }
 [data-accent="tangerine"] {
   --a-l: 0.73;
@@ -282,6 +288,7 @@ html[data-menu-open] .cursor-fx {
   --a-h: 264;
   --a-ink: oklch(0.975 0.01 90);
   --a-text: oklch(0.76 0.12 262);
+  --a-solid: 1;
 }
 [data-accent="rose"] {
   --a-l: 0.76;

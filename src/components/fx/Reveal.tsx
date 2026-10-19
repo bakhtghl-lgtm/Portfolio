@@ -112,13 +112,14 @@ function LitWord({
   );
   const highlight = word.startsWith("*");
   const clean = word.replace(/\*/g, "");
-  // dark mode, marked words: the dim (cream) word fades out as the marker fades in, so there's
-  // never cream text on a half-drawn yellow marker. In light the dim word is black and stays.
+  // marked words: when the marker's ink differs from the page text (dark mode, or a deep accent
+  // with cream ink) the dim word fades out as the marker fades in, so the two never overlap.
+  // --fade-rest is 0 for light mode with a bright accent, where the dim word is already the ink.
   return (
     <span className="relative mr-[0.25em] mt-[0.1em]">
       {/* readable resting state (>= 3:1); the lit layer fades in over it as you scroll */}
       <motion.span
-        className={`text-foreground/55 ${highlight ? "dark:opacity-[calc(1-var(--lit))]" : ""}`}
+        className={`text-foreground/55 ${highlight ? "opacity-[calc(1-var(--lit)*var(--fade-rest,0))]" : ""}`}
         style={{ "--lit": opacity } as React.CSSProperties}
       >
         {clean}

@@ -218,7 +218,7 @@ export function Hero() {
           className="absolute right-6 top-[46%] z-30 hidden lg:block"
         >
           <div className="flex items-center gap-4 border-l border-secondary-foreground/25 pl-4">
-            <ul className="space-y-2 text-[10px] font-semibold uppercase tracking-[0.55em] text-secondary-foreground/75">
+            <ul className="space-y-2 text-[10px] font-semibold uppercase tracking-[0.55em] text-secondary-foreground opacity-[max(0.75,var(--a-solid,0))]">
               {["Build", "Design", "Automate", "Repeat"].map((w) => (
                 <li key={w}>{w}</li>
               ))}

@@ -96,7 +96,7 @@ function Card({
         <span>
           <span className="block font-display font-semibold">{t.name}</span>
           <span
-            className={`block text-xs uppercase tracking-[0.25em] ${yellow ? "opacity-70" : "text-muted-foreground"}`}
+            className={`block text-xs uppercase tracking-[0.25em] ${yellow ? "opacity-[max(0.7,var(--a-solid,0))]" : "text-muted-foreground"}`}
           >
             {t.role}
           </span>

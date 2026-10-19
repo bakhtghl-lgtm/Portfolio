@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { Check, Palette } from "lucide-react";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { centreOf, revealFrom } from "./reveal";
 
@@ -149,12 +149,11 @@ export function AccentPicker({ className = "" }: { className?: string }) {
         aria-expanded={open}
         aria-label={`Accent colour: ${name}. Change colour`}
         title="Accent colour"
-        className="grid size-10 shrink-0 place-items-center rounded-full border border-border bg-background/70 backdrop-blur transition-colors hover:border-foreground/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ring)]"
+        className="relative grid size-10 shrink-0 place-items-center rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition-colors hover:border-foreground/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ring)]"
       >
-        {/* a conic ring of all the accents around the current one */}
-        <span className="relative grid size-6 place-items-center rounded-full bg-[conic-gradient(from_0deg,#fdd506,#f78439,#f290a2,#3061d8,#027c7c,#936147,#fdd506)]">
-          <span className="size-[18px] rounded-full border-2 border-background bg-secondary" />
-        </span>
+        <Palette className="size-[18px]" />
+        {/* the current accent, as a badge on the palette */}
+        <span className="absolute bottom-[7px] right-[7px] size-2.5 rounded-full bg-secondary ring-2 ring-background transition-colors duration-500" />
       </button>
 
       <AnimatePresence>
