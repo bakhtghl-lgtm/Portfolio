@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring } fr
 import { useEffect, useState } from "react";
 import { lockScroll, scrollToId } from "./fx/SmoothScroll";
 import { Magnetic } from "./fx/Magnetic";
+import { ThemeToggle } from "./fx/ThemeToggle";
 import avatar from "@/assets/avatar-cartoon.svg";
 import {
   FacebookIcon,
@@ -117,6 +118,7 @@ export function Nav() {
               </span>
               Available · Pakistan {time}
             </div>
+            {!open ? <ThemeToggle /> : null}
             {!open ? (
               <button
                 type="button"

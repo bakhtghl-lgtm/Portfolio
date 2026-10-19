@@ -112,10 +112,15 @@ function LitWord({
   );
   const highlight = word.startsWith("*");
   const clean = word.replace(/\*/g, "");
+  // marked words: the dim word fades out as the marker fades in, so mid-scrub there's never
+  // page-coloured text sitting on a half-drawn yellow marker (cream on yellow in dark mode)
+  const restOpacity = useTransform(opacity, (o) => (highlight ? 1 - o : 1));
   return (
     <span className="relative mr-[0.25em] mt-[0.1em]">
       {/* readable resting state (>= 3:1); the lit layer fades in over it as you scroll */}
-      <span className="text-foreground/55">{clean}</span>
+      <motion.span className="text-foreground/55" style={{ opacity: restOpacity }}>
+        {clean}
+      </motion.span>
       <motion.span
         aria-hidden
         style={{ opacity }}

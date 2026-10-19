@@ -57,6 +57,37 @@ function Fade({
   );
 }
 
+const HEADLINE =
+  "absolute inset-x-0 top-[calc(var(--header-h)+env(safe-area-inset-top,0px)+0.5rem)] z-10 px-4 font-mega fs-hero leading-[0.92] md:px-6";
+
+function HeadlineLines({
+  play,
+  line1X,
+  line2X,
+}: {
+  play: boolean;
+  line1X: MotionValue<string>;
+  line2X: MotionValue<string>;
+}) {
+  return (
+    <>
+      <motion.span aria-hidden className="gpu block whitespace-nowrap" style={{ x: line1X }}>
+        <Letters text="GOHIGHLEVEL" play={play} delay={0.1} />
+      </motion.span>
+      <motion.span aria-hidden className="gpu block whitespace-nowrap" style={{ x: line2X }}>
+        <Letters text="EXPERT" play={play} delay={0.3} />
+        {/* the full stop is a yellow square, the one spot of colour in the type */}
+        <motion.span
+          className="ml-[0.06em] inline-block size-[0.17em] bg-secondary align-baseline"
+          initial={{ scale: 0 }}
+          animate={play ? { scale: 1 } : undefined}
+          transition={{ type: "spring", stiffness: 260, damping: 14, delay: 0.95 }}
+        />
+      </motion.span>
+    </>
+  );
+}
+
 /**
  * Poster hero: full-width GOHIGHLEVEL / EXPERT., portrait in front of the type on a yellow
  * panel. The stage pins while you scroll: the headline splits apart and the panel opens until
@@ -83,13 +114,12 @@ export function Hero() {
       className="relative"
       style={{ height: reduce ? "100svh" : "185svh" }}
     >
-      <div className="hero-stage sticky top-0 h-[100svh] min-h-[560px] overflow-hidden">
+      <motion.div
+        className="hero-stage sticky top-0 h-[100svh] min-h-[560px] overflow-hidden"
+        style={{ "--p": panel } as React.CSSProperties}
+      >
         {/* yellow panel: a card behind the portrait that opens to full screen on scroll */}
-        <motion.div
-          aria-hidden
-          className="hero-panel absolute inset-0 z-0 overflow-hidden"
-          style={{ "--p": panel } as React.CSSProperties}
-        >
+        <motion.div aria-hidden className="hero-panel absolute inset-0 z-0 overflow-hidden">
           <motion.div
             className="absolute inset-0 bg-secondary"
             initial={{ y: "100%" }}
@@ -99,25 +129,27 @@ export function Hero() {
         </motion.div>
 
         {/* headline: behind the portrait, in front of the panel */}
-        <motion.h1
-          className="absolute inset-x-0 top-[calc(var(--header-h)+env(safe-area-inset-top,0px)+0.5rem)] z-10 px-4 font-mega fs-hero leading-[0.92] text-foreground md:px-6"
+        <motion.h1 className={`${HEADLINE} text-foreground`} style={{ opacity: typeFade }}>
+          <span className="sr-only">Bakht Ali, senior GoHighLevel expert</span>
+          <HeadlineLines play={play} line1X={line1X} line2X={line2X} />
+        </motion.h1>
+        {/* dark mode: the type turns cream, which can't be read on yellow. This copy in the
+            on-yellow ink is clipped to exactly the panel's shape, so wherever the headline crosses
+            the panel it stays dark. It fades in as the panel's yellow arrives. */}
+        <motion.div
+          aria-hidden
+          className="hero-ink pointer-events-none absolute inset-0 z-10 hidden dark:block"
           style={{ opacity: typeFade }}
         >
-          <span className="sr-only">Bakht Ali, senior GoHighLevel expert</span>
-          <motion.span aria-hidden className="gpu block whitespace-nowrap" style={{ x: line1X }}>
-            <Letters text="GOHIGHLEVEL" play={play} delay={0.1} />
-          </motion.span>
-          <motion.span aria-hidden className="gpu block whitespace-nowrap" style={{ x: line2X }}>
-            <Letters text="EXPERT" play={play} delay={0.3} />
-            {/* the full stop is a yellow square, the one spot of colour in the type */}
-            <motion.span
-              className="ml-[0.06em] inline-block size-[0.17em] bg-secondary align-baseline"
-              initial={{ scale: 0 }}
-              animate={play ? { scale: 1 } : undefined}
-              transition={{ type: "spring", stiffness: 260, damping: 14, delay: 0.95 }}
-            />
-          </motion.span>
-        </motion.h1>
+          <motion.div
+            className={`${HEADLINE} text-secondary-foreground`}
+            initial={{ opacity: 0 }}
+            animate={play ? { opacity: 1 } : undefined}
+            transition={{ duration: 0.6, delay: 1 }}
+          >
+            <HeadlineLines play={play} line1X={line1X} line2X={line2X} />
+          </motion.div>
+        </motion.div>
 
         {/* portrait, in front of the type */}
         <motion.div
@@ -182,15 +214,15 @@ export function Hero() {
           style={{ opacity: uiFade }}
           className="absolute right-6 top-[46%] z-30 hidden lg:block"
         >
-          <div className="flex items-center gap-4 border-l border-foreground/25 pl-4">
-            <ul className="space-y-2 text-[10px] font-semibold uppercase tracking-[0.55em] text-foreground/75">
+          <div className="flex items-center gap-4 border-l border-secondary-foreground/25 pl-4">
+            <ul className="space-y-2 text-[10px] font-semibold uppercase tracking-[0.55em] text-secondary-foreground/75">
               {["Build", "Design", "Automate", "Repeat"].map((w) => (
                 <li key={w}>{w}</li>
               ))}
             </ul>
           </div>
         </Fade>
-      </div>
+      </motion.div>
     </section>
   );
 }
