@@ -3,8 +3,6 @@ import { Check, Palette } from "lucide-react";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { centreOf, revealFrom } from "./reveal";
 
-export const ACCENT_KEY = "accent";
-
 /** Order = order in the picker. Colours live in styles.css ([data-accent="…"]). */
 export const ACCENTS = [
   { id: "sunbeam", name: "Sunbeam" },
@@ -18,11 +16,6 @@ export const ACCENTS = [
 export type AccentId = (typeof ACCENTS)[number]["id"];
 const DEFAULT: AccentId = "sunbeam";
 const isAccent = (v: unknown): v is AccentId => ACCENTS.some((a) => a.id === v);
-
-/** Runs in <head> before first paint: a returning visitor's accent, with no yellow flash. */
-export const accentInitScript = `try{var a=localStorage.getItem("${ACCENT_KEY}");if(${JSON.stringify(
-  ACCENTS.map((a) => a.id).filter((id) => id !== DEFAULT),
-)}.indexOf(a)>-1)document.documentElement.setAttribute("data-accent",a)}catch(e){}`;
 
 // tiny store so the header picker and the menu picker stay in sync
 const listeners = new Set<() => void>();
@@ -40,15 +33,11 @@ function useAccent() {
     () => DEFAULT,
   );
 }
+/** For this visit only: every load starts on the signature yellow. */
 function setAccent(id: AccentId) {
   const root = document.documentElement;
   if (id === DEFAULT) root.removeAttribute("data-accent");
   else root.setAttribute("data-accent", id);
-  try {
-    localStorage.setItem(ACCENT_KEY, id);
-  } catch {
-    /* private mode: the choice just isn't remembered */
-  }
   listeners.forEach((l) => l());
 }
 

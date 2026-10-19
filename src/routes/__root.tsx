@@ -2,7 +2,6 @@ import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/r
 
 import appCss from "../styles.css?url";
 import { themeInitScript } from "@/components/fx/ThemeToggle";
-import { accentInitScript } from "@/components/fx/AccentPicker";
 
 function NotFoundComponent() {
   return (
@@ -73,8 +72,8 @@ function RootShell({ children }: { children: React.ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
-        {/* before first paint: apply a remembered theme and accent so there's no flash */}
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript + accentInitScript }} />
+        {/* before first paint: apply a remembered theme so there's no light flash */}
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
         {children}
