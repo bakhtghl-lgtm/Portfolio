@@ -146,7 +146,9 @@
 /* the ink copy of the hero headline only matters when the panel's ink differs from the page
    text (dark mode, or a deep accent with cream ink); otherwise it's an identical second headline
    repainting under the clip every scroll frame, so it's not drawn at all */
-:root:not(.dark):not([data-accent="mocha"]):not([data-accent="teal"]):not([data-accent="cobalt"])
+:root:not(.dark):not([data-accent="mocha"]):not([data-accent="red"]):not([data-accent="teal"]):not(
+    [data-accent="cobalt"]
+  )
   .hero-ink {
   display: none;
 }
@@ -256,7 +258,7 @@ html[data-menu-open] .cursor-fx {
 
 /* Accent palettes (picker in the header / menu). Each one is contrast-checked: its ink on the
    fill clears 4.5:1 (small bold button labels), and its text tone clears 8:1 on the dark page and
-   7:1 on dark cards. Deep fills (mocha, teal, cobalt) take cream ink; bright ones take black.
+   7:1 on dark cards. Deep fills (mocha, red, teal, cobalt) take cream ink; bright ones take black.
    Set on <html> for the page, and on each picker swatch so it can paint its own colour. */
 /* the default, spelled out so a swatch can show it while another accent is active */
 [data-accent="sunbeam"] {
@@ -273,6 +275,15 @@ html[data-menu-open] .cursor-fx {
   --a-h: 48;
   --a-ink: oklch(0.975 0.01 90);
   --a-text: oklch(0.8 0.07 55);
+  --a-solid: 1;
+}
+[data-accent="red"] {
+  /* hot red, taken a step deep so cream type sits on it cleanly (5.7:1) */
+  --a-l: 0.52;
+  --a-c: 0.2;
+  --a-h: 25;
+  --a-ink: oklch(0.975 0.01 90);
+  --a-text: oklch(0.74 0.15 22);
   --a-solid: 1;
 }
 [data-accent="teal"] {

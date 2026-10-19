@@ -143,7 +143,7 @@ export function Hero() {
           <HeadlineLines play={play} line1X={line1X} line2X={line2X} />
         </motion.h1>
         {/* Where the headline crosses the accent panel it must take the panel's ink: cream type
-            in dark mode, or black type on a deep accent (mocha, teal, cobalt), can't be read on
+            in dark mode, or black type on a deep accent (mocha, red, teal, cobalt), can't be read on
             the fill. This copy in the ink is clipped to exactly the panel's shape; with the
             default yellow in light mode it simply matches. It fades in as the panel arrives. */}
         <motion.div

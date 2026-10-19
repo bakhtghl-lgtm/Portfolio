@@ -9,6 +9,7 @@ export const ACCENT_KEY = "accent";
 export const ACCENTS = [
   { id: "sunbeam", name: "Sunbeam" },
   { id: "mocha", name: "Mocha" },
+  { id: "red", name: "Hot Red" },
   { id: "teal", name: "Teal" },
   { id: "tangerine", name: "Tangerine" },
   { id: "cobalt", name: "Cobalt" },
