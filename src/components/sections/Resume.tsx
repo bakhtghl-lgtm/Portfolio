@@ -116,10 +116,19 @@ export function Resume() {
                 <motion.span
                   className="absolute -left-[34px] md:-left-[50px] top-3 size-4 rounded-full border-2 border-secondary bg-background"
                   initial={{ scale: 0 }}
-                  whileInView={{ scale: 1, backgroundColor: "rgba(246, 207, 58, 1)" }}
+                  whileInView={{ scale: 1 }}
                   viewport={{ margin: "-45% 0px -45% 0px" }}
                   transition={{ type: "spring", stiffness: 300, damping: 15 }}
-                />
+                >
+                  {/* the dot fills with the accent while its period is centred on screen */}
+                  <motion.span
+                    className="absolute inset-0 rounded-full bg-secondary"
+                    initial={{ scale: 0 }}
+                    whileInView={{ scale: 1 }}
+                    viewport={{ margin: "-45% 0px -45% 0px" }}
+                    transition={{ duration: 0.3 }}
+                  />
+                </motion.span>
                 {/* solid colour so the period label always reads; sized to fit "2025 — PRESENT" */}
                 <p className="font-mega text-[clamp(1.75rem,calc((100vw-6rem)/6.2),4.5rem)] lg:text-[min(4.5rem,calc((55vw-10rem)/6.2))] text-muted-foreground mb-8">
                   <MaskText lines={[block.period]} />

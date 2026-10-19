@@ -133,12 +133,13 @@ export function Hero() {
           <span className="sr-only">Bakht Ali, senior GoHighLevel expert</span>
           <HeadlineLines play={play} line1X={line1X} line2X={line2X} />
         </motion.h1>
-        {/* dark mode: the type turns cream, which can't be read on yellow. This copy in the
-            on-yellow ink is clipped to exactly the panel's shape, so wherever the headline crosses
-            the panel it stays dark. It fades in as the panel's yellow arrives. */}
+        {/* Where the headline crosses the accent panel it must take the panel's ink: cream type
+            in dark mode, or black type on a deep accent (mocha, teal, cobalt), can't be read on
+            the fill. This copy in the ink is clipped to exactly the panel's shape; with the
+            default yellow in light mode it simply matches. It fades in as the panel arrives. */}
         <motion.div
           aria-hidden
-          className="hero-ink pointer-events-none absolute inset-0 z-10 hidden dark:block"
+          className="hero-ink pointer-events-none absolute inset-0 z-10"
           style={{ opacity: typeFade }}
         >
           <motion.div

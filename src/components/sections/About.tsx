@@ -79,8 +79,8 @@ const mixClip = interpolate(
   ["inset(30% 30% 30% 30% round 50%)", "inset(0% 0% 0% 0% round 24px)"],
 );
 
-/* the photo frame keeps the original theme yellow regardless of page theme */
-const PHOTO_BACKDROP = "oklch(0.88 0.18 95)";
+/* the photo frame is the accent colour in both page themes */
+const PHOTO_BACKDROP = "var(--secondary)";
 
 export function About() {
   const imgRef = useRef<HTMLDivElement>(null);

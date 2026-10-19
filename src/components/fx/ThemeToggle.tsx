@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState, type MouseEvent } from "react";
-import { flushSync } from "react-dom";
+import { centreOf, revealFrom } from "./reveal";
 
 export const THEME_KEY = "theme";
 type Theme = "light" | "dark";
@@ -24,10 +24,6 @@ function apply(theme: Theme) {
   }
 }
 
-type ViewTransitionDoc = Document & {
-  startViewTransition?: (update: () => void) => { ready: Promise<void> };
-};
-
 /**
  * Light/dark switch. Light is the default; the choice is remembered. Where the browser supports
  * view transitions the new theme opens as a circle from the button, otherwise it switches at once.
@@ -38,33 +34,11 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
 
   const toggle = (e: MouseEvent<HTMLButtonElement>) => {
     const next: Theme = isDark() ? "light" : "dark";
-    const doc = document as ViewTransitionDoc;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!doc.startViewTransition || reduce) {
+    const [x, y] = centreOf(e.currentTarget);
+    revealFrom(x, y, () => {
       apply(next);
       setTheme(next);
-      return;
-    }
-    const r = e.currentTarget.getBoundingClientRect();
-    const x = r.left + r.width / 2;
-    const y = r.top + r.height / 2;
-    const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
-    const vt = doc.startViewTransition(() => {
-      apply(next);
-      flushSync(() => setTheme(next));
     });
-    vt.ready
-      .then(() =>
-        document.documentElement.animate(
-          { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
-          {
-            duration: 750,
-            easing: "cubic-bezier(0.76, 0, 0.24, 1)",
-            pseudoElement: "::view-transition-new(root)",
-          },
-        ),
-      )
-      .catch(() => {});
   };
 
   const dark = theme === "dark";

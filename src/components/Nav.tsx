@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { lockScroll, scrollToId } from "./fx/SmoothScroll";
 import { Magnetic } from "./fx/Magnetic";
 import { ThemeToggle } from "./fx/ThemeToggle";
+import { AccentPicker, AccentSwatches } from "./fx/AccentPicker";
 import avatar from "@/assets/avatar-cartoon.svg";
 import {
   FacebookIcon,
@@ -118,6 +119,8 @@ export function Nav() {
               </span>
               Available · Pakistan {time}
             </div>
+            {/* phones pick the accent in the menu: there's no room for a third button here */}
+            {!open ? <AccentPicker className="hidden md:block" /> : null}
             {!open ? <ThemeToggle /> : null}
             {!open ? (
               <button
@@ -218,6 +221,12 @@ export function Nav() {
                     bakht.ghl@gmail.com
                   </a>
                   <WhatsAppButton className="mt-4" />
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.3em] opacity-60 mb-3">
+                    Accent colour
+                  </p>
+                  <AccentSwatches className="lg:justify-end [--picker-ring:var(--secondary-foreground)]" />
                 </div>
                 <div>
                   <p className="text-[11px] uppercase tracking-[0.3em] opacity-60 mb-2">Based in</p>

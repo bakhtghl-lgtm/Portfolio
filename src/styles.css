@@ -108,7 +108,11 @@
     z-index: -1;
     pointer-events: none;
     background-image:
-      radial-gradient(800px 500px at 10% -10%, oklch(0.88 0.18 95 / 0.08), transparent 60%),
+      radial-gradient(
+        800px 500px at 10% -10%,
+        oklch(var(--a-l) var(--a-c) var(--a-h) / 0.08),
+        transparent 60%
+      ),
       radial-gradient(600px 400px at 110% 10%, oklch(1 0 0 / 0.04), transparent 60%);
   }
   .grain::after {
@@ -180,15 +184,23 @@ html[data-menu-open] .cursor-fx {
   --popover-foreground: oklch(0.98 0 0);
   --primary: oklch(0.2 0.006 270);
   --primary-foreground: oklch(0.982 0.005 95);
-  --secondary: oklch(0.88 0.18 95); /* the theme yellow */
-  --secondary-foreground: oklch(0.16 0.005 270);
+  /* The accent (default: the theme yellow), switchable from the header. Split into its oklch
+     parts so the fill, glows and shadows all derive from it; each accent also sets the ink used on
+     top of it and a text tone that reads on dark surfaces. See [data-accent] below. */
+  --a-l: 0.88;
+  --a-c: 0.18;
+  --a-h: 95;
+  --a-ink: oklch(0.16 0.005 270);
+  --a-text: oklch(0.88 0.18 95);
+  --secondary: oklch(var(--a-l) var(--a-c) var(--a-h));
+  --secondary-foreground: var(--a-ink);
   /* accent TEXT: black on cream (yellow text can't pass there), theme yellow on dark surfaces */
   --highlight: oklch(0.2 0.006 270);
   --muted: oklch(0.93 0.006 95);
   /* body grey: ~7:1 on cream */
   --muted-foreground: oklch(0.45 0.01 270);
-  --accent: oklch(0.88 0.18 95);
-  --accent-foreground: oklch(0.16 0.005 270);
+  --accent: var(--secondary);
+  --accent-foreground: var(--a-ink);
   --destructive: oklch(0.55 0.22 25);
   --destructive-foreground: oklch(0.98 0 0);
   --border: oklch(0.2 0.006 270 / 12%);
@@ -196,10 +208,14 @@ html[data-menu-open] .cursor-fx {
   --ring: oklch(0.2 0.006 270);
   --outline-stroke: oklch(0.2 0.006 270 / 72%);
 
-  --gradient-yellow: linear-gradient(135deg, oklch(0.92 0.18 100), oklch(0.84 0.19 85));
+  --gradient-yellow: linear-gradient(
+    135deg,
+    oklch(calc(var(--a-l) + 0.04) var(--a-c) calc(var(--a-h) + 5)),
+    oklch(calc(var(--a-l) - 0.04) calc(var(--a-c) + 0.01) calc(var(--a-h) - 10))
+  );
   /* dark cards: one step lighter than near-black, with a hairline border */
   --gradient-card: linear-gradient(160deg, oklch(0.255 0.008 270) 0%, oklch(0.205 0.006 270) 100%);
-  --shadow-glow: 0 20px 60px -20px oklch(0.88 0.18 95 / 0.55);
+  --shadow-glow: 0 20px 60px -20px oklch(var(--a-l) var(--a-c) var(--a-h) / 0.55);
   --shadow-card: 0 30px 80px -30px oklch(0 0 0 / 0.35);
 }
 
@@ -211,18 +227,68 @@ html[data-menu-open] .cursor-fx {
   --foreground: oklch(0.965 0.008 95);
   --primary: oklch(0.965 0.008 95);
   --primary-foreground: oklch(0.16 0.005 270);
-  --highlight: oklch(0.88 0.18 95);
+  --highlight: var(--a-text);
   --muted: oklch(0.22 0.006 270);
   /* body grey: ~8:1 on the dark page */
   --muted-foreground: oklch(0.76 0.01 270);
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.88 0.18 95);
+  --ring: var(--a-text);
   --outline-stroke: oklch(1 0 0 / 60%);
   --scrollbar: oklch(1 0 0 / 0.2);
   /* cards sit one clear step above the page */
   --gradient-card: linear-gradient(160deg, oklch(0.27 0.008 270) 0%, oklch(0.215 0.006 270) 100%);
   --shadow-card: 0 30px 80px -30px oklch(0 0 0 / 0.7);
+}
+
+/* Accent palettes (picker in the header / menu). Each one is contrast-checked: its ink on the
+   fill clears 4.5:1 (small bold button labels), and its text tone clears 8:1 on the dark page and
+   7:1 on dark cards. Deep fills (mocha, teal, cobalt) take cream ink; bright ones take black.
+   Set on <html> for the page, and on each picker swatch so it can paint its own colour. */
+/* the default, spelled out so a swatch can show it while another accent is active */
+[data-accent="sunbeam"] {
+  --a-l: 0.88;
+  --a-c: 0.18;
+  --a-h: 95;
+  --a-ink: oklch(0.16 0.005 270);
+  --a-text: oklch(0.88 0.18 95);
+}
+[data-accent="mocha"] {
+  /* a deeper take on Pantone's 2025 Mocha Mousse */
+  --a-l: 0.54;
+  --a-c: 0.075;
+  --a-h: 48;
+  --a-ink: oklch(0.975 0.01 90);
+  --a-text: oklch(0.8 0.07 55);
+}
+[data-accent="teal"] {
+  /* WGSN / Coloro 2026 colour of the year family */
+  --a-l: 0.53;
+  --a-c: 0.09;
+  --a-h: 195;
+  --a-ink: oklch(0.975 0.01 90);
+  --a-text: oklch(0.8 0.1 190);
+}
+[data-accent="tangerine"] {
+  --a-l: 0.73;
+  --a-c: 0.165;
+  --a-h: 50;
+  --a-ink: oklch(0.16 0.005 270);
+  --a-text: oklch(0.76 0.15 52);
+}
+[data-accent="cobalt"] {
+  --a-l: 0.53;
+  --a-c: 0.19;
+  --a-h: 264;
+  --a-ink: oklch(0.975 0.01 90);
+  --a-text: oklch(0.76 0.12 262);
+}
+[data-accent="rose"] {
+  --a-l: 0.76;
+  --a-c: 0.12;
+  --a-h: 8;
+  --a-ink: oklch(0.16 0.005 270);
+  --a-text: oklch(0.79 0.11 8);
 }
 
 /* Dark cards, form panel, loader, modal: light text tokens, yellow text allowed. */
@@ -233,8 +299,8 @@ html[data-menu-open] .cursor-fx {
   --muted-foreground: oklch(0.78 0.01 270);
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 14%);
-  --highlight: oklch(0.88 0.18 95);
-  --ring: oklch(0.88 0.18 95);
+  --highlight: var(--a-text);
+  --ring: var(--a-text);
   --outline-stroke: oklch(1 0 0 / 75%);
   color: var(--foreground);
 }
