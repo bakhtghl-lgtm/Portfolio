@@ -169,14 +169,16 @@ export function Hero() {
           />
         </motion.div>
 
-        {/* services list + actions: under the headline on phones, bottom-left on desktop */}
+        {/* services list + actions: under the headline on phones, bottom-left on desktop.
+            On narrow desktops (~1024px) the list crosses the portrait's shirt: in dark mode the
+            cream type gets a soft dark shadow there so it stays readable. */}
         <Fade
           play={play}
           delay={1}
           style={{ opacity: uiFade }}
           className="absolute inset-x-4 z-30 top-[calc(var(--header-h)+env(safe-area-inset-top,0px)+1.75rem+1.9*max(2.5rem,min((100vw-2rem)/4.75,(100svh-20rem)/1.95)))] md:inset-x-6 lg:inset-x-auto lg:left-6 lg:top-auto lg:bottom-10"
         >
-          <ul className="space-y-1 font-mega text-2xl leading-[1.05] md:text-3xl">
+          <ul className="space-y-1 font-mega text-2xl leading-[1.05] md:text-3xl dark:[text-shadow:0_1px_2px_oklch(0_0_0/0.7),0_2px_14px_oklch(0_0_0/0.75)]">
             {["Funnels & Websites", "Automations", "CRM & SaaS Systems"].map((s) => (
               <li key={s}>
                 <span className="font-sans font-bold">/</span> {s}
