@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Moon, Sun } from "lucide-react";
-import { useEffect, useState, type MouseEvent } from "react";
-import { flushSync } from "react-dom";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { centreOf, revealFrom } from "./reveal";
 
 export const THEME_KEY = "theme";
 type Theme = "light" | "dark";
@@ -24,71 +24,75 @@ function apply(theme: Theme) {
   }
 }
 
-type ViewTransitionDoc = Document & {
-  startViewTransition?: (update: () => void) => { ready: Promise<void> };
-};
-
 /**
- * Light/dark switch. Light is the default; the choice is remembered. Where the browser supports
- * view transitions the new theme opens as a circle from the button, otherwise it switches at once.
+ * Light/dark switch: a sliding knob (sun / moon) with the current mode written beside it. Light is
+ * the default; the choice is remembered. Where the browser supports view transitions the new theme
+ * opens as a circle from the knob, otherwise it switches at once.
  */
 export function ThemeToggle({ className = "" }: { className?: string }) {
   const [theme, setTheme] = useState<Theme>("light");
   useEffect(() => setTheme(isDark() ? "dark" : "light"), []);
+  const knob = useRef<HTMLSpanElement>(null);
 
   const toggle = (e: MouseEvent<HTMLButtonElement>) => {
     const next: Theme = isDark() ? "light" : "dark";
-    const doc = document as ViewTransitionDoc;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!doc.startViewTransition || reduce) {
+    const [x, y] = centreOf(knob.current ?? e.currentTarget);
+    revealFrom(x, y, () => {
       apply(next);
       setTheme(next);
-      return;
-    }
-    const r = e.currentTarget.getBoundingClientRect();
-    const x = r.left + r.width / 2;
-    const y = r.top + r.height / 2;
-    const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
-    const vt = doc.startViewTransition(() => {
-      apply(next);
-      flushSync(() => setTheme(next));
     });
-    vt.ready
-      .then(() =>
-        document.documentElement.animate(
-          { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
-          {
-            duration: 750,
-            easing: "cubic-bezier(0.76, 0, 0.24, 1)",
-            pseudoElement: "::view-transition-new(root)",
-          },
-        ),
-      )
-      .catch(() => {});
   };
 
   const dark = theme === "dark";
   return (
     <button
       type="button"
+      role="switch"
+      aria-checked={dark}
+      aria-label="Dark mode"
       onClick={toggle}
-      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-      aria-pressed={dark}
-      title={dark ? "Light mode" : "Dark mode"}
-      className={`relative grid size-10 shrink-0 place-items-center overflow-hidden rounded-full border border-border bg-background/70 text-foreground backdrop-blur transition-colors hover:bg-secondary hover:text-secondary-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ring)] ${className}`}
+      className={`group relative flex h-10 w-[5.75rem] shrink-0 items-center rounded-full border border-border bg-background/70 p-1 text-foreground backdrop-blur transition-colors hover:border-foreground/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ring)] ${className}`}
     >
-      <AnimatePresence mode="popLayout" initial={false}>
-        <motion.span
-          key={theme}
-          className="grid place-items-center"
-          initial={{ y: 18, rotate: -90, opacity: 0 }}
-          animate={{ y: 0, rotate: 0, opacity: 1 }}
-          exit={{ y: -18, rotate: 90, opacity: 0 }}
-          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        >
-          {dark ? <Sun className="size-[18px]" /> : <Moon className="size-[18px]" />}
-        </motion.span>
-      </AnimatePresence>
+      {/* the mode's name sits on the free side of the track */}
+      <span
+        aria-hidden
+        className={`absolute inset-y-0 grid w-[3.25rem] place-items-center text-[10px] font-bold uppercase tracking-[0.18em] transition-[left,opacity] duration-500 ${
+          dark ? "left-1" : "left-[2.35rem]"
+        }`}
+      >
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.span
+            key={theme}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.3 }}
+          >
+            {dark ? "Dark" : "Light"}
+          </motion.span>
+        </AnimatePresence>
+      </span>
+      <motion.span
+        ref={knob}
+        aria-hidden
+        className="relative z-10 grid size-8 place-items-center rounded-full bg-foreground text-background shadow-[0_2px_8px_-2px_oklch(0_0_0/0.35)]"
+        initial={false}
+        animate={{ x: dark ? 50 : 0 }}
+        transition={{ type: "spring", stiffness: 500, damping: 32 }}
+      >
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.span
+            key={theme}
+            className="grid place-items-center"
+            initial={{ rotate: -90, scale: 0.4, opacity: 0 }}
+            animate={{ rotate: 0, scale: 1, opacity: 1 }}
+            exit={{ rotate: 90, scale: 0.4, opacity: 0 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {dark ? <Moon className="size-4" /> : <Sun className="size-4" />}
+          </motion.span>
+        </AnimatePresence>
+      </motion.span>
     </button>
   );
 }

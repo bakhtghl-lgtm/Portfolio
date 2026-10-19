@@ -52,14 +52,12 @@ export function Cursor() {
     <>
       <motion.div
         aria-hidden
-        className={`cursor-fx pointer-events-none fixed left-0 top-0 z-[100] rounded-full border flex items-center justify-center ${label ? "" : "mix-blend-difference"}`}
+        className={`cursor-fx pointer-events-none fixed left-0 top-0 z-[100] rounded-full border flex items-center justify-center transition-colors duration-300 ${label ? "border-secondary bg-secondary" : "mix-blend-difference border-white/85 bg-transparent"}`}
         style={{ x: rx, y: ry, translateX: "-50%", translateY: "-50%" }}
         animate={{
           width: size,
           height: size,
           scale: down ? 0.8 : 1,
-          backgroundColor: label ? "rgba(246, 207, 58, 1)" : "rgba(246, 207, 58, 0)",
-          borderColor: label ? "rgba(246, 207, 58, 1)" : "rgba(255, 255, 255, 0.85)",
         }}
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
       >

@@ -90,7 +90,7 @@ function ServiceCard({
           {s.title}
         </h3>
         <p
-          className={`mt-5 max-w-sm leading-relaxed ${yellow ? "opacity-80" : "text-muted-foreground"}`}
+          className={`mt-5 max-w-sm leading-relaxed ${yellow ? "opacity-[max(0.8,var(--a-solid,0))]" : "text-muted-foreground"}`}
         >
           {s.desc}
         </p>

@@ -3,8 +3,6 @@ import { cloneElement, isValidElement, useRef, type ReactNode } from "react";
 
 const EASE = [0.76, 0, 0.24, 1] as const;
 
-const ramp = (v: number, a: number, b: number) => Math.min(1, Math.max(0, (v - a) / (b - a)));
-
 function textOf(node: ReactNode): string {
   if (typeof node === "string" || typeof node === "number") return String(node);
   if (isValidElement<{ children?: ReactNode }>(node)) return textOf(node.props.children);
@@ -12,22 +10,13 @@ function textOf(node: ReactNode): string {
   return "";
 }
 
-/** One letter that rises out of its mask as the heading scrolls into view (scrubbed). */
-function ScrubChar({
-  ch,
-  p,
-  range,
-}: {
-  ch: string;
-  p: MotionValue<number>;
-  range: [number, number];
-}) {
-  const y = useTransform(p, (v) => `${(1 - ramp(v, range[0], range[1])) * 115}%`);
-  const rotate = useTransform(p, (v) => (1 - ramp(v, range[0], range[1])) * 14);
+/** One letter that rises out of its mask; its position is computed in CSS from the heading's
+ *  scroll progress (--mp) and the letter's own start (--s): see .mask-char in styles.css. */
+function ScrubChar({ ch, start }: { ch: string; start: number }) {
   return (
-    <motion.span className="inline-block origin-bottom-left" style={{ y, rotate }}>
+    <span className="mask-char" style={{ "--s": start } as React.CSSProperties}>
       {ch === " " ? "\u00A0" : ch}
-    </motion.span>
+    </span>
   );
 }
 
@@ -57,7 +46,7 @@ export function MaskText({
   const split = (text: string) =>
     text.split("").map((ch) => {
       const start = (k++ / total) * 0.55;
-      return <ScrubChar key={k} ch={ch} p={scrollYProgress} range={[start, start + 0.45]} />;
+      return <ScrubChar key={k} ch={ch} start={start} />;
     });
 
   const render = (line: ReactNode): ReactNode => {
@@ -69,14 +58,20 @@ export function MaskText({
   };
 
   return (
-    <span ref={ref} className={`block ${className}`}>
+    // one style write per frame for the whole heading (the letters derive their own offsets);
+    // its own compositor layer, so moving letters repaint just this heading, not the page layer
+    <motion.span
+      ref={ref}
+      className={`gpu block ${className}`}
+      style={{ "--mp": scrollYProgress } as React.CSSProperties}
+    >
       <span className="sr-only">{lines.map(textOf).join(" ")}</span>
       {lines.map((line, i) => (
         <span key={i} aria-hidden className={`mask whitespace-nowrap ${lineClassName}`}>
           <span className="block">{render(line)}</span>
         </span>
       ))}
-    </span>
+    </motion.span>
   );
 }
 
@@ -112,13 +107,14 @@ function LitWord({
   );
   const highlight = word.startsWith("*");
   const clean = word.replace(/\*/g, "");
-  // dark mode, marked words: the dim (cream) word fades out as the marker fades in, so there's
-  // never cream text on a half-drawn yellow marker. In light the dim word is black and stays.
+  // marked words: when the marker's ink differs from the page text (dark mode, or a deep accent
+  // with cream ink) the dim word fades out as the marker fades in, so the two never overlap.
+  // --fade-rest is 0 for light mode with a bright accent, where the dim word is already the ink.
   return (
     <span className="relative mr-[0.25em] mt-[0.1em]">
       {/* readable resting state (>= 3:1); the lit layer fades in over it as you scroll */}
       <motion.span
-        className={`text-foreground/55 ${highlight ? "dark:opacity-[calc(1-var(--lit))]" : ""}`}
+        className={`text-foreground/55 ${highlight ? "opacity-[calc(1-var(--lit)*var(--fade-rest,0))]" : ""}`}
         style={{ "--lit": opacity } as React.CSSProperties}
       >
         {clean}

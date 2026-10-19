@@ -255,7 +255,7 @@ function ProjectIndex({ onOpen }: { onOpen: (p: PortfolioItem) => void }) {
                     {proj.title}
                   </span>
                   <span
-                    className={`mt-2 block text-xs font-semibold uppercase tracking-[0.2em] transition-colors ${on ? "text-secondary-foreground/75" : "text-muted-foreground"}`}
+                    className={`mt-2 block text-xs font-semibold uppercase tracking-[0.2em] transition-colors ${on ? "text-secondary-foreground opacity-[max(0.75,var(--a-solid,0))]" : "text-muted-foreground"}`}
                   >
                     {proj.tags.join(" · ")}
                   </span>

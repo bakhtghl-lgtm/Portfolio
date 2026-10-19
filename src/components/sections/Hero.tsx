@@ -1,4 +1,11 @@
-import { motion, useReducedMotion, useScroll, useTransform, type MotionValue } from "framer-motion";
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+  type MotionStyle,
+  type MotionValue,
+} from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { useRef } from "react";
 import cutout from "@/assets/portrait-cutout.webp";
@@ -114,12 +121,14 @@ export function Hero() {
       className="relative"
       style={{ height: reduce ? "100svh" : "185svh" }}
     >
-      <motion.div
-        className="hero-stage sticky top-0 h-[100svh] min-h-[560px] overflow-hidden"
-        style={{ "--p": panel } as React.CSSProperties}
-      >
+      <div className="hero-stage sticky top-0 h-[100svh] min-h-[560px] overflow-hidden">
         {/* yellow panel: a card behind the portrait that opens to full screen on scroll */}
-        <motion.div aria-hidden className="hero-panel absolute inset-0 z-0 overflow-hidden">
+        <motion.div
+          aria-hidden
+          className="hero-panel absolute inset-0 z-0 overflow-hidden"
+          /* --p only on the two clipped layers: on the stage it restyled the whole hero per frame */
+          style={{ "--p": panel } as React.CSSProperties}
+        >
           <motion.div
             className="absolute inset-0 bg-secondary"
             initial={{ y: "100%" }}
@@ -133,13 +142,14 @@ export function Hero() {
           <span className="sr-only">Bakht Ali, senior GoHighLevel expert</span>
           <HeadlineLines play={play} line1X={line1X} line2X={line2X} />
         </motion.h1>
-        {/* dark mode: the type turns cream, which can't be read on yellow. This copy in the
-            on-yellow ink is clipped to exactly the panel's shape, so wherever the headline crosses
-            the panel it stays dark. It fades in as the panel's yellow arrives. */}
+        {/* Where the headline crosses the accent panel it must take the panel's ink: cream type
+            in dark mode, or black type on a deep accent (mocha, red, teal, cobalt), can't be read on
+            the fill. This copy in the ink is clipped to exactly the panel's shape; with the
+            default yellow in light mode it simply matches. It fades in as the panel arrives. */}
         <motion.div
           aria-hidden
-          className="hero-ink pointer-events-none absolute inset-0 z-10 hidden dark:block"
-          style={{ opacity: typeFade }}
+          className="hero-ink pointer-events-none absolute inset-0 z-10"
+          style={{ opacity: typeFade, "--p": panel } as MotionStyle}
         >
           <motion.div
             className={`${HEADLINE} text-secondary-foreground`}
@@ -217,14 +227,14 @@ export function Hero() {
           className="absolute right-6 top-[46%] z-30 hidden lg:block"
         >
           <div className="flex items-center gap-4 border-l border-secondary-foreground/25 pl-4">
-            <ul className="space-y-2 text-[10px] font-semibold uppercase tracking-[0.55em] text-secondary-foreground/75">
+            <ul className="space-y-2 text-[10px] font-semibold uppercase tracking-[0.55em] text-secondary-foreground opacity-[max(0.75,var(--a-solid,0))]">
               {["Build", "Design", "Automate", "Repeat"].map((w) => (
                 <li key={w}>{w}</li>
               ))}
             </ul>
           </div>
         </Fade>
-      </motion.div>
+      </div>
     </section>
   );
 }

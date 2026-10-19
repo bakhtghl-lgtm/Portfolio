@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { lockScroll, scrollToId } from "./fx/SmoothScroll";
 import { Magnetic } from "./fx/Magnetic";
 import { ThemeToggle } from "./fx/ThemeToggle";
-import avatar from "@/assets/avatar-cartoon.svg";
+import { Avatar } from "./Avatar";
+import { AccentPicker, AccentSwatches } from "./fx/AccentPicker";
 import {
   FacebookIcon,
   LinkedInIcon,
@@ -87,12 +88,8 @@ export function Nav() {
             aria-label="Bakht Ali — back to top"
             className={`group flex min-w-0 items-center gap-2 font-display text-base sm:text-lg font-bold tracking-tight transition-colors duration-500 ${open ? "text-secondary-foreground" : "text-foreground"}`}
           >
-            <img
-              src={avatar}
-              alt=""
-              width={36}
-              height={36}
-              className={`size-9 shrink-0 rounded-full object-cover ring-2 ring-offset-0 transition-transform duration-500 group-hover:scale-110 ${
+            <Avatar
+              className={`size-9 shrink-0 rounded-full overflow-hidden ring-2 ring-offset-0 transition-transform duration-500 group-hover:scale-110 ${
                 open ? "ring-secondary-foreground" : "ring-foreground"
               }`}
             />
@@ -118,6 +115,8 @@ export function Nav() {
               </span>
               Available · Pakistan {time}
             </div>
+            {/* phones pick the accent in the menu: there's no room for a third button here */}
+            {!open ? <AccentPicker className="hidden md:block" /> : null}
             {!open ? <ThemeToggle /> : null}
             {!open ? (
               <button
@@ -134,9 +133,10 @@ export function Nav() {
                 onClick={() => setOpen((o) => !o)}
                 aria-label={open ? "Close menu" : "Open menu"}
                 aria-expanded={open}
-                className="relative z-[70] flex items-center gap-3 rounded-full bg-foreground text-background pl-5 pr-2 py-2 text-xs font-bold uppercase tracking-[0.25em]"
+                className="relative z-[70] flex items-center gap-0 rounded-full bg-foreground py-2 pl-2 pr-2 text-xs font-bold uppercase tracking-[0.25em] text-background sm:gap-3 sm:pl-5"
               >
-                <span className="overflow-hidden h-[1.3em]">
+                {/* phones show just the round icon: the theme switch needs the room */}
+                <span className="hidden h-[1.3em] overflow-hidden sm:block">
                   <motion.span
                     className="block"
                     animate={{ y: open ? "-50%" : "0%" }}
@@ -186,7 +186,7 @@ export function Nav() {
                       transition={{ duration: 0.8, ease: EASE, delay: 0.25 + i * 0.05 }}
                       className="group flex items-center gap-4 font-mega text-[clamp(2.5rem,13vw,4.5rem)] sm:text-[clamp(3rem,10vw,6rem)] lg:text-[min(7.2vw,8rem,calc((100svh-11rem)/8.6))] leading-[0.95] text-left"
                     >
-                      <span className="w-6 shrink-0 font-sans text-xs font-bold tracking-widest opacity-70">
+                      <span className="w-6 shrink-0 font-sans text-xs font-bold tracking-widest opacity-[max(0.7,var(--a-solid,0))]">
                         0{i + 1}
                       </span>
                       <span className="relative">
@@ -206,7 +206,7 @@ export function Nav() {
                 className="space-y-6 text-sm font-medium lg:text-right"
               >
                 <div>
-                  <p className="text-[11px] uppercase tracking-[0.3em] opacity-60 mb-2">
+                  <p className="text-[11px] uppercase tracking-[0.3em] opacity-[max(0.6,var(--a-solid,0))] mb-2">
                     Say hello
                   </p>
                   <a
@@ -220,7 +220,15 @@ export function Nav() {
                   <WhatsAppButton className="mt-4" />
                 </div>
                 <div>
-                  <p className="text-[11px] uppercase tracking-[0.3em] opacity-60 mb-2">Based in</p>
+                  <p className="text-[11px] uppercase tracking-[0.3em] opacity-[max(0.6,var(--a-solid,0))] mb-3">
+                    Accent colour
+                  </p>
+                  <AccentSwatches className="lg:justify-end [--picker-ring:var(--secondary-foreground)]" />
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.3em] opacity-[max(0.6,var(--a-solid,0))] mb-2">
+                    Based in
+                  </p>
                   <p>Pakistan · Working with clients worldwide</p>
                 </div>
                 <div className="flex gap-3 lg:justify-end">

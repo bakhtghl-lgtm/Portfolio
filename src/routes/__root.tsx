@@ -72,7 +72,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
-        {/* before first paint: apply a remembered dark theme so there's no light flash */}
+        {/* before first paint: apply a remembered theme so there's no light flash */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body>
