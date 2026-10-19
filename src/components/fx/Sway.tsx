@@ -28,6 +28,16 @@ export function Sway({ children }: { children: ReactNode }) {
   const touching = useRef(false);
   const lastY = useRef<number | null>(null);
   const touchV = useRef(0);
+  const el = useRef<HTMLDivElement>(null);
+  // The wrapper is its own compositor layer only while it moves. At rest it's a plain block, so
+  // the pinned (sticky) sections inside it keep the browser's cheap composited path instead of
+  // being repainted every scroll frame as part of one page-sized layer.
+  const layered = useRef(false);
+  const setLayer = (on: boolean) => {
+    if (layered.current === on || !el.current) return;
+    layered.current = on;
+    el.current.style.willChange = on ? "transform" : "";
+  };
 
   useEffect(() => {
     const down = () => (touching.current = true);
@@ -68,8 +78,10 @@ export function Sway({ children }: { children: ReactNode }) {
     if (Math.abs(target) < 0.05 && Math.abs(pos) < 0.05 && Math.abs(v) < 0.5) {
       if (pos !== 0) y.set(0);
       vel.current = 0;
+      setLayer(false);
       return;
     }
+    setLayer(true);
     // fixed 4ms sub-steps keep the spring identical at 60, 120 or a stuttering frame rate
     let t = dt / 1000;
     while (t > 0) {
@@ -85,7 +97,7 @@ export function Sway({ children }: { children: ReactNode }) {
   // the wrapper is always rendered (only its motion is switched off), so the page below it
   // never remounts when the media query resolves after hydration
   return (
-    <motion.div data-sway className={reduce ? undefined : "gpu"} style={{ y }}>
+    <motion.div ref={el} data-sway style={{ y }}>
       {children}
     </motion.div>
   );

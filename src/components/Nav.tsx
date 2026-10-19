@@ -66,7 +66,7 @@ export function Nav() {
   return (
     <>
       <motion.div
-        className="fixed top-0 left-0 right-0 h-[3px] bg-secondary origin-left z-[60]"
+        className="gpu fixed top-0 left-0 right-0 h-[3px] bg-secondary origin-left z-[60]"
         style={{ scaleX: progress }}
       />
 

@@ -51,7 +51,14 @@ export function Preloader() {
     lockScroll(true);
     window.scrollTo(0, 0);
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const dur = reduce ? 300 : DURATION;
+    // The curtain is server-rendered, so it has been on screen since the first paint, while the
+    // scripts downloaded. On a fast load that's a blink and the count-up plays in full; on a slow
+    // phone that wait counts toward it (beyond a 0.5s grace), so the intro never adds its whole
+    // length on top of the download.
+    const shownAt =
+      performance.getEntriesByName("first-contentful-paint")[0]?.startTime ?? performance.now();
+    const waited = Math.max(0, performance.now() - shownAt - 500);
+    const dur = reduce ? 300 : Math.max(700, DURATION - waited);
     const t0 = performance.now();
     const tick = (t: number) => {
       const p = Math.min((t - t0) / dur, 1);
