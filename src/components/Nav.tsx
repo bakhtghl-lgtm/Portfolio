@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring } fr
 import { useEffect, useState } from "react";
 import { lockScroll, scrollToId } from "./fx/SmoothScroll";
 import { Magnetic } from "./fx/Magnetic";
+import { ThemeToggle } from "./fx/ThemeToggle";
 import avatar from "@/assets/avatar-cartoon.svg";
 import {
   FacebookIcon,
@@ -65,7 +66,7 @@ export function Nav() {
   return (
     <>
       <motion.div
-        className="fixed top-0 left-0 right-0 h-[3px] bg-secondary origin-left z-[60]"
+        className="gpu fixed top-0 left-0 right-0 h-[3px] bg-secondary origin-left z-[60]"
         style={{ scaleX: progress }}
       />
 
@@ -117,6 +118,7 @@ export function Nav() {
               </span>
               Available · Pakistan {time}
             </div>
+            {!open ? <ThemeToggle /> : null}
             {!open ? (
               <button
                 type="button"

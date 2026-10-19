@@ -7,10 +7,15 @@ declare global {
   }
 }
 
-/** Inertia scrolling for the whole page. Skipped when the user prefers reduced motion. */
+/**
+ * Inertia scrolling for the whole page, for mouse wheels and trackpads. Skipped when the user
+ * prefers reduced motion, and on touch-only devices: their native momentum scroll is already
+ * smooth, and Lenis would only add a per-frame scroll read there.
+ */
 export function SmoothScroll() {
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!window.matchMedia("(pointer: fine)").matches) return;
     const lenis = new Lenis({
       // lower lerp = longer glide after the wheel stops (the Sway wrapper adds the soft landing)
       lerp: 0.09,

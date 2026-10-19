@@ -112,10 +112,17 @@ function LitWord({
   );
   const highlight = word.startsWith("*");
   const clean = word.replace(/\*/g, "");
+  // dark mode, marked words: the dim (cream) word fades out as the marker fades in, so there's
+  // never cream text on a half-drawn yellow marker. In light the dim word is black and stays.
   return (
     <span className="relative mr-[0.25em] mt-[0.1em]">
       {/* readable resting state (>= 3:1); the lit layer fades in over it as you scroll */}
-      <span className="text-foreground/55">{clean}</span>
+      <motion.span
+        className={`text-foreground/55 ${highlight ? "dark:opacity-[calc(1-var(--lit))]" : ""}`}
+        style={{ "--lit": opacity } as React.CSSProperties}
+      >
+        {clean}
+      </motion.span>
       <motion.span
         aria-hidden
         style={{ opacity }}

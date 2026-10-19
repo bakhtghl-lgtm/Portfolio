@@ -98,6 +98,19 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
+  /* the soft yellow glow at the top of the screen. A fixed layer of its own: as a body
+     background with background-attachment: fixed it forced a full-screen repaint every scroll
+     frame (the biggest scroll cost on phones) */
+  .grain::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+      radial-gradient(800px 500px at 10% -10%, oklch(0.88 0.18 95 / 0.08), transparent 60%),
+      radial-gradient(600px 400px at 110% 10%, oklch(1 0 0 / 0.04), transparent 60%);
+  }
   .grain::after {
     animation: none;
   }
@@ -126,7 +139,8 @@
   left: var(--photo-left);
   width: var(--pw);
 }
-.hero-panel {
+.hero-panel,
+.hero-ink {
   --q: calc(1 - var(--p, 0));
   clip-path: inset(
     calc(var(--pt) * var(--q)) calc(var(--pr) * var(--q)) 0 calc(var(--pl) * var(--q)) round
@@ -189,6 +203,28 @@ html[data-menu-open] .cursor-fx {
   --shadow-card: 0 30px 80px -30px oklch(0 0 0 / 0.35);
 }
 
+/* Dark theme (toggle in the header; light stays the default). Same yellow, same black-on-yellow
+   marker; the page goes near-black with cream type, and yellow becomes a valid text accent. */
+.dark {
+  color-scheme: dark;
+  --background: oklch(0.155 0.005 270);
+  --foreground: oklch(0.965 0.008 95);
+  --primary: oklch(0.965 0.008 95);
+  --primary-foreground: oklch(0.16 0.005 270);
+  --highlight: oklch(0.88 0.18 95);
+  --muted: oklch(0.22 0.006 270);
+  /* body grey: ~8:1 on the dark page */
+  --muted-foreground: oklch(0.76 0.01 270);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.88 0.18 95);
+  --outline-stroke: oklch(1 0 0 / 60%);
+  --scrollbar: oklch(1 0 0 / 0.2);
+  /* cards sit one clear step above the page */
+  --gradient-card: linear-gradient(160deg, oklch(0.27 0.008 270) 0%, oklch(0.215 0.006 270) 100%);
+  --shadow-card: 0 30px 80px -30px oklch(0 0 0 / 0.7);
+}
+
 /* Dark cards, form panel, loader, modal: light text tokens, yellow text allowed. */
 .surface-dark {
   color-scheme: dark;
@@ -208,10 +244,6 @@ html,
 body {
   background-color: var(--background);
   color: var(--foreground);
-}
-
-.dark {
-  color-scheme: dark;
 }
 
 @layer base {
@@ -235,12 +267,6 @@ body {
     color: var(--color-foreground);
     font-family: var(--font-sans);
   }
-  body {
-    background-image:
-      radial-gradient(800px 500px at 10% -10%, oklch(0.88 0.18 95 / 0.08), transparent 60%),
-      radial-gradient(600px 400px at 110% 10%, oklch(1 0 0 / 0.04), transparent 60%);
-    background-attachment: fixed;
-  }
   section[id] {
     scroll-margin-top: var(--header-h);
   }
@@ -260,7 +286,7 @@ body {
     height: 8px;
   }
   ::-webkit-scrollbar-thumb {
-    background: oklch(0 0 0 / 0.18);
+    background: var(--scrollbar, oklch(0 0 0 / 0.18));
     border-radius: 8px;
   }
   ::-webkit-scrollbar-thumb:hover {
@@ -369,4 +395,11 @@ body {
     backdrop-filter: blur(12px);
     border: 1px solid var(--border);
   }
+}
+
+/* theme switch: the new theme opens as a circle from the toggle (see ThemeToggle) */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }

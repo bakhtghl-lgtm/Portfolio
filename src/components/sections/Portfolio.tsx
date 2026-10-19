@@ -250,7 +250,7 @@ function ProjectIndex({ onOpen }: { onOpen: (p: PortfolioItem) => void }) {
                 </span>
                 <span className="min-w-0">
                   <span
-                    className={`block font-mega text-[clamp(1.75rem,2.6vw,2.75rem)] leading-[1] transition-transform duration-500 ${on ? "translate-x-3" : ""}`}
+                    className={`block font-mega text-[clamp(1.75rem,2.6vw,2.75rem)] leading-[1] transition-[transform,color] duration-500 ${on ? "translate-x-3 text-secondary-foreground" : "text-foreground"}`}
                   >
                     {proj.title}
                   </span>
