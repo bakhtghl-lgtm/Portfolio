@@ -140,7 +140,7 @@ export function Testimonial() {
         </div>
       ) : (
         <motion.div style={{ rotate }} className="gpu mt-16 space-y-6 py-6">
-          <VelocityMarquee baseVelocity={-1.2}>
+          <VelocityMarquee baseVelocity={-1.2} skewOnScroll={false}>
             {testimonials
               .slice(0, half)
               .concat(testimonials.slice(0, half))
@@ -148,7 +148,7 @@ export function Testimonial() {
                 <Card key={i} t={t} yellow={i % 3 === 1} />
               ))}
           </VelocityMarquee>
-          <VelocityMarquee baseVelocity={1.2}>
+          <VelocityMarquee baseVelocity={1.2} skewOnScroll={false}>
             {testimonials
               .slice(half)
               .concat(testimonials.slice(half))

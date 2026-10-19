@@ -143,8 +143,17 @@
   left: var(--photo-left);
   width: var(--pw);
 }
+/* the ink copy of the hero headline only matters when the panel's ink differs from the page
+   text (dark mode, or a deep accent with cream ink); otherwise it's an identical second headline
+   repainting under the clip every scroll frame, so it's not drawn at all */
+:root:not(.dark):not([data-accent="mocha"]):not([data-accent="teal"]):not([data-accent="cobalt"])
+  .hero-ink {
+  display: none;
+}
 .hero-panel,
 .hero-ink {
+  /* own layers: the clip changes every scroll frame; repaint just these, not the page layer */
+  will-change: transform;
   --q: calc(1 - var(--p, 0));
   clip-path: inset(
     calc(var(--pt) * var(--q)) calc(var(--pr) * var(--q)) 0 calc(var(--pl) * var(--q)) round
@@ -441,6 +450,14 @@ body {
     background-image: none;
     padding-inline: 0;
     margin-inline: 0;
+  }
+  /* MaskText letters: rise and untilt as the heading's progress (--mp) passes this letter's
+     start (--s); each letter takes 0.45 of the progress range */
+  .mask-char {
+    display: inline-block;
+    transform-origin: bottom left;
+    --k: clamp(0, (var(--mp, 1) - var(--s, 0)) / 0.45, 1);
+    transform: translateY(calc((1 - var(--k)) * 115%)) rotate(calc((1 - var(--k)) * 14deg));
   }
   .text-outline {
     color: transparent;

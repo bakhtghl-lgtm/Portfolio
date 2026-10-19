@@ -21,10 +21,13 @@ export function VelocityMarquee({
   children,
   baseVelocity = 3,
   className = "",
+  skewOnScroll = true,
 }: {
   children: ReactNode;
   baseVelocity?: number;
   className?: string;
+  /** lean with scroll speed; off for heavy content (re-rastered every frame while it changes) */
+  skewOnScroll?: boolean;
 }) {
   const baseX = useMotionValue(0);
   const { scrollY } = useScroll();
@@ -54,7 +57,7 @@ export function VelocityMarquee({
     <div ref={box} className={`overflow-hidden whitespace-nowrap flex ${className}`}>
       <motion.div
         className="gpu flex whitespace-nowrap"
-        style={reduce ? undefined : { x, skewX: skew }}
+        style={reduce ? undefined : skewOnScroll ? { x, skewX: skew } : { x }}
       >
         {[0, 1, 2, 3].map((i) => (
           <span key={i} className="flex shrink-0 items-center" aria-hidden={i > 0}>

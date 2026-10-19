@@ -106,7 +106,7 @@ export function Resume() {
           {/* rail + scroll-drawn progress */}
           <div className="absolute left-3 md:left-5 top-0 bottom-0 w-px bg-border" />
           <motion.div
-            className="absolute left-3 md:left-5 top-0 bottom-0 w-[3px] -ml-px bg-secondary origin-top shadow-glow"
+            className="gpu absolute left-3 md:left-5 top-0 bottom-0 w-[3px] -ml-px bg-secondary origin-top shadow-glow"
             style={{ scaleY: line }}
           />
 

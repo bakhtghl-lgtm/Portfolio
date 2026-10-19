@@ -1,4 +1,11 @@
-import { motion, useReducedMotion, useScroll, useTransform, type MotionValue } from "framer-motion";
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+  type MotionStyle,
+  type MotionValue,
+} from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { useRef } from "react";
 import cutout from "@/assets/portrait-cutout.webp";
@@ -114,12 +121,14 @@ export function Hero() {
       className="relative"
       style={{ height: reduce ? "100svh" : "185svh" }}
     >
-      <motion.div
-        className="hero-stage sticky top-0 h-[100svh] min-h-[560px] overflow-hidden"
-        style={{ "--p": panel } as React.CSSProperties}
-      >
+      <div className="hero-stage sticky top-0 h-[100svh] min-h-[560px] overflow-hidden">
         {/* yellow panel: a card behind the portrait that opens to full screen on scroll */}
-        <motion.div aria-hidden className="hero-panel absolute inset-0 z-0 overflow-hidden">
+        <motion.div
+          aria-hidden
+          className="hero-panel absolute inset-0 z-0 overflow-hidden"
+          /* --p only on the two clipped layers: on the stage it restyled the whole hero per frame */
+          style={{ "--p": panel } as React.CSSProperties}
+        >
           <motion.div
             className="absolute inset-0 bg-secondary"
             initial={{ y: "100%" }}
@@ -140,7 +149,7 @@ export function Hero() {
         <motion.div
           aria-hidden
           className="hero-ink pointer-events-none absolute inset-0 z-10"
-          style={{ opacity: typeFade }}
+          style={{ opacity: typeFade, "--p": panel } as MotionStyle}
         >
           <motion.div
             className={`${HEADLINE} text-secondary-foreground`}
@@ -225,7 +234,7 @@ export function Hero() {
             </ul>
           </div>
         </Fade>
-      </motion.div>
+      </div>
     </section>
   );
 }
