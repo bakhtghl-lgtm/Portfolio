@@ -219,12 +219,13 @@ export function Hero() {
           </div>
         </Fade>
 
-        {/* vertical motto, right edge (desktop) */}
+        {/* vertical motto, right edge (desktop). Pinned inside the panel's right and top edges: it's
+            set in the panel's ink, which on a deep accent is cream and vanishes on the page */}
         <Fade
           play={play}
           delay={1.2}
           style={{ opacity: uiFade }}
-          className="absolute right-6 top-[46%] z-30 hidden lg:block"
+          className="absolute right-[calc(var(--pr)+1.25rem)] top-[max(46%,calc(var(--pt)+1.75rem))] z-30 hidden lg:block"
         >
           <div className="flex items-center gap-4 border-l border-secondary-foreground/25 pl-4">
             <ul className="space-y-2 text-[10px] font-semibold uppercase tracking-[0.55em] text-secondary-foreground opacity-[max(0.75,var(--a-solid,0))]">
