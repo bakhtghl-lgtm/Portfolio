@@ -4,13 +4,13 @@ import {
   motion,
   useInView,
   useReducedMotion,
-  useScroll,
   useTransform,
 } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import cutout from "@/assets/portrait-cutout.webp";
 import { Eyebrow, ScrollLitText } from "../fx/Reveal";
 import { VelocityMarquee } from "../fx/VelocityMarquee";
+import { useInertialScroll } from "../fx/useInertialScroll";
 
 /** Counts up from 0 once the number scrolls into view (instantly final with reduced motion). */
 function Counter({ to, suffix = "+" }: { to: number; suffix?: string }) {
@@ -84,7 +84,10 @@ const PHOTO_BACKDROP = "var(--secondary)";
 
 export function About() {
   const imgRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: imgRef, offset: ["start end", "end start"] });
+  const { scrollYProgress } = useInertialScroll({
+    target: imgRef,
+    offset: ["start end", "end start"],
+  });
   // exactly the original reveal (oval -> rounded rect), mixed with framer's own interpolator but
   // through a function transform so it stays off the native scroll-timeline path
   const clip = useTransform(scrollYProgress, mixClip);

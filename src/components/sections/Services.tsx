@@ -1,8 +1,9 @@
 import { Workflow, LayoutTemplate, Database, Layers, ArrowUpRight } from "lucide-react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useTransform } from "framer-motion";
 import { useLayoutEffect, useRef, useState } from "react";
 import { Eyebrow } from "../fx/Reveal";
 import { useMedia } from "../fx/useMedia";
+import { useInertialScroll } from "../fx/useInertialScroll";
 
 const services = [
   {
@@ -144,7 +145,10 @@ function PinnedServices() {
     };
   }, []);
 
-  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end end"] });
+  const { scrollYProgress } = useInertialScroll({
+    target: sectionRef,
+    offset: ["start start", "end end"],
+  });
   const x = useTransform(scrollYProgress, [0, 1], [0, -distance]);
   const bar = useTransform(scrollYProgress, [0, 1], [0, 1]);
   const bgText = useTransform(scrollYProgress, [0, 1], ["10%", "-60%"]);

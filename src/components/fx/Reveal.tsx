@@ -1,12 +1,5 @@
-import {
-  motion,
-  useInView,
-  useReducedMotion,
-  useScroll,
-  useTransform,
-  type MotionValue,
-} from "framer-motion";
-import { cloneElement, isValidElement, useRef, type ReactNode } from "react";
+import { animate, motion, useInView, useMotionValue, useReducedMotion } from "framer-motion";
+import { cloneElement, isValidElement, useEffect, useRef, type ReactNode } from "react";
 import { useMedia } from "./useMedia";
 
 const EASE = [0.76, 0, 0.24, 1] as const;
@@ -29,9 +22,8 @@ function ScrubChar({ ch, start }: { ch: string; start: number }) {
 }
 
 /**
- * Section headings: every letter rises from behind its line mask, staggered left to right and
- * tied to scroll position (scrubs back on scroll up). Fully assembled once the heading's top
- * reaches 55% of the viewport. Static for reduced motion.
+ * Section headings: every letter rises from behind its line mask, staggered left to right, as
+ * the heading comes into view. Static for reduced motion.
  */
 export function MaskText({
   lines,
@@ -47,11 +39,21 @@ export function MaskText({
 }) {
   const ref = useRef<HTMLSpanElement>(null);
   const reduce = useReducedMotion();
-  // Touch screens: the letters rise once as the heading enters (CSS transitions, staggered) and
-  // then cost nothing; scrubbing every letter on every scroll frame is what made phones stutter.
-  const touch = useMedia("(pointer: coarse)");
+  // The letters rise on their own once the heading enters and always play through: tied to the
+  // scroll position they froze mid-move whenever the scroll stopped, which read as the page
+  // getting stuck. One value per heading is tweened 0 -> 1 and every letter derives its own
+  // staggered offset from it in CSS (.mask-char), so a heading costs one style write per frame
+  // while it plays (per-letter transitions promoted dozens of layers and cost phones frames).
   const seen = useInView(ref, { once: true, margin: "0px 0px -12% 0px" });
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 95%", "start 55%"] });
+  // touch screens: whole lines rise instead of single letters. A line moving as one block is a
+  // pure compositor move (no repaint), where moving letters repaint the heading every frame
+  const touch = useMedia("(pointer: coarse)");
+  const mp = useMotionValue(0);
+  useEffect(() => {
+    if (!seen || touch) return;
+    const a = animate(mp, 1, { duration: 1.35, ease: [0.33, 1, 0.68, 1] });
+    return () => a.stop();
+  }, [seen, mp, touch]);
   const total = Math.max(1, lines.map(textOf).join("").length);
   let k = 0;
 
@@ -62,7 +64,7 @@ export function MaskText({
     });
 
   const render = (line: ReactNode): ReactNode => {
-    if (reduce) return line;
+    if (reduce || touch) return line;
     if (typeof line === "string") return split(line);
     if (isValidElement<{ children?: ReactNode }>(line))
       return cloneElement(line, undefined, split(textOf(line)));
@@ -70,86 +72,43 @@ export function MaskText({
   };
 
   return (
-    // one style write per frame for the whole heading (the letters derive their own offsets);
-    // its own compositor layer, so moving letters repaint just this heading, not the page layer
     <motion.span
       ref={ref}
-      className={`gpu block ${touch ? "mask-once" : ""} ${className}`}
-      style={{ "--mp": touch ? (seen ? 1 : 0) : scrollYProgress } as React.CSSProperties}
+      className={`gpu block ${className}`}
+      style={{ "--mp": mp } as unknown as React.CSSProperties}
     >
       <span className="sr-only">{lines.map(textOf).join(" ")}</span>
       {lines.map((line, i) => (
         <span key={i} aria-hidden className={`mask whitespace-nowrap ${lineClassName}`}>
-          <span className="block">{render(line)}</span>
+          {touch && !reduce ? (
+            <motion.span
+              className="gpu block origin-bottom-left"
+              initial={{ y: "115%", rotate: 4 }}
+              animate={seen ? { y: "0%", rotate: 0 } : undefined}
+              transition={{ duration: 1.05, ease: EASE, delay: i * 0.12 }}
+            >
+              {line}
+            </motion.span>
+          ) : (
+            <span className="block">{render(line)}</span>
+          )}
         </span>
       ))}
     </motion.span>
   );
 }
 
-/** Each word brightens as the paragraph scrolls through the viewport. */
+/** The paragraph's words light up one after another, left to right, as it comes into view. */
 export function ScrollLitText({ text, className = "" }: { text: string; className?: string }) {
   const ref = useRef<HTMLParagraphElement>(null);
-  // fully lit by the time the paragraph's end reaches the middle of the screen
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.9", "end 0.55"] });
-  // touch screens: the words light up once, left to right, as the paragraph comes into view
-  const touch = useMedia("(pointer: coarse)");
   const seen = useInView(ref, { once: true, margin: "0px 0px -20% 0px" });
   const words = text.split(" ");
-  if (touch)
-    return (
-      <p ref={ref} className={`flex flex-wrap ${className}`}>
-        {words.map((w, i) => (
-          <OnceWord key={i} word={w} lit={seen} delay={i * 0.07} />
-        ))}
-      </p>
-    );
   return (
     <p ref={ref} className={`flex flex-wrap ${className}`}>
-      {words.map((w, i) => {
-        const start = i / words.length;
-        const end = start + 1 / words.length;
-        return <LitWord key={i} progress={scrollYProgress} range={[start, end]} word={w} />;
-      })}
+      {words.map((w, i) => (
+        <OnceWord key={i} word={w} lit={seen} delay={i * 0.07} />
+      ))}
     </p>
-  );
-}
-
-function LitWord({
-  progress,
-  range,
-  word,
-}: {
-  progress: MotionValue<number>;
-  range: [number, number];
-  word: string;
-}) {
-  // function form keeps this off framer's native scroll-timeline path (it mis-maps opacity ranges)
-  const opacity = useTransform(progress, (v) =>
-    Math.min(1, Math.max(0, (v - range[0]) / (range[1] - range[0]))),
-  );
-  const highlight = word.startsWith("*");
-  const clean = word.replace(/\*/g, "");
-  // marked words: when the marker's ink differs from the page text (dark mode, or a deep accent
-  // with cream ink) the dim word fades out as the marker fades in, so the two never overlap.
-  // --fade-rest is 0 for light mode with a bright accent, where the dim word is already the ink.
-  return (
-    <span className="relative mr-[0.25em] mt-[0.1em]">
-      {/* readable resting state (>= 3:1); the lit layer fades in over it as you scroll */}
-      <motion.span
-        className={`text-foreground/55 ${highlight ? "opacity-[calc(1-var(--lit)*var(--fade-rest,0))]" : ""}`}
-        style={{ "--lit": opacity } as React.CSSProperties}
-      >
-        {clean}
-      </motion.span>
-      <motion.span
-        aria-hidden
-        style={{ opacity }}
-        className={`pointer-events-none absolute inset-0 ${highlight ? "hl hl-body" : "text-foreground"}`}
-      >
-        {clean}
-      </motion.span>
-    </span>
   );
 }
 

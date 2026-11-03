@@ -1,12 +1,13 @@
 import { useRef, useState, type FormEvent } from "react";
 import { ArrowUpRight, Send } from "lucide-react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useTransform } from "framer-motion";
 import { toast } from "sonner";
 import emailjs from "@emailjs/browser";
 import { Eyebrow } from "../fx/Reveal";
 import { Magnetic } from "../fx/Magnetic";
 import { hireMeHref, WhatsAppButton } from "../social";
 import { submitContact } from "@/server/submit-contact";
+import { useInertialScroll } from "../fx/useInertialScroll";
 
 const initialForm = {
   full_name: "",
@@ -23,7 +24,10 @@ export function Contact() {
   const [pending, setPending] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ctaRef, offset: ["start end", "center center"] });
+  const { scrollYProgress } = useInertialScroll({
+    target: ctaRef,
+    offset: ["start end", "center center"],
+  });
   const ctaScale = useTransform(scrollYProgress, [0, 1], [0.55, 1]);
   const ctaX1 = useTransform(scrollYProgress, [0, 1], ["-30%", "0%"]);
   const ctaX2 = useTransform(scrollYProgress, [0, 1], ["30%", "0%"]);

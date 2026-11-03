@@ -1,7 +1,6 @@
 import {
   motion,
   useReducedMotion,
-  useScroll,
   useTransform,
   type MotionStyle,
   type MotionValue,
@@ -13,6 +12,7 @@ import { useIntroDone } from "../fx/Preloader";
 import { scrollToId } from "../fx/SmoothScroll";
 import { Magnetic } from "../fx/Magnetic";
 import { WhatsAppIcon, whatsappHref } from "../social";
+import { useInertialScroll } from "../fx/useInertialScroll";
 
 const EASE = [0.76, 0, 0.24, 1] as const;
 const SOFT = [0.22, 1, 0.36, 1] as const;
@@ -104,7 +104,10 @@ export function Hero() {
   const play = useIntroDone();
   const reduce = useReducedMotion();
   const ref = useRef<HTMLElement>(null);
-  const { scrollYProgress: p } = useScroll({ target: ref, offset: ["start start", "end end"] });
+  const { scrollYProgress: p } = useInertialScroll({
+    target: ref,
+    offset: ["start start", "end end"],
+  });
 
   // function transforms keep these off framer's native scroll-timeline path
   // Reduced motion: the stage is exactly one screen tall, so it has no scroll range and the
