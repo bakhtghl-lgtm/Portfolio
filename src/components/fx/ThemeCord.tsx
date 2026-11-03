@@ -36,6 +36,43 @@ const MAX_STRETCH = 1.5; // a drag can stretch the cord this far
 const BULB_DROP = 17; // cord end -> bulb centre (px)
 
 type P = { x: number; y: number; px: number; py: number };
+// a tug is a few eased keyframes for the hand: ms from start, sideways offset and depth (both in
+// cord lengths); `kick` is the sideways throw on release
+type Key = { at: number; x: number; y: number };
+type Tug = { keys: Key[]; kick: number };
+const rnd = (a: number, b: number) => a + Math.random() * (b - a);
+const side = () => (Math.random() < 0.5 ? -1 : 1);
+const TUGS: (() => Tug)[] = [
+  // firm: one straight pull
+  () => ({ keys: [{ at: rnd(95, 125), x: rnd(-0.04, 0.04), y: rnd(1.28, 1.36) }], kick: 0 }),
+  // angled: pulled off to one side, it swings across on release
+  () => {
+    const d = side();
+    return {
+      keys: [{ at: rnd(110, 140), x: d * rnd(0.32, 0.45), y: rnd(1.22, 1.3) }],
+      kick: -d * rnd(1.6, 2.4),
+    };
+  },
+  // double: two quick tugs
+  () => ({
+    keys: [
+      { at: 80, x: 0, y: rnd(1.12, 1.18) },
+      { at: 150, x: 0, y: 1.04 },
+      { at: 230, x: rnd(-0.06, 0.06), y: rnd(1.3, 1.36) },
+    ],
+    kick: 0,
+  }),
+  // lazy: a slow, deep pull and a big boing
+  () => ({ keys: [{ at: rnd(210, 260), x: rnd(-0.08, 0.08), y: rnd(1.4, 1.46) }], kick: 0 }),
+  // flick: quick and sideways, a wide swing after
+  () => {
+    const d = side();
+    return {
+      keys: [{ at: rnd(65, 85), x: d * rnd(0.5, 0.62), y: rnd(1.16, 1.22) }],
+      kick: -d * rnd(3, 3.8),
+    };
+  },
+];
 
 export function ThemeCord({ visible = true }: { visible?: boolean }) {
   const slot = useRef<HTMLSpanElement>(null);
@@ -58,7 +95,8 @@ export function ThemeCord({ visible = true }: { visible?: boolean }) {
     segV: 0,
     segRest: rest / (POINTS - 1),
     drag: null as null | { x: number; y: number; sx: number; sy: number; t: number; moved: number },
-    tug: null as null | { t: number; fx: number; fy: number },
+    tug: null as null | { t: number; fx: number; fy: number; keys: Key[]; kick: number },
+    lastStyle: -1,
     acc: 0,
     last: 0,
     raf: 0,
@@ -151,17 +189,39 @@ export function ThemeCord({ visible = true }: { visible?: boolean }) {
     }
 
     if (s.tug) {
-      const k = Math.min(1, (now - s.tug.t) / 110);
-      const e = 1 - Math.pow(1 - k, 3);
-      const ty = rest * 1.3;
-      const x = s.tug.fx + (AX - s.tug.fx) * e;
-      const y = s.tug.fy + (ty - s.tug.fy) * e;
+      const tg = s.tug;
+      const el = now - tg.t;
+      // find the keyframe segment we're in and ease through it
+      let from = { x: tg.fx, y: tg.fy };
+      let t0 = 0;
+      let x = from.x;
+      let y = from.y;
+      let done = true;
+      for (const key of tg.keys) {
+        const to = { x: AX + key.x * rest, y: key.y * rest };
+        if (el < key.at) {
+          const k = (el - t0) / (key.at - t0);
+          const e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+          x = from.x + (to.x - from.x) * e;
+          y = from.y + (to.y - from.y) * e;
+          done = false;
+          break;
+        }
+        from = to;
+        t0 = key.at;
+        x = to.x;
+        y = to.y;
+      }
       s.drag = { x, y, sx: x, sy: y, t: now, moved: 0 };
       s.seg = Math.max(s.segRest, Math.hypot(x - AX, y) / (POINTS - 1));
-      if (k >= 1) {
+      if (done) {
         s.tug = null;
         s.drag = null;
         s.segV = 0;
+        // throw the cord sideways as the hand lets go
+        if (tg.kick) {
+          for (let i = 1; i < POINTS; i++) s.pts[i].px -= tg.kick * (i / (POINTS - 1));
+        }
         flip();
       }
     }
@@ -258,6 +318,23 @@ export function ThemeCord({ visible = true }: { visible?: boolean }) {
     }
   }
 
+  // switching the lamp on: it flickers into life, a different stutter each time
+  function flicker() {
+    const parts = bulb.current?.querySelectorAll<SVGElement>("[data-lit]");
+    if (!parts?.length || reduce) return;
+    const set = (v: string) => parts.forEach((el) => (el.style.opacity = v));
+    const n = 2 + Math.floor(Math.random() * 3);
+    let t = 60;
+    set("0.15");
+    for (let i = 0; i < n; i++) {
+      window.setTimeout(() => set(String(rnd(0.75, 1))), t);
+      t += rnd(40, 110);
+      if (i < n - 1) window.setTimeout(() => set(String(rnd(0.1, 0.35))), t);
+      t += rnd(30, 90);
+    }
+    window.setTimeout(() => set(""), t);
+  }
+
   function flip() {
     const next: Theme = isDark() ? "light" : "dark";
     const [x, y] = hit.current ? centreOf(hit.current) : [innerWidth - 60, 60];
@@ -265,15 +342,22 @@ export function ThemeCord({ visible = true }: { visible?: boolean }) {
       applyTheme(next);
       setTheme(next);
     });
+    if (next === "light") flicker();
   }
 
-  // a tap / Enter: a hand gives the bulb one firm tug (eased, ~110ms), lets go, and the switch
-  // clicks; the cord stretches and springs back on its own
+  // a tap / Enter: a hand tugs the bulb, lets go, and the switch clicks. Each tug is picked at
+  // random from a few kinds (firm, angled, double, lazy, flick), never the same kind twice running,
+  // with its own timing and depth, so the cord never plays the same move twice
   function tug() {
     const s = sim.current;
     if (s.tug || s.drag) return;
+    let k = Math.floor(Math.random() * TUGS.length);
+    if (k === s.lastStyle)
+      k = (k + 1 + Math.floor(Math.random() * (TUGS.length - 1))) % TUGS.length;
+    s.lastStyle = k;
+    const { keys, kick } = TUGS[k]();
     const end = s.pts[POINTS - 1];
-    s.tug = { t: performance.now(), fx: end.x, fy: end.y };
+    s.tug = { t: performance.now(), fx: end.x, fy: end.y, keys, kick };
     wake();
   }
 
@@ -387,19 +471,22 @@ export function ThemeCord({ visible = true }: { visible?: boolean }) {
                 />
                 <g ref={bulb}>
                   {/* warm halo while the lamp is on */}
-                  <circle
-                    cy="22"
-                    r="40"
-                    fill="url(#cord-glow)"
-                    className="transition-opacity duration-500"
-                    style={{ opacity: dark ? 0 : 1 }}
-                  />
+                  <g data-lit>
+                    <circle
+                      cy="22"
+                      r="40"
+                      fill="url(#cord-glow)"
+                      className="transition-opacity duration-500"
+                      style={{ opacity: dark ? 0 : 1 }}
+                    />
+                  </g>
                   {/* cord end cap, then the socket with its threads */}
                   <rect x="-2.6" y="-1.5" width="5.2" height="4" rx="1.2" fill="url(#cord-metal)" />
                   <rect x="-6.5" y="2.2" width="13" height="10" rx="2.2" fill="url(#cord-socket)" />
                   <path d="M-6.2 5.2H6.2M-6.2 8.2H6.2" stroke="#6b707a" strokeWidth="0.8" />
                   {/* glass */}
                   <path
+                    data-lit
                     d="M-5.6 12 C-5.6 15 -11.5 17.5 -11.5 25 C-11.5 32 -6.3 36.5 0 36.5 C6.3 36.5 11.5 32 11.5 25 C11.5 17.5 5.6 15 5.6 12 Z"
                     fill={dark ? "oklch(1 0 0 / 0.14)" : "url(#cord-glass-on)"}
                     stroke={dark ? "oklch(1 0 0 / 0.75)" : "oklch(0.55 0.08 80 / 0.55)"}
@@ -407,6 +494,7 @@ export function ThemeCord({ visible = true }: { visible?: boolean }) {
                   />
                   {/* filament */}
                   <path
+                    data-lit
                     d="M-2.6 13 L-2 21.5 Q-1.4 25.5 0 23.2 Q1.4 25.5 2 21.5 L2.6 13"
                     fill="none"
                     stroke={dark ? "oklch(0.85 0.01 270)" : "#ff8a1f"}

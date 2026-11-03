@@ -1,5 +1,13 @@
-import { motion, useReducedMotion, useScroll, useTransform, type MotionValue } from "framer-motion";
+import {
+  motion,
+  useInView,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+  type MotionValue,
+} from "framer-motion";
 import { cloneElement, isValidElement, useRef, type ReactNode } from "react";
+import { useMedia } from "./useMedia";
 
 const EASE = [0.76, 0, 0.24, 1] as const;
 
@@ -39,6 +47,10 @@ export function MaskText({
 }) {
   const ref = useRef<HTMLSpanElement>(null);
   const reduce = useReducedMotion();
+  // Touch screens: the letters rise once as the heading enters (CSS transitions, staggered) and
+  // then cost nothing; scrubbing every letter on every scroll frame is what made phones stutter.
+  const touch = useMedia("(pointer: coarse)");
+  const seen = useInView(ref, { once: true, margin: "0px 0px -12% 0px" });
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 95%", "start 55%"] });
   const total = Math.max(1, lines.map(textOf).join("").length);
   let k = 0;
@@ -62,8 +74,8 @@ export function MaskText({
     // its own compositor layer, so moving letters repaint just this heading, not the page layer
     <motion.span
       ref={ref}
-      className={`gpu block ${className}`}
-      style={{ "--mp": scrollYProgress } as React.CSSProperties}
+      className={`gpu block ${touch ? "mask-once" : ""} ${className}`}
+      style={{ "--mp": touch ? (seen ? 1 : 0) : scrollYProgress } as React.CSSProperties}
     >
       <span className="sr-only">{lines.map(textOf).join(" ")}</span>
       {lines.map((line, i) => (
@@ -80,7 +92,18 @@ export function ScrollLitText({ text, className = "" }: { text: string; classNam
   const ref = useRef<HTMLParagraphElement>(null);
   // fully lit by the time the paragraph's end reaches the middle of the screen
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.9", "end 0.55"] });
+  // touch screens: the words light up once, left to right, as the paragraph comes into view
+  const touch = useMedia("(pointer: coarse)");
+  const seen = useInView(ref, { once: true, margin: "0px 0px -20% 0px" });
   const words = text.split(" ");
+  if (touch)
+    return (
+      <p ref={ref} className={`flex flex-wrap ${className}`}>
+        {words.map((w, i) => (
+          <OnceWord key={i} word={w} lit={seen} delay={i * 0.07} />
+        ))}
+      </p>
+    );
   return (
     <p ref={ref} className={`flex flex-wrap ${className}`}>
       {words.map((w, i) => {
@@ -126,6 +149,29 @@ function LitWord({
       >
         {clean}
       </motion.span>
+    </span>
+  );
+}
+
+function OnceWord({ word, lit, delay }: { word: string; lit: boolean; delay: number }) {
+  const highlight = word.startsWith("*");
+  const clean = word.replace(/\*/g, "");
+  const t = { transition: "opacity 0.6s ease", transitionDelay: `${delay}s` };
+  return (
+    <span className="relative mr-[0.25em] mt-[0.1em]">
+      <span
+        className="text-foreground/55"
+        style={highlight ? { ...t, opacity: lit ? `calc(1 - var(--fade-rest, 0))` : 1 } : undefined}
+      >
+        {clean}
+      </span>
+      <span
+        aria-hidden
+        style={{ ...t, opacity: lit ? 1 : 0 }}
+        className={`pointer-events-none absolute inset-0 ${highlight ? "hl hl-body" : "text-foreground"}`}
+      >
+        {clean}
+      </span>
     </span>
   );
 }
