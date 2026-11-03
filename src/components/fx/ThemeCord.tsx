@@ -18,6 +18,8 @@ import { useMedia } from "./useMedia";
  * it) and the cord stretches, snaps back and the theme flips. The cord is a small Verlet rope:
  * gravity keeps it hanging, page scrolling jostles it, and it swings and settles like a real
  * cord. The simulation only runs while something moves; at rest it costs nothing.
+ * With reduced motion the cord never moves on its own (no drop-in, no sway on scroll), but the
+ * visitor's own pull or tap still plays out: that motion is theirs, not ours.
  */
 
 const POINTS = 14; // rope nodes, anchor included
@@ -139,7 +141,7 @@ export function ThemeCord({ visible = true }: { visible?: boolean }) {
     const sy = window.scrollY;
     const d = Math.max(-70, Math.min(70, sy - s.scrollY));
     s.scrollY = sy;
-    if (d !== 0) {
+    if (d !== 0 && !reduce) {
       const dir = d > 0 ? 1 : -1;
       for (let i = 1; i < POINTS; i++) {
         const f = i / (POINTS - 1);
@@ -268,7 +270,6 @@ export function ThemeCord({ visible = true }: { visible?: boolean }) {
   // a tap / Enter: a hand gives the bulb one firm tug (eased, ~110ms), lets go, and the switch
   // clicks; the cord stretches and springs back on its own
   function tug() {
-    if (reduce) return flip();
     const s = sim.current;
     if (s.tug || s.drag) return;
     const end = s.pts[POINTS - 1];
@@ -282,7 +283,6 @@ export function ThemeCord({ visible = true }: { visible?: boolean }) {
   }
 
   function onDown(e: PointerEvent<HTMLButtonElement>) {
-    if (reduce) return;
     e.currentTarget.setPointerCapture(e.pointerId);
     const p = local(e);
     sim.current.drag = { x: p.x, y: p.y, sx: p.x, sy: p.y, t: performance.now(), moved: 0 };
@@ -325,7 +325,6 @@ export function ThemeCord({ visible = true }: { visible?: boolean }) {
   }
 
   function onKey(e: KeyboardEvent<HTMLButtonElement>) {
-    if (reduce) return; // the native click flips it
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       tug();
@@ -440,10 +439,8 @@ export function ThemeCord({ visible = true }: { visible?: boolean }) {
                 onPointerCancel={onUp}
                 onKeyDown={onKey}
                 onClick={(e) => {
-                  // reduced motion: no physics, a click simply flips. Otherwise pointer taps are
-                  // handled on pointerup and keyboard "clicks" come through onKey
-                  if (reduce) flip();
-                  else if (e.detail === 0) e.preventDefault();
+                  // pointer taps are handled on pointerup; keyboard "clicks" come through onKey
+                  if (e.detail === 0) e.preventDefault();
                 }}
                 className={`group absolute left-0 top-0 size-12 cursor-grab touch-none rounded-full focus-visible:outline-2 focus-visible:outline-offset-[-6px] focus-visible:outline-[var(--ring)] active:cursor-grabbing ${visible ? "pointer-events-auto" : "pointer-events-none"}`}
               >

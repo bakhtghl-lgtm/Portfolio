@@ -107,12 +107,15 @@ export function Hero() {
   const { scrollYProgress: p } = useScroll({ target: ref, offset: ["start start", "end end"] });
 
   // function transforms keep these off framer's native scroll-timeline path
-  const panel = useTransform(p, (v) => (reduce ? 0 : ramp(v, 0.1, 0.72)));
-  const line1X = useTransform(p, (v) => `${-ramp(v, 0, 0.85) * 22}%`);
-  const line2X = useTransform(p, (v) => `${ramp(v, 0, 0.85) * 22}%`);
-  const typeFade = useTransform(p, (v) => 1 - ramp(v, 0.5, 0.85));
-  const uiFade = useTransform(p, (v) => 1 - ramp(v, 0, 0.22));
-  const photoScale = useTransform(p, (v) => 1 - 0.07 * ramp(v, 0.1, 0.9));
+  // Reduced motion: the stage is exactly one screen tall, so it has no scroll range and the
+  // progress reads as "finished" (which would fade the whole hero out). Hold the resting state.
+  const at = (v: number) => (reduce ? 0 : v);
+  const panel = useTransform(p, (v) => ramp(at(v), 0.1, 0.72));
+  const line1X = useTransform(p, (v) => `${-ramp(at(v), 0, 0.85) * 22}%`);
+  const line2X = useTransform(p, (v) => `${ramp(at(v), 0, 0.85) * 22}%`);
+  const typeFade = useTransform(p, (v) => 1 - ramp(at(v), 0.5, 0.85));
+  const uiFade = useTransform(p, (v) => 1 - ramp(at(v), 0, 0.22));
+  const photoScale = useTransform(p, (v) => 1 - 0.07 * ramp(at(v), 0.1, 0.9));
 
   return (
     <section
