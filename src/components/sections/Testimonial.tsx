@@ -1,8 +1,9 @@
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useTransform } from "framer-motion";
 import { useRef } from "react";
 import { Eyebrow, MaskText } from "../fx/Reveal";
 import { VelocityMarquee } from "../fx/VelocityMarquee";
 import { useMedia } from "../fx/useMedia";
+import { useInertialScroll } from "../fx/useInertialScroll";
 
 type TestimonialItem = {
   name: string;
@@ -108,7 +109,10 @@ function Card({
 
 export function Testimonial() {
   const ref = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const { scrollYProgress } = useInertialScroll({
+    target: ref,
+    offset: ["start end", "end start"],
+  });
   const rotate = useTransform(scrollYProgress, [0, 1], [-4, 4]);
   const half = Math.ceil(testimonials.length / 2);
   // phones and reduced motion get a swipeable, snapping row where a whole card is always readable

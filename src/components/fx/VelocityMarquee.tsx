@@ -6,10 +6,10 @@ import {
   useSpring,
   useTransform,
   useInView,
-  useReducedMotion,
   useVelocity,
 } from "framer-motion";
 import { useRef, type ReactNode } from "react";
+import { useMedia } from "./useMedia";
 
 function wrap(min: number, max: number, v: number) {
   const r = max - min;
@@ -37,7 +37,8 @@ export function VelocityMarquee({
   const skew = useTransform(smoothVelocity, [-2000, 2000], [8, -8]);
   const x = useTransform(baseX, (v) => `${wrap(-25, 0, v)}%`);
   const direction = useRef(1);
-  const reduce = useReducedMotion();
+  // hydration-safe: false on the server and the first client render, like the server markup
+  const reduce = useMedia("(prefers-reduced-motion: reduce)");
   // only run the per-frame update while the band is on (or near) screen
   const box = useRef<HTMLDivElement>(null);
   const visible = useInView(box, { margin: "200px 0px" });

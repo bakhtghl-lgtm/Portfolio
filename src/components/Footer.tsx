@@ -1,4 +1,4 @@
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useTransform } from "framer-motion";
 import { ArrowUp } from "lucide-react";
 import { useRef } from "react";
 import { scrollToId } from "./fx/SmoothScroll";
@@ -11,10 +11,11 @@ import {
   linkedinUrl,
   whatsappHref,
 } from "./social";
+import { useInertialScroll } from "./fx/useInertialScroll";
 
 export function Footer() {
   const ref = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end end"] });
+  const { scrollYProgress } = useInertialScroll({ target: ref, offset: ["start end", "end end"] });
   const y = useTransform(scrollYProgress, [0, 1], ["60%", "0%"]);
 
   return (

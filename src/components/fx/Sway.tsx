@@ -7,7 +7,7 @@ const SOFT = 30;
 // mouse/trackpad: the content trails the wheel by up to this many px
 const MAX = 34;
 // touch: a smaller swing, and only once the finger lifts (a drag must stay glued to the finger)
-const MAX_TOUCH = 18;
+const MAX_TOUCH = 36;
 // damping ratio ~0.6: one soft swing past rest (~10%), then it's still, with no slow creep
 const STIFFNESS = 85;
 const DAMPING = 11;

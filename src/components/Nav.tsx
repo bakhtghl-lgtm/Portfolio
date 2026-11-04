@@ -2,7 +2,7 @@ import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring } fr
 import { useEffect, useState } from "react";
 import { lockScroll, scrollToId } from "./fx/SmoothScroll";
 import { Magnetic } from "./fx/Magnetic";
-import { ThemeToggle } from "./fx/ThemeToggle";
+import { ThemeCord } from "./fx/ThemeCord";
 import { Avatar } from "./Avatar";
 import { AccentPicker, AccentSwatches } from "./fx/AccentPicker";
 import {
@@ -117,7 +117,8 @@ export function Nav() {
             </div>
             {/* phones pick the accent in the menu: there's no room for a third button here */}
             {!open ? <AccentPicker className="hidden md:block" /> : null}
-            {!open ? <ThemeToggle /> : null}
+            {/* light / dark: a lamp cord hanging from the top of the screen */}
+            <ThemeCord visible={!open} />
             {!open ? (
               <button
                 type="button"

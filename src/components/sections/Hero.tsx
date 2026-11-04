@@ -1,11 +1,4 @@
-import {
-  motion,
-  useReducedMotion,
-  useScroll,
-  useTransform,
-  type MotionStyle,
-  type MotionValue,
-} from "framer-motion";
+import { motion, useTransform, type MotionStyle, type MotionValue } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { useRef } from "react";
 import cutout from "@/assets/portrait-cutout.webp";
@@ -13,6 +6,8 @@ import { useIntroDone } from "../fx/Preloader";
 import { scrollToId } from "../fx/SmoothScroll";
 import { Magnetic } from "../fx/Magnetic";
 import { WhatsAppIcon, whatsappHref } from "../social";
+import { useInertialScroll } from "../fx/useInertialScroll";
+import { useMedia } from "../fx/useMedia";
 
 const EASE = [0.76, 0, 0.24, 1] as const;
 const SOFT = [0.22, 1, 0.36, 1] as const;
@@ -102,17 +97,24 @@ function HeadlineLines({
  */
 export function Hero() {
   const play = useIntroDone();
-  const reduce = useReducedMotion();
+  // hydration-safe: false on the server and the first client render, like the server markup
+  const reduce = useMedia("(prefers-reduced-motion: reduce)");
   const ref = useRef<HTMLElement>(null);
-  const { scrollYProgress: p } = useScroll({ target: ref, offset: ["start start", "end end"] });
+  const { scrollYProgress: p } = useInertialScroll({
+    target: ref,
+    offset: ["start start", "end end"],
+  });
 
   // function transforms keep these off framer's native scroll-timeline path
-  const panel = useTransform(p, (v) => (reduce ? 0 : ramp(v, 0.1, 0.72)));
-  const line1X = useTransform(p, (v) => `${-ramp(v, 0, 0.85) * 22}%`);
-  const line2X = useTransform(p, (v) => `${ramp(v, 0, 0.85) * 22}%`);
-  const typeFade = useTransform(p, (v) => 1 - ramp(v, 0.5, 0.85));
-  const uiFade = useTransform(p, (v) => 1 - ramp(v, 0, 0.22));
-  const photoScale = useTransform(p, (v) => 1 - 0.07 * ramp(v, 0.1, 0.9));
+  // Reduced motion: the stage is exactly one screen tall, so it has no scroll range and the
+  // progress reads as "finished" (which would fade the whole hero out). Hold the resting state.
+  const at = (v: number) => (reduce ? 0 : v);
+  const panel = useTransform(p, (v) => ramp(at(v), 0.1, 0.72));
+  const line1X = useTransform(p, (v) => `${-ramp(at(v), 0, 0.85) * 22}%`);
+  const line2X = useTransform(p, (v) => `${ramp(at(v), 0, 0.85) * 22}%`);
+  const typeFade = useTransform(p, (v) => 1 - ramp(at(v), 0.5, 0.85));
+  const uiFade = useTransform(p, (v) => 1 - ramp(at(v), 0, 0.22));
+  const photoScale = useTransform(p, (v) => 1 - 0.07 * ramp(at(v), 0.1, 0.9));
 
   return (
     <section

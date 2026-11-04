@@ -1,6 +1,7 @@
-import { animate, motion, useInView, useScroll, useTransform } from "framer-motion";
+import { animate, motion, useInView, useTransform } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { Eyebrow, MaskText } from "../fx/Reveal";
+import { useInertialScroll } from "../fx/useInertialScroll";
 
 const skills = [
   { name: "GoHighLevel", value: 98 },
@@ -68,7 +69,10 @@ function SkillRow({ name, value, i }: { name: string; value: number; i: number }
 
 export function Skills() {
   const ref = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const { scrollYProgress } = useInertialScroll({
+    target: ref,
+    offset: ["start end", "end start"],
+  });
   const x = useTransform(scrollYProgress, [0, 1], ["20%", "-40%"]);
 
   return (
