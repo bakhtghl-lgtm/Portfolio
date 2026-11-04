@@ -1,4 +1,4 @@
-import { animate, motion, useInView, useMotionValue, useReducedMotion } from "framer-motion";
+import { animate, motion, useInView, useMotionValue } from "framer-motion";
 import { cloneElement, isValidElement, useEffect, useRef, type ReactNode } from "react";
 import { useMedia } from "./useMedia";
 
@@ -38,7 +38,8 @@ export function MaskText({
   once?: boolean;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const reduce = useReducedMotion();
+  // hydration-safe: false on the server and the first client render, like the server markup
+  const reduce = useMedia("(prefers-reduced-motion: reduce)");
   // The letters rise on their own once the heading enters and always play through: tied to the
   // scroll position they froze mid-move whenever the scroll stopped, which read as the page
   // getting stuck. One value per heading is tweened 0 -> 1 and every letter derives its own

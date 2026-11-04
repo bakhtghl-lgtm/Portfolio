@@ -1,10 +1,4 @@
-import {
-  motion,
-  useReducedMotion,
-  useTransform,
-  type MotionStyle,
-  type MotionValue,
-} from "framer-motion";
+import { motion, useTransform, type MotionStyle, type MotionValue } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { useRef } from "react";
 import cutout from "@/assets/portrait-cutout.webp";
@@ -13,6 +7,7 @@ import { scrollToId } from "../fx/SmoothScroll";
 import { Magnetic } from "../fx/Magnetic";
 import { WhatsAppIcon, whatsappHref } from "../social";
 import { useInertialScroll } from "../fx/useInertialScroll";
+import { useMedia } from "../fx/useMedia";
 
 const EASE = [0.76, 0, 0.24, 1] as const;
 const SOFT = [0.22, 1, 0.36, 1] as const;
@@ -102,7 +97,8 @@ function HeadlineLines({
  */
 export function Hero() {
   const play = useIntroDone();
-  const reduce = useReducedMotion();
+  // hydration-safe: false on the server and the first client render, like the server markup
+  const reduce = useMedia("(prefers-reduced-motion: reduce)");
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress: p } = useInertialScroll({
     target: ref,
